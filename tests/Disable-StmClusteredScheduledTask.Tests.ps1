@@ -13,7 +13,14 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
     Describe 'Disable-StmClusteredScheduledTask' {
         BeforeEach {
             Mock -CommandName 'Export-StmClusteredScheduledTask' -MockWith {
-                return '<TaskDefinition>MockTaskXML</TaskDefinition>'
+                if ($PesterBoundParameters.ContainsKey('FilePath')) {
+                    # When FilePath is provided, write to the file
+                    $mockXml = '<TaskDefinition>MockTaskXML</TaskDefinition>'
+                    $mockXml | Out-File -FilePath $PesterBoundParameters.FilePath -Encoding ([System.Text.Encoding]::Unicode)
+                } else {
+                    # When no FilePath, return the XML
+                    return '<TaskDefinition>MockTaskXML</TaskDefinition>'
+                }
             }
             Mock -CommandName 'Join-Path' -MockWith {
                 # Call the real Join-Path with the provided ChildPath
@@ -94,7 +101,7 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
 
                 Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters
 
-                Should -Invoke Join-Path -Times 1 -ParameterFilter {
+                Should -Invoke 'Join-Path' -Times 1 -ParameterFilter {
                     $ChildPath -like 'TestTask_TestCluster_20250118153045.xml'
                 }
             }
@@ -222,7 +229,14 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             It 'Should complete full disable workflow successfully' {
                 # Arrange
                 Mock -CommandName 'Export-StmClusteredScheduledTask' -MockWith {
-                    return '<TaskDefinition>MockTaskXML</TaskDefinition>'
+                    if ($PesterBoundParameters.ContainsKey('FilePath')) {
+                        # When FilePath is provided, write to the file
+                        $mockXml = '<TaskDefinition>MockTaskXML</TaskDefinition>'
+                        $mockXml | Out-File -FilePath $PesterBoundParameters.FilePath -Encoding ([System.Text.Encoding]::Unicode)
+                    } else {
+                        # When no FilePath, return the XML
+                        return '<TaskDefinition>MockTaskXML</TaskDefinition>'
+                    }
                 }
                 Mock -CommandName 'Test-Path' -MockWith {
                     return $true
