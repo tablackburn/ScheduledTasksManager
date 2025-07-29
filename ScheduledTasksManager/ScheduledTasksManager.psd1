@@ -130,7 +130,7 @@ PrivateData = @{
         # RequireLicenseAcceptance = $false
 
         # External dependent modules of this module
-        # ExternalModuleDependencies = @()
+        ExternalModuleDependencies = @('ScheduledTasks')
 
     } # End of PSData hashtable
 
