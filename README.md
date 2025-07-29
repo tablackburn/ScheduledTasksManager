@@ -63,8 +63,7 @@ Import-Module ScheduledTasksManager
 Get-StmClusteredScheduledTask -Cluster "MyCluster"
 
 # Register a new clustered task
-Register-StmClusteredScheduledTask -Cluster "MyCluster" -TaskName "BackupTask"
--TaskType "ClusterWide"
+Register-StmClusteredScheduledTask -Cluster "MyCluster" -TaskName "BackupTask" -TaskType "ClusterWide"
 
 # Start a clustered task
 Start-StmClusteredScheduledTask -Cluster "MyCluster" -TaskName "BackupTask"
