@@ -103,11 +103,15 @@ function Export-StmClusteredScheduledTask {
             $directory = Split-Path -Path $FilePath -Parent
             if ($directory -and -not (Test-Path -Path $directory)) {
                 Write-Verbose "Creating directory: $directory"
-                New-Item -Path $directory -ItemType Directory -Force | Out-Null
+                New-Item -Path $directory -ItemType 'Directory' -Force | Out-Null
             }
 
             try {
-                $scheduledTask.ScheduledTaskObject | Export-ScheduledTask | Out-File -FilePath $FilePath -Encoding ([System.Text.Encoding]::UTF8)
+                $outFileParameters = @{
+                    FilePath = $FilePath
+                    Encoding = [System.Text.Encoding]::Unicode
+                }
+                $scheduledTask.ScheduledTaskObject | Export-ScheduledTask | Out-File @outFileParameters
                 Write-Verbose "Successfully exported task to: $FilePath"
             }
             catch {
