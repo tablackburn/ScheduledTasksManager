@@ -1,10 +1,9 @@
 name: Publish Module
 on:
-  workflow_call:
-    secrets:
-      ps_gallery_key:
-        description: 'The PSGallery key used to publish'
-        required: true
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 jobs:
   publish:
     defaults:
