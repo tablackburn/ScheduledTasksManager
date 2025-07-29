@@ -1,0 +1,43 @@
+name: Publish Module
+on:
+  workflow_call:
+    secrets:
+      ps_gallery_key:
+        description: 'The PSGallery key used to publish'
+        required: true
+jobs:
+  publish:
+    defaults:
+      run:
+        shell: pwsh
+    runs-on: windows-latest
+    steps:
+      # Get the current version
+      - uses: actions/checkout@v4
+      - name: Bootstrap
+        run: ./build.ps1 -Task 'Init' -Bootstrap
+      - id: check_if_versions_bumped
+        run: |
+          Import-Module BuildHelpers
+          Set-BuildEnvironment -Force
+          [version]$githubVersion = Get-Metadata -Path $env:BHPSModuleManifest -PropertyName 'ModuleVersion' -ErrorAction 'Stop'
+          $moduleSplat = @{
+              Repository      = 'PSGallery'
+              Name            = $env:BHProjectName
+              RequiredVersion = $githubVersion
+              AllowPrerelease = $True
+              ErrorAction     = 'SilentlyContinue'
+          }
+          if (Find-Module @moduleSplat) {
+              $bumped = $False
+          }
+          else {
+              $bumped = $True
+          }
+          # Set the output named "BUMPED"
+          Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value "BUMPED=$bumped" -Confirm:$False -Encoding 'UTF8'
+      - name: Publish to PSGallery
+        if: ${{ steps.check_if_versions_bumped.outputs.BUMPED == 'True'}}
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.ps_gallery_key }}
+        run: ./build.ps1 -Task 'Publish' -Bootstrap
