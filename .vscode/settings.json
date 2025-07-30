@@ -1,6 +1,9 @@
 {
     "editor.insertSpaces": true,
     "editor.tabSize": 4,
+    "files.associations": {
+        ".actrc": "shellscript"
+    },
     "files.insertFinalNewline": true,
     "files.trimTrailingWhitespace": true,
     "github.copilot.chat.codeGeneration.useInstructionFiles": true,
