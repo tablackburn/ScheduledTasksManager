@@ -1,3 +1,8 @@
 site_name: ScheduledTasksManager
 site_url: https://tablackburn.github.io/ScheduledTasksManager/
 repo_url: https://github.com/tablackburn/ScheduledTasksManager
+nav:
+  - Home: index.md
+  - Changelog: https://github.com/tablackburn/ScheduledTasksManager/blob/main/CHANGELOG.md
+  - en-US:
+    - en-US/
