@@ -1,5 +1,17 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.actrc'
+      - '.github/workflows/CI.yaml' # We want to run this workflow on any changes to this file
+      - 'ScheduledTasksManager/**'
+      - 'build.ps1'
+      - 'tests/**'
+  pull_request:
+    branches:
+      - main
 jobs:
   test:
     name: Run Tests
