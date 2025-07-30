@@ -14,7 +14,7 @@ schema: 2.0.0
 
 ```
 Get-StmScheduledTaskRun [[-TaskName] <String>] [[-ComputerName] <String>] [[-Credential] <PSCredential>]
- [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [[-MaxRuns] <Int32>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -72,6 +72,21 @@ Aliases:
 Required: False
 Position: 3
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MaxRuns
+The maximum number of task runs to return per task. If not specified, all available runs are returned.
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
