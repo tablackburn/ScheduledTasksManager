@@ -16,5 +16,9 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
+      - name: Copy README.md to docs/index.md
+        shell: pwsh
+        run: | # powershell
+          Copy-Item -Path 'README.md' -Destination 'docs/index.md'
       - name: Deploy MkDocs to GitHub Pages
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
