@@ -2,3 +2,4 @@
 # See https://nektosact.com/usage/runners.html
 # This prevents act from prompting the user to choose a runner
 --platform ubuntu-latest=catthehacker/ubuntu:act-latest
+--platform windows-latest=-self-hosted
