@@ -126,7 +126,7 @@ function Register-StmClusteredScheduledTask {
         - ClusterWide: Task runs across the entire cluster infrastructure
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'XmlString')]
+    [CmdletBinding(DefaultParameterSetName = 'XmlString', SupportsShouldProcess = $true)]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -162,9 +162,7 @@ function Register-StmClusteredScheduledTask {
 
     begin {
         Write-Verbose "Starting Register-StmClusteredScheduledTask for task '$TaskName' on cluster '$Cluster'"
-    }
 
-    process {
         if ($PSCmdlet.ParameterSetName -eq 'XmlFile') {
             try {
                 $xmlContent = Get-Content -Path $XmlPath -Raw -ErrorAction 'Stop'
@@ -176,9 +174,13 @@ function Register-StmClusteredScheduledTask {
             }
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'XmlString') {
+            Write-Verbose 'Using provided XML content'
             $xmlContent = $Xml
         }
+    }
 
+    process {
+        if ($PSCmdlet.ShouldProcess("Register clustered scheduled task '$TaskName' on cluster '$Cluster'", 'Register clustered scheduled task')) {
         $cimSession = New-StmCimSession -ComputerName $Cluster -Credential $Credential
         Write-Verbose "Registering clustered scheduled task '$TaskName' using provided XML..."
         $clusteredScheduledTaskParameters = @{
@@ -187,8 +189,9 @@ function Register-StmClusteredScheduledTask {
             CimSession  = $cimSession
             TaskType    = $TaskType
             ErrorAction = 'Stop'
+            }
+            Register-ClusteredScheduledTask @clusteredScheduledTaskParameters
         }
-        Register-ClusteredScheduledTask @clusteredScheduledTaskParameters
     }
 
     end {
