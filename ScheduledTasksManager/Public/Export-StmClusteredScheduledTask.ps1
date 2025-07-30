@@ -93,6 +93,11 @@ function Export-StmClusteredScheduledTask {
             Credential = $Credential
         }
         $scheduledTask = Get-StmClusteredScheduledTask @stmScheduledTaskParameters
+
+        if ($null -eq $scheduledTask) {
+            Write-Error "Failed to retrieve scheduled task '$TaskName' on cluster '$Cluster'"
+            return
+        }
     }
 
     process {
