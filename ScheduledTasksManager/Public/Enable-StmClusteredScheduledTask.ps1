@@ -89,11 +89,13 @@ function Enable-StmClusteredScheduledTask {
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$TaskName,
+        [string]
+        $TaskName,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$Cluster,
+        [string]
+        $Cluster,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNull()]

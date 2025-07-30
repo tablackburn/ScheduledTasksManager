@@ -120,21 +120,10 @@ function Disable-StmClusteredScheduledTask {
                     TaskName    = $TaskName
                     Cluster     = $Cluster
                     Credential  = $Credential
+                    FilePath    = $backupPath
                     ErrorAction = 'Stop'
                 }
-                $exportedTaskXml = Export-StmClusteredScheduledTask @exportTaskParameters
-                if ($null -eq $exportedTaskXml) {
-                    Write-Error "Failed to export XML for task '$TaskName'. Aborting." -ErrorAction 'Stop'
-                    return
-                }
-                $fileParameters = @{
-                    Path        = $backupPath
-                    InputObject = $exportedTaskXml
-                    Encoding    = [System.Text.Encoding]::GetEncoding('utf-8')
-                    ErrorAction = 'Stop'
-                    Force       = $true
-                }
-                Out-File @fileParameters
+                Export-StmClusteredScheduledTask @exportTaskParameters
                 $backupSuccessful = (Test-Path -Path $backupPath) -and (Get-Content -Path $backupPath).Length -gt 0
                 if ($backupSuccessful) {
                     Write-Verbose "Backup of clustered scheduled task '$TaskName' created successfully at '$backupPath'."

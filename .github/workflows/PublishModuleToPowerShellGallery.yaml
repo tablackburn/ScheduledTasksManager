@@ -1,4 +1,4 @@
-name: Publish Module
+name: Publish Module to PowerShell Gallery
 on:
   push:
     branches:

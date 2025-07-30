@@ -3,14 +3,17 @@ on: [push, pull_request]
 jobs:
   test:
     name: Run Tests
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest]
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
     steps:
-    - uses: actions/checkout@v1
-    - name: Test
-      shell: pwsh
-      run: ./build.ps1 -Task Test -Bootstrap
-
+    - uses: actions/checkout@v4
+    - name: Build Task - Test
+      run: | # powershell
+        ./build.ps1 -Task 'Test' -Bootstrap
+    - uses: actions/upload-artifact@v4                # upload test results
+      if: ${{ (success() || failure()) && !env.ACT }} # run this step even if previous step failed but do not run if it is running locally
+      with:
+        name: test-results
+        path: ./tests/out/testResults.xml
