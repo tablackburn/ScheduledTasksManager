@@ -5,6 +5,13 @@ clustered scheduled tasks on Windows systems. It supports operations in
 standalone environments as well as Windows Server Failover Clusters, extending
 the capabilities of the built-in `ScheduledTasks` module from Microsoft.
 
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ScheduledTasksManager)
+![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/ScheduledTasksManager)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/tablackburn/ScheduledTasksManager/.github/workflows/CI.yaml?branch=main)
+![PowerShell Gallery](https://img.shields.io/powershellgallery/p/ScheduledTasksManager)](https://www.powershellgallery.com/packages/ScheduledTasksManager/)
+
+Documentation automatically updated at [tablackburn.github.io/ScheduledTasksManager](https://tablackburn.github.io/ScheduledTasksManager/)
+
 ## What This Project Does
 
 ScheduledTasksManager provides comprehensive functions for managing scheduled
@@ -118,7 +125,6 @@ changes, please open an issue first to discuss what you would like to change.
 
 ### Development
 
-- **Version**: 0.1.0
 - **License**: See [LICENSE](LICENSE) file
 - **Changelog**: See [CHANGELOG.md](CHANGELOG.md) for version history
 
