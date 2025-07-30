@@ -18,6 +18,9 @@
     .PARAMETER Credential
         The credentials to use when connecting to the remote computer. If not specified, the current user's credentials are used.
 
+    .PARAMETER MaxRuns
+        The maximum number of task runs to return per task. If not specified, all available runs are returned.
+
     .EXAMPLE
         Get-StmScheduledTaskRun -TaskName "MyTask"
 
@@ -33,6 +36,11 @@
         Get-StmScheduledTaskRun -TaskName "BackupTask" -ComputerName "Server02" -Credential $creds
 
         Retrieves the run history for the "BackupTask" scheduled task on "Server02" using the specified credentials.
+
+    .EXAMPLE
+        Get-StmScheduledTaskRun -TaskName "MyTask" -MaxRuns 5
+
+        Retrieves the 5 most recent runs for the scheduled task named "MyTask" on the local computer.
 
     .INPUTS
         None. You cannot pipe objects to Get-StmScheduledTaskRun.
@@ -55,13 +63,18 @@
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [string]
-        $ComputerName,
+        $ComputerName = 'localhost',
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNull()]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]
-        $Credential = [System.Management.Automation.PSCredential]::Empty
+        $Credential = [System.Management.Automation.PSCredential]::Empty,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]
+        $MaxRuns
     )
 
     begin {
@@ -84,9 +97,9 @@
             LogName     = 'Microsoft-Windows-TaskScheduler/Operational'
             ErrorAction = 'Stop'
         }
+        $cimSessionParameters['ComputerName'] = $ComputerName
         if ($PSBoundParameters.ContainsKey('ComputerName')) {
             Write-Verbose "Using provided computer name '$ComputerName'"
-            $cimSessionParameters['ComputerName'] = $ComputerName
             $getWinEventCommonParameters['ComputerName'] = $ComputerName
         }
         else {
@@ -100,7 +113,7 @@
         else {
             Write-Verbose 'Using current user credentials'
         }
-        $cimSession = New-CimSession @cimSessionParameters
+        $cimSession = New-StmCimSession @cimSessionParameters
         $scheduledTaskParameters['CimSession'] = $cimSession
     }
 
@@ -170,6 +183,14 @@
 
                 $uniqueActivityIds = $taskEvents | Select-Object -ExpandProperty 'ActivityId' -Unique
                 Write-Verbose "Found $($uniqueActivityIds.Count) unique activity ID(s) for task '$($currentTask.TaskName)'"
+
+                # Limit the number of activity IDs if MaxRuns is specified
+                if ($PSBoundParameters.ContainsKey('MaxRuns')) {
+                    Write-Verbose "Limiting to $MaxRuns most recent runs for task '$($currentTask.TaskName)'"
+                    $uniqueActivityIds = $uniqueActivityIds | Select-Object -First $MaxRuns
+                    Write-Verbose "Limited to $($uniqueActivityIds.Count) activity ID(s) for task '$($currentTask.TaskName)'"
+                }
+
                 foreach ($activityId in $uniqueActivityIds) {
                     Write-Verbose "Processing activity ID '$activityId' for task '$($currentTask.TaskName)'"
                     $runDetails = [ordered]@{
@@ -181,6 +202,9 @@
                         Duration             = $null
                         DurationSeconds      = $null
                         LaunchRequestIgnored = $null
+                        Events               = $null
+                        EventCount           = $null
+                        EventXml             = $null
                     }
                     $activityEvents = $taskEvents | Where-Object { $_.ActivityId -eq $activityId }
                     Write-Verbose "Found $($activityEvents.Count) event(s) for activity ID '$activityId' of task '$($currentTask.TaskName)'"
