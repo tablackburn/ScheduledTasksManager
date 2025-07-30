@@ -22,3 +22,5 @@ jobs:
           Copy-Item -Path 'README.md' -Destination 'docs/index.md'
       - name: Deploy MkDocs to GitHub Pages
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
