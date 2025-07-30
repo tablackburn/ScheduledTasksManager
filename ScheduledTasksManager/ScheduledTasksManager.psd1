@@ -24,7 +24,7 @@ GUID = '158c4068-aff1-41e8-a5e8-160651ceadac'
 Author = 'Trent Blackburn'
 
 # Company or vendor of this module
-CompanyName = 'Unknown'
+CompanyName = 'Trent Blackburn'
 
 # Copyright statement for this module
 Copyright = '(c) Trent Blackburn. All rights reserved.'
@@ -109,7 +109,13 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags                   = @(
+            'PSEdition_Desktop',
+            'PSEdition_Core',
+            'Windows',
+            'Linux',
+            'MacOS'
+        )
 
         # A URL to the license for this module.
         LicenseUri = 'https://github.com/tablackburn/ScheduledTasksManager/blob/main/LICENSE'
