@@ -16,25 +16,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   retrieval
 - Unit tests for `Get-StmScheduledTaskRun` to validate task retrieval, event
   handling, and XML conversion
-- Enhanced documentation for `Get-StmScheduledTaskRun` with additional
-  examples and parameter details
-
-### Enhanced
-
+- Additional examples and parameters details for `Get-StmScheduledTaskRun`
 - `Register-StmClusteredScheduledTask` now supports `ShouldProcess` with
   `-WhatIf` and `-Confirm` parameters for improved safety during task
   registration
-- Added verbose output for XML content usage in
-  `Register-StmClusteredScheduledTask`
-- Enhanced error handling in `Export-StmClusteredScheduledTask` to check for
-  null scheduled task retrieval
-- Improved parameter declarations in `Enable-StmClusteredScheduledTask` for
-  better readability by separating type annotations from parameter names
-
-### Fixed
-
-- Documentation updates for better clarity and user awareness of cmdlet
-  behavior
+- Verbose output for XML content usage in `Register-StmClusteredScheduledTask`
+- Error handling in `Export-StmClusteredScheduledTask` to check for null
+  scheduled task retrieval
 
 ## [0.1.0] - 2025-07-29
 
