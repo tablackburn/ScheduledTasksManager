@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Build and Debug",
+            "type": "PowerShell",
+            "request": "launch",
+            "script": "${cwd}/build.ps1",
+            "args": [
+                "-Task Test",
+                "-Verbose"
+            ],
+            "createTemporaryIntegratedConsole": false,
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Run Build and Debug (Temp Console)",
+            "type": "PowerShell",
+            "request": "launch",
+            "script": "${cwd}/build.ps1",
+            "args": [
+                "-Task Test",
+                "-Verbose"
+            ],
+            "createTemporaryIntegratedConsole": true,
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

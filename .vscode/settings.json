@@ -2,7 +2,8 @@
     "editor.insertSpaces": true,
     "editor.tabSize": 4,
     "files.associations": {
-        ".actrc": "shellscript"
+        ".actrc": "shellscript",
+        "cspell.json": "jsonc"
     },
     "files.insertFinalNewline": true,
     "files.trimTrailingWhitespace": true,
