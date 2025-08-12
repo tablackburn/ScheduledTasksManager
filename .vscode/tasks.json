@@ -2,14 +2,12 @@
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
     "version": "2.0.0",
-
     // Start PowerShell (pwsh on *nix)
     "windows": {
         "options": {
             "shell": {
                 "executable": "pwsh.exe",
                 "args": [
-                    "-NonInteractive",
                     "-NoProfile",
                     "-ExecutionPolicy",
                     "Bypass",
@@ -23,7 +21,6 @@
             "shell": {
                 "executable": "/usr/bin/pwsh",
                 "args": [
-                    "-NonInteractive",
                     "-NoProfile",
                     "-Command"
                 ]
@@ -35,54 +32,106 @@
             "shell": {
                 "executable": "/usr/local/bin/pwsh",
                 "args": [
-                    "-NonInteractive",
                     "-NoProfile",
                     "-Command"
                 ]
             }
         }
     },
-
     "tasks": [
+        /* "problemMatcher": [] prevents the
+            "Select for which kind of errors and warnings to scan the task output" prompt from appearing.
+            See https://stackoverflow.com/q/56519017 for more information */
         {
             "label": "Clean",
             "type": "shell",
-            "command": "${cwd}/build.ps1 -Task Clean -Verbose"
+            "command": "& '${cwd}/build.ps1' -Task Clean -Verbose",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": [],
+            "icon": {
+                "id": "trash"
+            }
         },
         {
             "label": "Test",
             "type": "shell",
-            "command": "${cwd}/build.ps1 -Task Test -Verbose",
+            "command": "& '${cwd}/build.ps1' -Task Test -Verbose",
             "group": {
                 "kind": "test",
                 "isDefault": true
             },
-            "problemMatcher": "$pester"
+            "problemMatcher": "$pester",
+            "icon": {
+                "id": "beaker"
+            }
         },
         {
             "label": "Analyze",
             "type": "shell",
-            "command": "${cwd}/build.ps1 -Task Analyze -Verbose"
+            "command": "& '${cwd}/build.ps1' -Task Analyze -Verbose",
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": "$pester",
+            "icon": {
+                "id": "beaker"
+            }
         },
         {
             "label": "Pester",
             "type": "shell",
-            "command": "${cwd}/build.ps1 -Task Pester -Verbose",
-            "problemMatcher": "$pester"
+            "command": "& '${cwd}/build.ps1' -Task Pester -Verbose",
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": "$pester",
+            "icon": {
+                "id": "beaker"
+            }
         },
         {
             "label": "Build",
             "type": "shell",
-            "command": "${cwd}/build.ps1 -Task Build -Verbose",
+            "command": "& '${cwd}/build.ps1' -Task Build -Verbose",
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "problemMatcher": [],
+            "icon": {
+                "id": "gear"
             }
         },
         {
             "label": "Publish",
             "type": "shell",
-            "command": "${cwd}/build.ps1 -Task Publish -Verbose"
+            "command": "& '${cwd}/build.ps1' -Task Publish -Verbose",
+            "group": {
+                "kind": "none",
+                "isDefault": false
+            },
+            "problemMatcher": [],
+            "icon": {
+                "id": "cloud-upload"
+            }
+        },
+        {
+            "label": "Bootstrap",
+            "type": "shell",
+            "command": "& '${cwd}/build.ps1' -Task Init -Bootstrap -Verbose",
+            "group": {
+                "kind": "none",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "icon": {
+                "id": "gear"
+            }
         }
     ]
 }
