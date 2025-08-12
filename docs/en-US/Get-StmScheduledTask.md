@@ -5,7 +5,7 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-StmScheduledTaskRun
+# Get-StmScheduledTask
 
 ## SYNOPSIS
 {{ Fill in the Synopsis }}
@@ -13,8 +13,8 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-Get-StmScheduledTaskRun [[-TaskName] <String>] [[-TaskPath] <String>] [[-ComputerName] <String>]
- [[-Credential] <PSCredential>] [[-MaxRuns] <Int32>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+Get-StmScheduledTask [[-TaskName] <String>] [[-TaskPath] <String>] [[-ComputerName] <String>]
+ [[-Credential] <PSCredential>] [-ProgressAction <ActionPreference>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -47,8 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -TaskPath
-The path of the scheduled task(s) to retrieve run history for. Matches the TaskPath parameter of Get-ScheduledTask.
-If not specified, all task paths are considered.
+{{ Fill TaskPath Description }}
 
 ```yaml
 Type: String
@@ -88,21 +87,6 @@ Aliases:
 Required: False
 Position: 4
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MaxRuns
-The maximum number of task runs to return per task. If not specified, all available runs are returned.
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 5
-Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

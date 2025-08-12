@@ -8,6 +8,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.3.0] - 2025-08-11
+
+### Added
+
+- `Get-StmScheduledTask` - New function to retrieve scheduled tasks from local
+  or remote computers with credential support and consistent error handling
+- `TaskPath` parameter to `Get-StmScheduledTaskRun` for filtering by task path
+  location
+- Comprehensive comment-based help documentation for `Get-StmScheduledTask`
+  with detailed examples and parameter descriptions
+- Unit tests for `Get-StmScheduledTask` to validate task retrieval
+  functionality
+- Help documentation file for `Get-StmScheduledTask` following module
+  standards
+
+### Changed
+
+- Module version bumped to 0.3.0 in manifest
+- Updated `Get-StmScheduledTaskRun` example to use `$credentials` variable
+  name for consistency
+- Improved verbose messaging in `Get-StmScheduledTaskRun` for better clarity
+- Updated help documentation for `Get-StmScheduledTaskRun` to reflect new
+  `TaskPath` parameter
+
 ## [0.2.0] - 2025-07-30
 
 ### Added

@@ -49,8 +49,8 @@ function Get-StmClusteredScheduledTask {
         Retrieves all clustered scheduled tasks that are in "Ready" state and are "ClusterWide" type from cluster "MyCluster".
 
     .EXAMPLE
-        $creds = Get-Credential
-        Get-StmClusteredScheduledTask -Cluster "MyCluster" -Credential $creds | Where-Object { $_.CurrentOwner -eq "Node01" }
+        $credentials = Get-Credential
+        Get-StmClusteredScheduledTask -Cluster "MyCluster" -Credential $credentials | Where-Object { $_.CurrentOwner -eq "Node01" }
 
         Retrieves all clustered scheduled tasks from cluster "MyCluster" using specified credentials and filters to show
         only tasks owned by "Node01".

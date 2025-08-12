@@ -12,6 +12,10 @@
     .PARAMETER TaskName
         The name of the scheduled task to retrieve run history for. If not specified, retrieves run history for all tasks.
 
+    .PARAMETER TaskPath
+        The path of the scheduled task(s) to retrieve run history for. Matches the TaskPath parameter of Get-ScheduledTask.
+        If not specified, all task paths are considered.
+
     .PARAMETER ComputerName
         The name of the computer to query. If not specified, the local computer is used.
 
@@ -32,8 +36,8 @@
         Retrieves the run history for all scheduled tasks on the remote computer "Server01".
 
     .EXAMPLE
-        $creds = Get-Credential
-        Get-StmScheduledTaskRun -TaskName "BackupTask" -ComputerName "Server02" -Credential $creds
+        $credentials = Get-Credential
+        Get-StmScheduledTaskRun -TaskName "BackupTask" -ComputerName "Server02" -Credential $credentials
 
         Retrieves the run history for the "BackupTask" scheduled task on "Server02" using the specified credentials.
 
@@ -55,10 +59,15 @@
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $TaskName,
+    [Parameter(Mandatory = $false)]
+    [ValidateNotNullOrEmpty()]
+    [string]
+    $TaskName,
+
+    [Parameter(Mandatory = $false)]
+    [ValidateNotNullOrEmpty()]
+    [string]
+    $TaskPath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -85,9 +94,15 @@
         if ($PSBoundParameters.ContainsKey('TaskName')) {
             Write-Verbose "Using provided task name '$TaskName'"
             $scheduledTaskParameters['TaskName'] = $TaskName
+        } else {
+            Write-Verbose 'No task name provided (all task names)'
         }
-        else {
-            Write-Verbose 'No task name provided, retrieving all scheduled tasks'
+
+        if ($PSBoundParameters.ContainsKey('TaskPath')) {
+            Write-Verbose "Using provided task path '$TaskPath'"
+            $scheduledTaskParameters['TaskPath'] = $TaskPath
+        } else {
+            Write-Verbose 'No task path provided (all task paths)'
         }
 
         $cimSessionParameters = @{

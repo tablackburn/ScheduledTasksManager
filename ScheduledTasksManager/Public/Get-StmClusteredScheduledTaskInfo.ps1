@@ -43,8 +43,8 @@ function Get-StmClusteredScheduledTaskInfo {
         from cluster "MyCluster.contoso.com".
 
     .EXAMPLE
-        $creds = Get-Credential
-        Get-StmClusteredScheduledTaskInfo -TaskName "ReportTask" -Cluster "MyCluster" -Credential $creds |
+        $credentials = Get-Credential
+        Get-StmClusteredScheduledTaskInfo -TaskName "ReportTask" -Cluster "MyCluster" -Credential $credentials |
             Select-Object TaskName, LastRunTime, LastTaskResult, NextRunTime
 
         Retrieves detailed information about the clustered scheduled task named "ReportTask" using specified credentials
