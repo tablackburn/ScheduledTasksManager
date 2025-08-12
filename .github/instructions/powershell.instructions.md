@@ -333,6 +333,7 @@ function Remove-UserAccount {
   - Align parameter attributes vertically for readability
   - Align key/value pairs in hashtables for readability
   - Lines should not exceed 115 characters
+    - Including comment-based help
   - Use `#region` and `#endregion` for logical grouping of code blocks with descriptive titles
   - Use `#` for inline comments, but avoid excessive comments; code should be self-explanatory
   - Capitalize the first letter of comments
