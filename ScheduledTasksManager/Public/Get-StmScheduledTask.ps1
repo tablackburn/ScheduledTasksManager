@@ -5,9 +5,9 @@ function Get-StmScheduledTask {
 
     .DESCRIPTION
         The Get-StmScheduledTask function retrieves scheduled tasks from the Windows Task Scheduler on a local or
-        remote computer. You can filter tasks by name and path, and optionally specify credentials for remote
-        connections. This function wraps the built-in Get-ScheduledTask cmdlet to provide credential support across
-        the ScheduledTasksManager module.
+        remote computer. You can filter tasks by name, path, and state, and optionally specify credentials for
+        remote connections. This function wraps the built-in Get-ScheduledTask cmdlet to provide credential support
+        across the ScheduledTasksManager module.
 
     .PARAMETER TaskName
         Specifies the name of a specific scheduled task to retrieve. If not specified, all scheduled tasks will be
@@ -17,6 +17,10 @@ function Get-StmScheduledTask {
         Specifies the path of the scheduled task(s) to retrieve. The task path represents the folder structure in the
         Task Scheduler where the task is located (e.g., '\Microsoft\Windows\PowerShell\'). If not specified, tasks
         from all paths will be returned. This parameter is optional and supports wildcards.
+
+    .PARAMETER TaskState
+        Specifies the state of the scheduled task(s) to retrieve. Valid values are: Unknown, Disabled, Queued, Ready,
+        and Running. If not specified, tasks in all states will be returned. This parameter is optional.
 
     .PARAMETER ComputerName
         Specifies the name of the computer from which to retrieve scheduled tasks. If not specified, the local
@@ -43,6 +47,11 @@ function Get-StmScheduledTask {
         Retrieves all scheduled tasks located in the PowerShell folder from the local computer.
 
     .EXAMPLE
+        Get-StmScheduledTask -TaskState "Ready"
+
+        Retrieves all scheduled tasks that are in the "Ready" state from the local computer.
+
+    .EXAMPLE
         Get-StmScheduledTask -ComputerName "Server01"
 
         Retrieves all scheduled tasks from the remote computer "Server01" using the current user's credentials.
@@ -58,6 +67,11 @@ function Get-StmScheduledTask {
         Get-StmScheduledTask -TaskName "DatabaseBackup" -TaskPath "\Custom\Database\" -ComputerName "DBServer"
 
         Retrieves the "DatabaseBackup" task from the "\Custom\Database\" path on the remote computer "DBServer".
+
+    .EXAMPLE
+        Get-StmScheduledTask -TaskState "Running" -ComputerName "Server01"
+
+        Retrieves all running scheduled tasks from the remote computer "Server01".
 
     .INPUTS
         None. You cannot pipe objects to Get-StmScheduledTask.
@@ -87,6 +101,11 @@ function Get-StmScheduledTask {
         [ValidateNotNullOrEmpty()]
         [string]
         $TaskPath,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [Microsoft.PowerShell.Cmdletization.GeneratedTypes.ScheduledTask.StateEnum]
+        $TaskState,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -145,6 +164,12 @@ function Get-StmScheduledTask {
     process {
         try {
             $scheduledTasks = Get-ScheduledTask @scheduledTaskParameters
+
+            if ($PSBoundParameters.ContainsKey('TaskState')) {
+                Write-Verbose "Filtering scheduled tasks by state '$TaskState'"
+                $scheduledTasks = $scheduledTasks | Where-Object { $_.State -eq $TaskState }
+            }
+
             Write-Verbose "Retrieved $($scheduledTasks.Count) task(s). Returning them."
             $scheduledTasks
         }

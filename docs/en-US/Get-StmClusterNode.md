@@ -44,9 +44,8 @@ Retrieves information about the specific node "Node01" in cluster "MyCluster.con
 ### EXAMPLE 3
 ```
 $creds = Get-Credential
-```
-
 Get-StmClusterNode -Cluster "MyCluster" -Credential $creds
+```
 
 Retrieves cluster node information using the specified credentials for authentication.
 

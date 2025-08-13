@@ -28,8 +28,15 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 [Microsoft.Management.Infrastructure.CimType]::String,
                 [Microsoft.Management.Infrastructure.CimFlags]::Property -bor [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
             )
+            $mockStateProperty = [Microsoft.Management.Infrastructure.CimProperty]::Create(
+                'State',
+                'Ready',
+                [Microsoft.Management.Infrastructure.CimType]::String,
+                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
+            )
             $mockTask.CimInstanceProperties.Add($mockTaskNameProperty)
             $mockTask.CimInstanceProperties.Add($mockURIProperty)
+            $mockTask.CimInstanceProperties.Add($mockStateProperty)
             Mock -CommandName 'Get-ScheduledTask' -MockWith {
                 return @(
                     $mockTask
@@ -45,6 +52,13 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             $result = Get-StmScheduledTask -TaskName 'TestTask1'
             $result | Should -Not -BeNullOrEmpty
             $result.TaskName | Should -Be 'TestTask1'
+        }
+
+        It 'should filter tasks by TaskState' {
+            $result = Get-StmScheduledTask -TaskState 'Ready'
+            $result | Should -Not -BeNullOrEmpty
+            $result.TaskName | Should -Be 'TestTask1'
+            $result.State | Should -Be 'Ready'
         }
     }
 }

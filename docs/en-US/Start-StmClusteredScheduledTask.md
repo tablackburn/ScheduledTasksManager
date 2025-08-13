@@ -8,7 +8,7 @@ schema: 2.0.0
 # Start-StmClusteredScheduledTask
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Starts a clustered scheduled task on a Windows failover cluster.
 
 ## SYNTAX
 
@@ -18,21 +18,51 @@ Start-StmClusteredScheduledTask [-TaskName] <String> [-Cluster] <String> [[-Cred
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+The Start-StmClusteredScheduledTask function starts a clustered scheduled task on a Windows failover cluster.
+This function retrieves the specified clustered scheduled task using Get-StmClusteredScheduledTask and then
+starts it using the native Start-ScheduledTask cmdlet.
+The function supports the -WhatIf and -Confirm parameters
+for safe execution and provides verbose output for troubleshooting.
 
 ## EXAMPLES
 
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+### EXAMPLE 1
+```
+Start-StmClusteredScheduledTask -TaskName "BackupTask" -Cluster "MyCluster"
 ```
 
-{{ Add example description here }}
+Starts the clustered scheduled task named "BackupTask" on cluster "MyCluster" using the current user's credentials.
+
+### EXAMPLE 2
+```
+Start-StmClusteredScheduledTask -TaskName "MaintenanceTask" -Cluster "MyCluster.contoso.com" -WhatIf
+```
+
+Shows what would happen if the clustered scheduled task named "MaintenanceTask" were started on cluster "MyCluster.contoso.com"
+without actually starting it.
+
+### EXAMPLE 3
+```
+$creds = Get-Credential
+Start-StmClusteredScheduledTask -TaskName "ReportTask" -Cluster "MyCluster" -Credential $creds -Confirm
+```
+
+Starts the clustered scheduled task named "ReportTask" on cluster "MyCluster" using specified credentials
+and prompts for confirmation before starting.
+
+### EXAMPLE 4
+```
+Start-StmClusteredScheduledTask -TaskName "CleanupTask" -Cluster "MyCluster" -Verbose
+```
+
+Starts the clustered scheduled task named "CleanupTask" on cluster "MyCluster" with verbose output
+to show detailed information about the operation.
 
 ## PARAMETERS
 
 ### -TaskName
-{{ Fill TaskName Description }}
+Specifies the name of the clustered scheduled task to start.
+This parameter is mandatory.
 
 ```yaml
 Type: String
@@ -47,7 +77,8 @@ Accept wildcard characters: False
 ```
 
 ### -Cluster
-{{ Fill Cluster Description }}
+Specifies the name or FQDN of the cluster where the scheduled task is located.
+This parameter is mandatory.
 
 ```yaml
 Type: String
@@ -62,7 +93,9 @@ Accept wildcard characters: False
 ```
 
 ### -Credential
-{{ Fill Credential Description }}
+Specifies credentials to use when connecting to the cluster.
+If not provided, the current user's credentials
+will be used for the connection.
 
 ```yaml
 Type: PSCredential
@@ -71,13 +104,14 @@ Aliases:
 
 Required: False
 Position: 3
-Default value: None
+Default value: [System.Management.Automation.PSCredential]::Empty
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -WhatIf
-Shows what would happen if the cmdlet runs. The cmdlet is not run.
+Shows what would happen if the cmdlet runs.
+The cmdlet is not run.
 
 ```yaml
 Type: SwitchParameter
@@ -126,11 +160,21 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
+### None. You cannot pipe objects to Start-StmClusteredScheduledTask.
 ## OUTPUTS
 
-### System.Object
+### None. This function does not return any output objects.
 ## NOTES
+This function requires:
+- The FailoverClusters PowerShell module to be installed on the target cluster
+- Appropriate permissions to start clustered scheduled tasks
+- Network connectivity to the cluster
+- The task must exist on the specified cluster
+- The task must be in a state that allows it to be started (e.g., Ready, Disabled)
+
+The function uses Get-StmClusteredScheduledTask internally to retrieve the task before starting it.
+If the task is not found or cannot be started, an error will be thrown.
+
+This function supports the -WhatIf and -Confirm parameters for safe execution in automated scenarios.
 
 ## RELATED LINKS
