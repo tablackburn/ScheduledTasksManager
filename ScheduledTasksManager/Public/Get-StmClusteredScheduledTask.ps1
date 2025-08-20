@@ -234,7 +234,7 @@ function Get-StmClusteredScheduledTask {
                 }
             }
             catch {
-                Write-Warning "Failed to retrieve tasks from owner '$taskOwner': $($_.Exception.Message)"
+                Write-Error "Failed to retrieve tasks from owner '$taskOwner': $($_.Exception.Message)"
             }
         }
     }

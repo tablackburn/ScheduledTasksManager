@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.3.1] - 2025-08-20
+
+### Fixed
+
+- Fixed credential passing in `Get-ClusteredScheduledTaskInfo`
+
 ## [0.3.0] - 2025-08-11
 
 ### Added

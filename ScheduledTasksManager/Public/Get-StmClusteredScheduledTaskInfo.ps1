@@ -152,14 +152,12 @@ function Get-StmClusteredScheduledTaskInfo {
             Write-Verbose "Using provided CIM session for cluster '$Cluster'"
             $stmScheduledTaskParameters['CimSession'] = $CimSession
         }
+        elseif ($PSBoundParameters.ContainsKey('Credential')) {
+            Write-Verbose "Using provided credentials for cluster '$Cluster'"
+            $stmScheduledTaskParameters['Credential'] = $Credential
+        }
         else {
-            Write-Verbose "Creating new CIM session for cluster '$Cluster'"
-            $cimSessionParameters = @{
-                ComputerName = $Cluster
-                Credential   = $Credential
-                ErrorAction  = 'Stop'
-            }
-            $stmScheduledTaskParameters['CimSession'] = New-StmCimSession @cimSessionParameters
+            Write-Verbose 'No CIM session or credentials provided, using default credentials'
         }
 
         $scheduledTask = Get-StmClusteredScheduledTask @stmScheduledTaskParameters
