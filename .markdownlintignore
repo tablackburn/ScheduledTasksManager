@@ -1,0 +1,2 @@
+# Exclude documentation files from linting as they are auto-generated cmdlet help
+docs/**/*.md

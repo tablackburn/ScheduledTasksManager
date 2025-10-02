@@ -1,8 +1,11 @@
 {
-    "editor.insertSpaces": true,
-    "editor.tabSize": 4,
+    "[markdown]": {
+        "editor.wordWrap": "on",
+        "editor.wrappingIndent": "same"
+    },
     "files.associations": {
         ".actrc": "shellscript",
+        ".markdownlintignore": "ignore",
         "cspell.json": "jsonc"
     },
     "files.insertFinalNewline": true,
@@ -26,5 +29,8 @@
     "powershell.codeFormatting.whitespaceBeforeOpenBrace": true,
     "powershell.codeFormatting.whitespaceBeforeOpenParen": true,
     "powershell.codeFormatting.whitespaceBetweenParameters": true,
-    "powershell.codeFormatting.whitespaceInsideBrace": true
+    "powershell.codeFormatting.whitespaceInsideBrace": true,
+    "terminal.integrated.env.windows": {
+        "PATH": "${workspaceFolder}\\node_modules\\.bin;${env:PATH};${env:USERPROFILE}\\AppData\\Roaming\\npm"
+    }
 }

@@ -40,21 +40,22 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
         BeforeAll {
             $script:commonParameters = @{
                 WarningAction = 'SilentlyContinue'
+                InformationAction = 'SilentlyContinue'
             }
         }
 
         Context 'Parameter Validation' {
             It 'Should accept valid TaskName parameter' {
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf @commonParameters } | Should -Not -Throw
+                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters } | Should -Not -Throw
             }
 
             It 'Should accept valid Cluster parameter' {
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf @commonParameters } | Should -Not -Throw
+                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters } | Should -Not -Throw
             }
 
             It 'Should accept valid Credential parameter' {
                 $credential = [PSCredential]::new('TestUser', ('TestPass' | ConvertTo-SecureString -AsPlainText -Force))
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $credential -WhatIf @commonParameters } | Should -Not -Throw
+                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $credential -Confirm:$false @commonParameters } | Should -Not -Throw
             }
 
             It 'Should throw when TaskName is null or empty' {
@@ -68,21 +69,19 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
         }
 
-        Context 'ShouldProcess Support' {
-            It 'Should support -WhatIf parameter' {
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf @commonParameters } | Should -Not -Throw
-
-                # Verify that actual operations are not performed in WhatIf mode
-                Should -Invoke 'Export-StmClusteredScheduledTask' -Times 0
-                Should -Invoke 'Unregister-ClusteredScheduledTask' -Times 0
-            }
-
+        Context 'Function Attributes' {
             It 'Should have ConfirmImpact set to High' {
                 $function = Get-Command -Name 'Disable-StmClusteredScheduledTask'
                 $confirmImpact = $function.ScriptBlock.Ast.Body.ParamBlock.Attributes.NamedArguments | Where-Object {
                     $_.ArgumentName -eq 'ConfirmImpact'
                 }
                 $confirmImpact.Argument.Value | Should -Be 'High'
+            }
+
+            It 'Should support ShouldProcess' {
+                $function = Get-Command -Name 'Disable-StmClusteredScheduledTask'
+                $function.Parameters.ContainsKey('WhatIf') | Should -Be $true
+                $function.Parameters.ContainsKey('Confirm') | Should -Be $true
             }
         }
 

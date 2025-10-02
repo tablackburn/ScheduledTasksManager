@@ -1,62 +1,34 @@
-# How to contribute
+# Contributing
 
-Contributions to ScheduledTasksManager are highly encouraged and desired.
-Below are some guidelines that will help make the process as smooth as possible.
+Contributions are welcome! Please follow these guidelines:
 
-## Getting Started
+## Issues
 
-- Make sure you have a [GitHub account](https://github.com/signup/free)
-- Submit a new issue, assuming one does not already exist.
-  - Clearly describe the issue including steps to reproduce when it is a bug.
-  - Make sure you fill in the earliest version that you know has the issue.
-- Fork the repository on GitHub
+- Check existing issues before creating a new one
+- Provide clear reproduction steps for bugs
+- Explain the use case for feature requests
 
-## Suggesting Enhancements
+## Pull Requests
 
-I want to know what you think is missing from ScheduledTasksManager and how it can be made better.
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes
+4. Add tests for new functionality
+5. Run tests: `./build.ps1 -Task Test`
+6. Submit a pull request to the `main` branch
 
-- When submitting an issue for an enhancement, please be as clear as possible about why you think the enhancement is needed and what the benefit of it would be.
+## Code Standards
 
-## Making Changes
+- Follow existing code style
+- Include Pester tests for new functions
+- Update documentation as needed
+- Use approved PowerShell verbs
+- Follow [Semantic Versioning](https://semver.org/) for version changes
+- Update [CHANGELOG.md](../CHANGELOG.md) following [Keep a Changelog](https://keepachangelog.com/) format
 
-- From your fork of the repository, create a topic branch where work on your change will take place.
-- To quickly create a topic branch based on master; `git checkout -b my_contribution master`.
-  Please avoid working directly on the `master` branch.
-- Make commits of logical units.
-- Check for unnecessary whitespace with `git diff --check` before committing.
-- Please follow the prevailing code conventions in the repository.
-  Differences in style make the code harder to understand for everyone.
-- Make sure your commit messages are in the proper format.
+## Development Setup
 
-```
-    Add more cowbell to Get-Something.ps1
-
-    The functionality of Get-Something would be greatly improved if there was a little
-    more 'pizzazz' added to it. I propose a cowbell. Adding more cowbell has been
-    shown in studies to both increase one's mojo, and cement one's status
-    as a rock legend.
-```
-
-- Make sure you have added all the necessary Pester tests for your changes.
-- Run _all_ Pester tests in the module to assure nothing else was accidentally broken.
-
-## Documentation
-
-I am infallible and as such my documenation needs no corectoin.
-In the highly unlikely event that that is _not_ the case, commits to update or add documentation are highly apprecaited.
-
-## Submitting Changes
-
-- Push your changes to a topic branch in your fork of the repository.
-- Submit a pull request to the main repository.
-- Once the pull request has been reviewed and accepted, it will be merged with the master branch.
-- Celebrate
-
-## Additional Resources
-
-- [General GitHub documentation](https://help.github.com/)
-- [GitHub forking documentation](https://guides.github.com/activities/forking/)
-- [GitHub pull request documentation](https://help.github.com/send-pull-requests/)
-- [GitHub Flow guide](https://guides.github.com/introduction/flow/)
-- [GitHub's guide to contributing to open source projects](https://guides.github.com/activities/contributing-to-open-source/)
-
+- Install PowerShell 7+
+- Run `./build.ps1 -Task Init -Bootstrap` to install dependencies
+- Run `./build.ps1 -Task Build` to build the module
+- Run `./build.ps1 -Task Test` to run tests

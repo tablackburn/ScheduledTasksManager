@@ -1,48 +1,33 @@
 # ScheduledTasksManager
 
-`ScheduledTasksManager` is a PowerShell module for managing both local and
-clustered scheduled tasks on Windows systems. It supports operations in
-standalone environments as well as Windows Server Failover Clusters, extending
-the capabilities of the built-in `ScheduledTasks` module from Microsoft.
+`ScheduledTasksManager` is a PowerShell module for managing both local and clustered scheduled tasks on Windows systems. It supports operations in standalone environments as well as Windows Server Failover Clusters, extending the capabilities of the built-in `ScheduledTasks` module from Microsoft.
 
-[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ScheduledTasksManager)
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ScheduledTasksManager)](https://www.powershellgallery.com/packages/ScheduledTasksManager/)
 ![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/ScheduledTasksManager)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/tablackburn/ScheduledTasksManager/.github/workflows/CI.yaml?branch=main)
-![PowerShell Gallery](https://img.shields.io/powershellgallery/p/ScheduledTasksManager)](https://www.powershellgallery.com/packages/ScheduledTasksManager/)
+![PowerShell Gallery](https://img.shields.io/powershellgallery/p/ScheduledTasksManager)
 
 Documentation automatically updated at [tablackburn.github.io/ScheduledTasksManager](https://tablackburn.github.io/ScheduledTasksManager/)
 
 ## What This Project Does
 
-ScheduledTasksManager provides comprehensive functions for managing scheduled
-tasks in Windows environments, with special focus on clustered scenarios:
+ScheduledTasksManager provides comprehensive functions for managing scheduled tasks in Windows environments, with special focus on clustered scenarios:
 
-- **Clustered Task Management**: Register, enable, disable, start, and monitor
-  scheduled tasks across failover cluster nodes
-- **Task Information & Monitoring**: Retrieve detailed task information, run
-  history, and cluster node details
-- **Configuration Management**: Export and import task configurations for backup
-  and deployment
-- **Advanced Filtering**: Filter tasks by state, type, and ownership across
-  cluster nodes
-- **Credential Management**: Secure authentication with cluster nodes using
-  credentials or CIM sessions
+- **Clustered Task Management**: Register, enable, disable, start, and monitor scheduled tasks across failover cluster nodes
+- **Task Information & Monitoring**: Retrieve detailed task information, run history, and cluster node details
+- **Configuration Management**: Export and import task configurations for backup and deployment
+- **Advanced Filtering**: Filter tasks by state, type, and ownership across cluster nodes
+- **Credential Management**: Secure authentication with cluster nodes using credentials or CIM sessions
 
 ## Why This Project Is Useful
 
-Managing scheduled tasks in Windows Server Failover Clusters can be complex and
-error-prone. This module addresses common challenges:
+Managing scheduled tasks in Windows Server Failover Clusters can be complex and error-prone. This module addresses common challenges:
 
-- **Simplified Cluster Operations**: Single functions handle cluster-aware task
-  management
-- **Reduced Administrative Overhead**: Automate task deployment and monitoring
-  across multiple nodes
-- **Enhanced Reliability**: Built-in error handling and validation for cluster
-  operations
-- **Standardized Workflows**: Consistent PowerShell function patterns for task
-  management
-- **Enterprise Ready**: Supports credential delegation and secure remote
-  management
+- **Simplified Cluster Operations**: Single functions handle cluster-aware task management
+- **Reduced Administrative Overhead**: Automate task deployment and monitoring across multiple nodes
+- **Enhanced Reliability**: Built-in error handling and validation for cluster operations
+- **Standardized Workflows**: Consistent PowerShell function patterns for task management
+- **Enterprise Ready**: Supports credential delegation and secure remote management
 
 ## Getting Started
 
@@ -100,17 +85,14 @@ Start-StmClusteredScheduledTask -Cluster "MyCluster" -TaskName "BackupTask"
 
 ### Support
 
-- **Issues**: Report bugs or request features on
-  [GitHub Issues](https://github.com/tablackburn/ScheduledTasksManager/issues)
+- **Issues**: Report bugs or request features on [GitHub Issues](https://github.com/tablackburn/ScheduledTasksManager/issues)
 - **Questions**: Use GitHub Discussions for general questions
 - **Documentation**: Check the `docs/` folder for detailed help files
 
 ### Community
 
-- **PowerShell Gallery**:
-  [ScheduledTasksManager](https://www.powershellgallery.com/packages/ScheduledTasksManager)
-- **GitHub Repository**:
-  [tabblackburn/ScheduledTasksManager](https://github.com/tablackburn/ScheduledTasksManager)
+- **PowerShell Gallery**: [ScheduledTasksManager](https://www.powershellgallery.com/packages/ScheduledTasksManager)
+- **GitHub Repository**: [tablackburn/ScheduledTasksManager](https://github.com/tablackburn/ScheduledTasksManager)
 
 ## Project Maintenance
 
@@ -120,8 +102,7 @@ Start-StmClusteredScheduledTask -Cluster "MyCluster" -TaskName "BackupTask"
 
 ### Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major
-changes, please open an issue first to discuss what you would like to change.
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
 ### Development
 
