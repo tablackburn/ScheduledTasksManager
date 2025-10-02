@@ -120,8 +120,9 @@ function Get-StmClusterNode {
     process {
         try {
             Write-Verbose 'Executing command to retrieve cluster node information...'
-            Invoke-Command @invokeCommandParameters
+            $clusterNodes = Invoke-Command @invokeCommandParameters
             Write-Verbose "Successfully retrieved information for $($clusterNodes.Count) cluster node(s)"
+            $clusterNodes
         }
         catch {
             $errorRecordParameters = @{

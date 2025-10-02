@@ -180,15 +180,17 @@ function Register-StmClusteredScheduledTask {
     }
 
     process {
-        if ($PSCmdlet.ShouldProcess("Register clustered scheduled task '$TaskName' on cluster '$Cluster'", 'Register clustered scheduled task')) {
-        $cimSession = New-StmCimSession -ComputerName $Cluster -Credential $Credential
-        Write-Verbose "Registering clustered scheduled task '$TaskName' using provided XML..."
-        $clusteredScheduledTaskParameters = @{
-            TaskName    = $TaskName
-            Xml         = $xmlContent
-            CimSession  = $cimSession
-            TaskType    = $TaskType
-            ErrorAction = 'Stop'
+        $target = "cluster '$Cluster'"
+        $operation = "Register clustered scheduled task '$TaskName'"
+        if ($PSCmdlet.ShouldProcess($target, $operation)) {
+            $cimSession = New-StmCimSession -ComputerName $Cluster -Credential $Credential
+            Write-Verbose "Registering clustered scheduled task '$TaskName' using provided XML..."
+            $clusteredScheduledTaskParameters = @{
+                TaskName    = $TaskName
+                Xml         = $xmlContent
+                CimSession  = $cimSession
+                TaskType    = $TaskType
+                ErrorAction = 'Stop'
             }
             Register-ClusteredScheduledTask @clusteredScheduledTaskParameters
         }

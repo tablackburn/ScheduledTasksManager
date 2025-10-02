@@ -162,10 +162,11 @@ function Disable-StmClusteredScheduledTask {
                 Unregister-ClusteredScheduledTask @unregisterClusteredScheduledTaskParameters
                 Write-Verbose "Verifying unregistration of clustered scheduled task '$TaskName'..."
                 $taskParameters = @{
-                    TaskName    = $TaskName
-                    Cluster     = $Cluster
-                    CimSession  = $clusterCimSession
-                    ErrorAction = 'Stop'
+                    TaskName      = $TaskName
+                    Cluster       = $Cluster
+                    CimSession    = $clusterCimSession
+                    ErrorAction   = 'Stop'
+                    WarningAction = 'SilentlyContinue' # Suppress the warning about the task not being found
                 }
                 $task = Get-StmClusteredScheduledTask @taskParameters
                 $taskExists = $null -ne $task

@@ -59,15 +59,15 @@
     #>
     [CmdletBinding()]
     param(
-    [Parameter(Mandatory = $false)]
-    [ValidateNotNullOrEmpty()]
-    [string]
-    $TaskName,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $TaskName,
 
-    [Parameter(Mandatory = $false)]
-    [ValidateNotNullOrEmpty()]
-    [string]
-    $TaskPath,
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $TaskPath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -94,14 +94,16 @@
         if ($PSBoundParameters.ContainsKey('TaskName')) {
             Write-Verbose "Using provided task name '$TaskName'"
             $scheduledTaskParameters['TaskName'] = $TaskName
-        } else {
+        }
+        else {
             Write-Verbose 'No task name provided (all task names)'
         }
 
         if ($PSBoundParameters.ContainsKey('TaskPath')) {
             Write-Verbose "Using provided task path '$TaskPath'"
             $scheduledTaskParameters['TaskPath'] = $TaskPath
-        } else {
+        }
+        else {
             Write-Verbose 'No task path provided (all task paths)'
         }
 
