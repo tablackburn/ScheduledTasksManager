@@ -1,19 +1,22 @@
-function Get-StmClusteredScheduledTaskInfo {
+﻿function Get-StmClusteredScheduledTaskInfo {
     <#
     .SYNOPSIS
         Retrieves detailed information about clustered scheduled tasks from a Windows failover cluster.
 
     .DESCRIPTION
-        The Get-StmClusteredScheduledTaskInfo function retrieves comprehensive information about clustered scheduled tasks
-        from a Windows failover cluster. This function combines information from both the clustered scheduled task object
-        and the scheduled task info object to provide detailed execution history, last run times, next run times,
-        and other operational details. You can filter tasks by name, state, or type to get information for specific tasks.
+        The Get-StmClusteredScheduledTaskInfo function retrieves comprehensive information about clustered scheduled
+        tasks from a Windows failover cluster. This function combines information from both the clustered scheduled
+        task object and the scheduled task info object to provide detailed execution history, last run times,
+        next run times, and other operational details. You can filter tasks by name, state, or type to get
+        information for specific tasks.
 
     .PARAMETER TaskName
-        Specifies the name of a specific clustered scheduled task to retrieve information for. This parameter is mandatory.
+        Specifies the name of a specific clustered scheduled task to retrieve information for.
+        This parameter is mandatory.
 
     .PARAMETER Cluster
-        Specifies the name or FQDN of the cluster to query for clustered scheduled task information. This parameter is mandatory.
+        Specifies the name or FQDN of the cluster to query for clustered scheduled task information.
+        This parameter is mandatory.
 
     .PARAMETER TaskState
         Specifies the state of the tasks to filter by. Valid values are: Unknown, Disabled, Queued, Ready, Running.
@@ -37,10 +40,15 @@ function Get-StmClusteredScheduledTaskInfo {
         Retrieves detailed information about the clustered scheduled task named "BackupTask" from cluster "MyCluster".
 
     .EXAMPLE
-        Get-StmClusteredScheduledTaskInfo -TaskName "MaintenanceTask" -Cluster "MyCluster.contoso.com" -TaskState "Ready"
+        $parameters = @{
+            TaskName  = "MaintenanceTask"
+            Cluster   = "MyCluster.contoso.com"
+            TaskState = "Ready"
+        }
+        Get-StmClusteredScheduledTaskInfo @parameters
 
-        Retrieves detailed information about the clustered scheduled task named "MaintenanceTask" that is in "Ready" state
-        from cluster "MyCluster.contoso.com".
+        Retrieves detailed information about the clustered scheduled task named "MaintenanceTask" that is in
+        "Ready" state from cluster "MyCluster.contoso.com".
 
     .EXAMPLE
         $credentials = Get-Credential
@@ -54,14 +62,16 @@ function Get-StmClusteredScheduledTaskInfo {
         $session = New-CimSession -ComputerName "MyCluster"
         Get-StmClusteredScheduledTaskInfo -TaskName "CleanupTask" -Cluster "MyCluster" -CimSession $session
 
-        Retrieves detailed information about the clustered scheduled task named "CleanupTask" using an existing CIM session.
+    Retrieves detailed information about the clustered scheduled task named "CleanupTask" using an
+    existing CIM session.
 
     .INPUTS
         None. You cannot pipe objects to Get-StmClusteredScheduledTaskInfo.
 
     .OUTPUTS
         PSCustomObject
-        Returns custom objects containing merged information from both clustered scheduled task and scheduled task info objects:
+        Returns custom objects containing merged information from both clustered scheduled task and scheduled task
+        info objects:
         - TaskName: The name of the clustered scheduled task
         - CurrentOwner: The current owner node of the task
         - TaskState: The current state of the task
@@ -182,11 +192,13 @@ function Get-StmClusteredScheduledTaskInfo {
         }
         $mergedHashtable = Merge-Object @mergeParameters
         # Ensure top-level TaskName property for test compatibility
-        if (-not ($mergedHashtable.Keys -contains 'TaskName') -and ($mergedHashtable.Keys -contains 'ClusteredScheduledTaskObject')) {
+        if (-not ($mergedHashtable.Keys -contains 'TaskName') -and
+            ($mergedHashtable.Keys -contains 'ClusteredScheduledTaskObject')) {
             $mergedHashtable['TaskName'] = $mergedHashtable['ClusteredScheduledTaskObject'].TaskName
         }
         # If TaskName is a hashtable (from merge conflict), set it to the value from ClusteredScheduledTaskObject
-        if ($mergedHashtable['TaskName'] -is [hashtable] -and ($mergedHashtable.Keys -contains 'ClusteredScheduledTaskObject')) {
+        if ($mergedHashtable['TaskName'] -is [hashtable] -and
+            ($mergedHashtable.Keys -contains 'ClusteredScheduledTaskObject')) {
             $mergedHashtable['TaskName'] = $mergedHashtable['ClusteredScheduledTaskObject'].TaskName
         }
         [PSCustomObject]$mergedHashtable

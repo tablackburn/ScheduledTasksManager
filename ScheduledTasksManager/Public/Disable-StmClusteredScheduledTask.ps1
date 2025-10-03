@@ -1,4 +1,4 @@
-function Disable-StmClusteredScheduledTask {
+﻿function Disable-StmClusteredScheduledTask {
     <#
     .SYNOPSIS
         Disables (unregisters) a clustered scheduled task from a Windows failover cluster.
@@ -124,12 +124,21 @@ function Disable-StmClusteredScheduledTask {
                     ErrorAction = 'Stop'
                 }
                 Export-StmClusteredScheduledTask @exportTaskParameters
-                $backupSuccessful = (Test-Path -Path $backupPath) -and (Get-Content -Path $backupPath).Length -gt 0
+                $backupSuccessful = (
+                    (Test-Path -Path $backupPath) -and
+                    (Get-Content -Path $backupPath).Length -gt 0
+                )
                 if ($backupSuccessful) {
-                    Write-Verbose "Backup of clustered scheduled task '$TaskName' created successfully at '$backupPath'."
+                    Write-Verbose (
+                        "Backup of clustered scheduled task '$TaskName' created successfully at '$backupPath'."
+                    )
                 }
                 else {
-                    Write-Error "Failed to create backup for clustered scheduled task '$TaskName'." -ErrorAction 'Stop'
+                    $errorParameters = @{
+                        Message     = "Failed to create backup for clustered scheduled task '$TaskName'."
+                        ErrorAction = 'Stop'
+                    }
+                    Write-Error @errorParameters
                 }
             }
             catch {
@@ -138,7 +147,9 @@ function Disable-StmClusteredScheduledTask {
                     ErrorId           = 'BackupFailed'
                     ErrorCategory     = [System.Management.Automation.ErrorCategory]::WriteError
                     TargetObject      = $TaskName
-                    Message           = "Failed to create backup for clustered scheduled task '$TaskName'. $($_.Exception.Message)"
+                    Message           = (
+                        "Failed to create backup for clustered scheduled task '$TaskName'. $($_.Exception.Message)"
+                    )
                     RecommendedAction = 'Ensure you have write permissions to the specified backup path.'
                 }
                 $errorRecord = New-StmError @errorRecordParameters
@@ -171,10 +182,21 @@ function Disable-StmClusteredScheduledTask {
                 $task = Get-StmClusteredScheduledTask @taskParameters
                 $taskExists = $null -ne $task
                 if ($taskExists) {
-                    Write-Error "Clustered scheduled task '$TaskName' still exists on cluster '$Cluster' after unregistration." -ErrorAction 'Stop'
+                    $errorParameters = @{
+                        Message     = (
+                            "Clustered scheduled task '$TaskName' still exists on cluster '$Cluster' after " +
+                            'unregistration.'
+                        )
+                        ErrorAction = 'Stop'
+                    }
+                    Write-Error @errorParameters
                 }
                 else {
-                    Write-Verbose "Clustered scheduled task '$TaskName' has been successfully unregistered from cluster '$Cluster'."
+                    $verboseParameters = @{
+                        Message     = "Clustered scheduled task '$TaskName' has been successfully unregistered."
+                        ErrorAction = 'Continue'
+                    }
+                    Write-Verbose @verboseParameters
                 }
             }
             catch {
@@ -183,7 +205,9 @@ function Disable-StmClusteredScheduledTask {
                     ErrorId           = 'UnregisterFailed'
                     ErrorCategory     = [System.Management.Automation.ErrorCategory]::WriteError
                     TargetObject      = $TaskName
-                    Message           = "Failed to unregister clustered scheduled task '$TaskName'. $($_.Exception.Message)"
+                    Message           = (
+                        "Failed to unregister clustered scheduled task '$TaskName'. $($_.Exception.Message)"
+                    )
                     RecommendedAction = 'Ensure the task is not running and you have the necessary permissions.'
                 }
                 $errorRecord = New-StmError @errorRecordParameters

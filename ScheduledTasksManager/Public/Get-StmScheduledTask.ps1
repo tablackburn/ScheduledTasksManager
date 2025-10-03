@@ -1,4 +1,4 @@
-function Get-StmScheduledTask {
+﻿function Get-StmScheduledTask {
     <#
     .SYNOPSIS
         Retrieves scheduled tasks from a local or remote computer.
@@ -180,7 +180,9 @@ function Get-StmScheduledTask {
                 ErrorCategory     = [System.Management.Automation.ErrorCategory]::NotSpecified
                 TargetObject      = $TaskName
                 Message           = "Failed to retrieve scheduled tasks. $($_.Exception.Message)"
-                RecommendedAction = 'Verify the task name is correct and that you have permission to access the scheduled tasks.'
+                RecommendedAction = (
+                    'Verify the task name is correct and that you have permission to access the scheduled tasks.'
+                )
             }
             $errorRecord = New-StmError @errorRecordParameters
             $PSCmdlet.ThrowTerminatingError($errorRecord)

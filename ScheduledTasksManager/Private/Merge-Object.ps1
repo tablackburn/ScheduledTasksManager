@@ -33,8 +33,12 @@ function Merge-Object {
     }
 
     process {
-        $firstObjectProperties = $FirstObject | Get-Member -MemberType 'Properties' | Select-Object -ExpandProperty 'Name'
-        $secondObjectProperties = $SecondObject | Get-Member -MemberType 'Properties' | Select-Object -ExpandProperty 'Name'
+        $firstObjectProperties = $FirstObject |
+            Get-Member -MemberType 'Properties' |
+            Select-Object -ExpandProperty 'Name'
+        $secondObjectProperties = $SecondObject |
+            Get-Member -MemberType 'Properties' |
+            Select-Object -ExpandProperty 'Name'
 
         $uniqueFirstObjectProperties = $firstObjectProperties | Where-Object { $_ -notin $secondObjectProperties }
         $uniqueSecondObjectProperties = $secondObjectProperties | Where-Object { $_ -notin $firstObjectProperties }

@@ -1,13 +1,14 @@
-function Unregister-StmClusteredScheduledTask {
+﻿function Unregister-StmClusteredScheduledTask {
     <#
     .SYNOPSIS
         Unregisters a clustered scheduled task from a Windows failover cluster.
 
     .DESCRIPTION
-        The Unregister-StmClusteredScheduledTask function removes a clustered scheduled task from a Windows failover cluster.
-        This function creates a CIM session to the cluster and uses the native Unregister-ClusteredScheduledTask cmdlet to
-        remove the task. The function supports the -WhatIf and -Confirm parameters for safe execution and provides
-        comprehensive error handling for connection and operation failures.
+        The Unregister-StmClusteredScheduledTask function removes a clustered scheduled task from a Windows
+        failover cluster. This function creates a CIM session to the cluster and uses the native
+        Unregister-ClusteredScheduledTask cmdlet to remove the task. The function supports the -WhatIf and
+        -Confirm parameters for safe execution and provides comprehensive error handling for connection and
+        operation failures.
 
     .PARAMETER TaskName
         Specifies the name of the clustered scheduled task to unregister. This parameter is mandatory.
@@ -22,13 +23,14 @@ function Unregister-StmClusteredScheduledTask {
     .EXAMPLE
         Unregister-StmClusteredScheduledTask -TaskName "OldBackupTask" -Cluster "MyCluster"
 
-        Unregisters the clustered scheduled task named "OldBackupTask" from cluster "MyCluster" using the current user's credentials.
+        Unregisters the clustered scheduled task named "OldBackupTask" from cluster "MyCluster"
+        using the current user's credentials.
 
     .EXAMPLE
         Unregister-StmClusteredScheduledTask -TaskName "DeprecatedTask" -Cluster "MyCluster.contoso.com" -WhatIf
 
-        Shows what would happen if the clustered scheduled task named "DeprecatedTask" were unregistered from cluster "MyCluster.contoso.com"
-        without actually removing it.
+        Shows what would happen if the clustered scheduled task named "DeprecatedTask" were unregistered
+        from cluster "MyCluster.contoso.com" without actually removing it.
 
     .EXAMPLE
         $creds = Get-Credential

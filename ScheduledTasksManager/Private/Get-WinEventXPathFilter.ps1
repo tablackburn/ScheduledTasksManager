@@ -189,12 +189,20 @@ function Get-WinEventXPathFilter {
     # attribute of the TimeCreated node.
     if ($StartTime) {
         $Diff = [Math]::Round($Now.Subtract($StartTime).TotalMilliseconds)
-        $filter = Join-XPathFilter -NewFilter "*[System[TimeCreated[timediff(@SystemTime) <= $Diff]]]" -ExistingFilter $filter
+        $joinParameters = @{
+            NewFilter      = "*[System[TimeCreated[timediff(@SystemTime) <= $Diff]]]"
+            ExistingFilter = $filter
+        }
+        $filter = Join-XPathFilter @joinParameters
     }
 
     if ($EndTime) {
         $Diff = [Math]::Round($Now.Subtract($EndTime).TotalMilliseconds)
-        $filter = Join-XPathFilter -NewFilter "*[System[TimeCreated[timediff(@SystemTime) >= $Diff]]]" -ExistingFilter $filter
+        $joinParameters = @{
+            NewFilter      = "*[System[TimeCreated[timediff(@SystemTime) >= $Diff]]]"
+            ExistingFilter = $filter
+        }
+        $filter = Join-XPathFilter @joinParameters
     }
     #endregion Date filters
 

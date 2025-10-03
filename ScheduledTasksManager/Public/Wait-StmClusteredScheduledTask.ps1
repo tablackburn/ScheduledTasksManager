@@ -1,32 +1,33 @@
-function Wait-StmClusteredScheduledTask {
+﻿function Wait-StmClusteredScheduledTask {
     <#
     .SYNOPSIS
         Waits for a clustered scheduled task to complete execution on a Windows failover cluster.
 
     .DESCRIPTION
-        The Wait-StmClusteredScheduledTask function monitors a clustered scheduled task and waits for it to complete
-        its execution. This function polls the task state at regular intervals and provides progress feedback
-        through Write-Progress. The function will exit when the task is no longer in the 'Running' state or when
-        the specified timeout is reached. This is useful for automation scenarios where you need to wait for
-        a task to complete before proceeding with subsequent operations.
+        The Wait-StmClusteredScheduledTask function monitors a clustered scheduled task and waits for it to
+        complete its execution. This function polls the task state at regular intervals and provides progress
+        feedback through Write-Progress. The function will exit when the task is no longer in the 'Running' state
+        or when the specified timeout is reached. This is useful for automation scenarios where you need to wait
+        for a task to complete before proceeding with subsequent operations.
 
     .PARAMETER TaskName
         Specifies the name of the clustered scheduled task to wait for. This parameter is mandatory.
 
     .PARAMETER Cluster
-        Specifies the name or FQDN of the cluster where the scheduled task is located. This parameter is mandatory.
+        Specifies the name or FQDN of the cluster where the scheduled task is located. This parameter is
+        mandatory.
 
     .PARAMETER Credential
-        Specifies credentials to use when connecting to the cluster. If not provided, the current user's credentials
-        will be used for the connection.
+        Specifies credentials to use when connecting to the cluster. If not provided, the current user's
+        credentials will be used for the connection.
 
     .PARAMETER PollingIntervalSeconds
-        Specifies the interval in seconds between state checks of the clustered scheduled task. The default value is 5 seconds.
-        This parameter is optional.
+        Specifies the interval in seconds between state checks of the clustered scheduled task. The default
+        value is 5 seconds. This parameter is optional.
 
     .PARAMETER TimeoutSeconds
-        Specifies the maximum time in seconds to wait for the task to complete. If the timeout is reached, the function
-        will throw an error. The default value is 300 seconds (5 minutes). This parameter is optional.
+        Specifies the maximum time in seconds to wait for the task to complete. If the timeout is reached, the
+        function will throw an error. The default value is 300 seconds (5 minutes). This parameter is optional.
 
     .EXAMPLE
         Wait-StmClusteredScheduledTask -TaskName "BackupTask" -Cluster "MyCluster"
@@ -35,23 +36,34 @@ function Wait-StmClusteredScheduledTask {
         using default polling interval (5 seconds) and timeout (300 seconds).
 
     .EXAMPLE
-        Wait-StmClusteredScheduledTask -TaskName "MaintenanceTask" -Cluster "MyCluster.contoso.com" -TimeoutSeconds 600
+        Wait-StmClusteredScheduledTask `
+            -TaskName "MaintenanceTask" `
+            -Cluster "MyCluster.contoso.com" `
+            -TimeoutSeconds 600
 
-        Waits for the clustered scheduled task named "MaintenanceTask" on cluster "MyCluster.contoso.com" to complete,
-        with a timeout of 10 minutes (600 seconds).
+        Waits for the clustered scheduled task named "MaintenanceTask" on cluster "MyCluster.contoso.com" to
+        complete, with a timeout of 10 minutes (600 seconds).
 
     .EXAMPLE
         $creds = Get-Credential
-        Wait-StmClusteredScheduledTask -TaskName "ReportTask" -Cluster "MyCluster" -Credential $creds -PollingIntervalSeconds 10
+        Wait-StmClusteredScheduledTask `
+            -TaskName "ReportTask" `
+            -Cluster "MyCluster" `
+            -Credential $creds `
+            -PollingIntervalSeconds 10
 
-        Waits for the clustered scheduled task named "ReportTask" on cluster "MyCluster" using specified credentials,
-        checking the task state every 10 seconds.
+        Waits for the clustered scheduled task named "ReportTask" on cluster "MyCluster" using specified
+        credentials, checking the task state every 10 seconds.
 
     .EXAMPLE
-        Wait-StmClusteredScheduledTask -TaskName "LongRunningTask" -Cluster "MyCluster" -TimeoutSeconds 1800 -Verbose
+        Wait-StmClusteredScheduledTask `
+            -TaskName "LongRunningTask" `
+            -Cluster "MyCluster" `
+            -TimeoutSeconds 1800 `
+            -Verbose
 
-        Waits for the clustered scheduled task named "LongRunningTask" on cluster "MyCluster" with a 30-minute timeout
-        and verbose output to show detailed information about the waiting process.
+        Waits for the clustered scheduled task named "LongRunningTask" on cluster "MyCluster" with a 30-minute
+        timeout and verbose output to show detailed information about the waiting process.
 
     .INPUTS
         None. You cannot pipe objects to Wait-StmClusteredScheduledTask.
@@ -114,14 +126,19 @@ function Wait-StmClusteredScheduledTask {
 
     process {
         $activity = "Waiting for clustered scheduled task '$TaskName' to complete"
-        $status = ""
+        $status = ''
         $percentComplete = 0
         while ($true) {
-            $scheduledTask = Get-StmClusteredScheduledTask -TaskName $TaskName -Cluster $Cluster -Credential $Credential
+            $clusteredScheduledTaskParameters = @{
+                TaskName   = $TaskName
+                Cluster    = $Cluster
+                Credential = $Credential
+            }
+            $scheduledTask = Get-StmClusteredScheduledTask @clusteredScheduledTaskParameters
             $state = $scheduledTask.ScheduledTaskObject.State
             $elapsed = (Get-Date) - $startTime
             $percentComplete = [math]::Min([math]::Round(($elapsed.TotalSeconds / $TimeoutSeconds) * 100), 100)
-            $status = "Elapsed: {0:N0}s / {1}s | State: {2}" -f $elapsed.TotalSeconds, $TimeoutSeconds, $state
+            $status = 'Elapsed: {0:N0}s / {1}s | State: {2}' -f $elapsed.TotalSeconds, $TimeoutSeconds, $state
             Write-Progress -Activity $activity -Status $status -PercentComplete $percentComplete
             Write-Verbose "Current state of task '$TaskName': $state"
 
@@ -134,11 +151,11 @@ function Wait-StmClusteredScheduledTask {
             if ($elapsed.TotalSeconds -ge $TimeoutSeconds) {
                 Write-Progress -Activity $activity -Completed
                 $errorRecordParameters = @{
-                    Exception         = $null
-                    ErrorId           = 'TimeoutReached'
-                    ErrorCategory     = [System.Management.Automation.ErrorCategory]::WriteError
-                    TargetObject      = $TaskName
-                    Message           = "Timeout reached while waiting for task '$TaskName' to complete."
+                    Exception     = $null
+                    ErrorId       = 'TimeoutReached'
+                    ErrorCategory = [System.Management.Automation.ErrorCategory]::WriteError
+                    TargetObject  = $TaskName
+                    Message       = "Timeout reached while waiting for task '$TaskName' to complete."
                 }
                 $errorRecord = New-StmError @errorRecordParameters
                 $PSCmdlet.ThrowTerminatingError($errorRecord)

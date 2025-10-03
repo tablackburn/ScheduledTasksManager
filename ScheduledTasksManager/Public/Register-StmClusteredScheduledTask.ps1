@@ -1,28 +1,30 @@
-function Register-StmClusteredScheduledTask {
+﻿function Register-StmClusteredScheduledTask {
     <#
     .SYNOPSIS
         Registers a new clustered scheduled task on a Windows failover cluster.
 
     .DESCRIPTION
-        The Register-StmClusteredScheduledTask function registers a new clustered scheduled task on a Windows failover cluster
-        using an XML definition. This function supports two parameter sets: one for providing the XML content as a string
-        and another for providing the path to an XML file. The function creates a CIM session to the cluster and registers
-        the task using the native Register-ClusteredScheduledTask cmdlet. Clustered scheduled tasks can be configured to run
-        on specific nodes, any node, or across the entire cluster depending on the task type specified.
+        The Register-StmClusteredScheduledTask function registers a new clustered scheduled task on a Windows
+        failover cluster using an XML definition. This function supports two parameter sets: one for providing
+        the XML content as a string and another for providing the path to an XML file. The function creates a
+        CIM session to the cluster and registers the task using the native Register-ClusteredScheduledTask
+        cmdlet. Clustered scheduled tasks can be configured to configured to run on specific nodes, any node, or
+        across the entire cluster depending on the task type specified.
 
     .PARAMETER TaskName
         Specifies the name for the new clustered scheduled task. This parameter is mandatory.
 
     .PARAMETER Cluster
-        Specifies the name or FQDN of the cluster where the scheduled task will be registered. This parameter is mandatory.
+        Specifies the name or FQDN of the cluster where the scheduled task will be registered. This parameter is
+        mandatory.
 
     .PARAMETER Xml
-        Specifies the XML content that defines the scheduled task configuration. This parameter is mandatory when using
-        the XmlString parameter set. The XML should follow the Task Scheduler schema format.
+        Specifies the XML content that defines the scheduled task configuration. This parameter is mandatory
+        when using the XmlString parameter set. The XML should follow the Task Scheduler schema format.
 
     .PARAMETER XmlPath
-        Specifies the path to an XML file that contains the scheduled task configuration. This parameter is mandatory when
-        using the XmlFile parameter set. The file should contain valid Task Scheduler XML format.
+        Specifies the path to an XML file that contains the scheduled task configuration. This parameter is
+        mandatory when using the XmlFile parameter set. The file should contain valid Task Scheduler XML format.
 
     .PARAMETER TaskType
         Specifies the type of clustered scheduled task to register. Valid values are:
@@ -80,23 +82,42 @@ function Register-StmClusteredScheduledTask {
             </Actions>
         </Task>
         "@
-        Register-StmClusteredScheduledTask -TaskName "MyClusteredTask" -Cluster "MyCluster" -Xml $xmlContent -TaskType "AnyNode"
+        $parameters = @{
+            TaskName = 'MyClusteredTask'
+            Cluster  = 'MyCluster'
+            Xml      = $xmlContent
+            TaskType = 'AnyNode'
+        }
+        Register-StmClusteredScheduledTask @parameters
 
-        Registers a new clustered scheduled task named "MyClusteredTask" on cluster "MyCluster" using XML content provided as a string.
-        The task is configured to run on any node in the cluster.
+        Registers a new clustered scheduled task named "MyClusteredTask" on cluster "MyCluster" using XML content
+        provided as a string. The task is configured to run on any node in the cluster.
 
     .EXAMPLE
-        Register-StmClusteredScheduledTask -TaskName "BackupTask" -Cluster "MyCluster.contoso.com" -XmlPath "C:\Tasks\BackupTask.xml" -TaskType "ClusterWide"
+        $parameters = @{
+            TaskName = 'BackupTask'
+            Cluster  = 'MyCluster.contoso.com'
+            XmlPath  = 'C:\Tasks\BackupTask.xml'
+            TaskType = 'ClusterWide'
+        }
+        Register-StmClusteredScheduledTask @parameters
 
-        Registers a new clustered scheduled task named "BackupTask" on cluster "MyCluster.contoso.com" using an XML file.
-        The task is configured to run cluster-wide.
+        Registers a new clustered scheduled task named "BackupTask" on cluster "MyCluster.contoso.com" using an XML
+        file. The task is configured to run cluster-wide.
 
     .EXAMPLE
         $creds = Get-Credential
-        Register-StmClusteredScheduledTask -TaskName "MaintenanceTask" -Cluster "MyCluster" -XmlPath "C:\Tasks\MaintenanceTask.xml" -TaskType "ResourceSpecific" -Credential $creds
+        $parameters = @{
+            TaskName    = 'MaintenanceTask'
+            Cluster    = 'MyCluster'
+            XmlPath    = 'C:\Tasks\MaintenanceTask.xml'
+            TaskType   = 'ResourceSpecific'
+            Credential = $credentials
+        }
+        Register-StmClusteredScheduledTask @parameters
 
-        Registers a new clustered scheduled task named "MaintenanceTask" on cluster "MyCluster" using specified credentials.
-        The task is configured as resource-specific.
+        Registers a new clustered scheduled task named "MaintenanceTask" on cluster "MyCluster" using specified
+        credentials. The task is configured as resource-specific.
 
     .INPUTS
         None. You cannot pipe objects to Register-StmClusteredScheduledTask.

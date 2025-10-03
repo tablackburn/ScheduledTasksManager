@@ -1,4 +1,4 @@
-function Get-StmClusteredScheduledTask {
+﻿function Get-StmClusteredScheduledTask {
     <#
     .SYNOPSIS
         Retrieves clustered scheduled tasks from a Windows failover cluster.
@@ -46,11 +46,13 @@ function Get-StmClusteredScheduledTask {
     .EXAMPLE
         Get-StmClusteredScheduledTask -Cluster "MyCluster" -TaskState "Ready" -TaskType "ClusterWide"
 
-        Retrieves all clustered scheduled tasks that are in "Ready" state and are "ClusterWide" type from cluster "MyCluster".
+        Retrieves all clustered scheduled tasks that are in "Ready" state and are "ClusterWide" type from cluster
+        "MyCluster".
 
     .EXAMPLE
         $credentials = Get-Credential
-        Get-StmClusteredScheduledTask -Cluster "MyCluster" -Credential $credentials | Where-Object { $_.CurrentOwner -eq "Node01" }
+        Get-StmClusteredScheduledTask -Cluster "MyCluster" -Credential $credentials |
+            Where-Object { $_.CurrentOwner -eq "Node01" }
 
         Retrieves all clustered scheduled tasks from cluster "MyCluster" using specified credentials and filters to show
         only tasks owned by "Node01".
@@ -165,9 +167,9 @@ function Get-StmClusteredScheduledTask {
         Write-Verbose "Found $($clusteredScheduledTasks.Count) clustered scheduled task(s) on cluster '$Cluster'"
 
         $uniqueTaskOwners = @($clusteredScheduledTasks |
-            Select-Object -ExpandProperty 'CurrentOwner' |
-            Where-Object { -not [string]::IsNullOrEmpty($_) } |
-            Select-Object -Unique)
+                Select-Object -ExpandProperty 'CurrentOwner' |
+                    Where-Object { -not [string]::IsNullOrEmpty($_) } |
+                        Select-Object -Unique)
         if ($uniqueTaskOwners.Count -eq 0) {
             Write-Error (
                 "No current owners found for tasks in cluster '$Cluster'. " +
@@ -180,7 +182,7 @@ function Get-StmClusteredScheduledTask {
         }
         foreach ($taskOwner in $uniqueTaskOwners) {
             if ([string]::IsNullOrEmpty($taskOwner)) {
-                Write-Verbose "Skipping task owner with null or empty name"
+                Write-Verbose 'Skipping task owner with null or empty name'
                 continue
             }
 
@@ -204,14 +206,26 @@ function Get-StmClusteredScheduledTask {
                 }
 
                 foreach ($scheduledTaskFromOwner in $scheduledTasksFromOwner) {
-                    Write-Verbose "Processing scheduled task '$($scheduledTaskFromOwner.TaskName)' from owner '$taskOwner'"
-                    Write-Verbose "Finding matching clustered scheduled task for '$($scheduledTaskFromOwner.TaskName)'"
+                    $procMsg = (
+                        "Processing scheduled task '" + $scheduledTaskFromOwner.TaskName +
+                        "' from owner '" + $taskOwner + "'"
+                    )
+                    Write-Verbose $procMsg
+                    $findMsg = (
+                        "Finding matching clustered scheduled task for '" +
+                        $scheduledTaskFromOwner.TaskName + "'"
+                    )
+                    Write-Verbose $findMsg
                     $clusteredScheduledTask = $clusteredScheduledTasksOwnedByCurrentOwner | Where-Object {
                         $_.TaskName -eq $scheduledTaskFromOwner.TaskName
                     }
 
                     if ($null -eq $clusteredScheduledTask) {
-                        Write-Warning "No matching clustered task found for '$($scheduledTaskFromOwner.TaskName)'"
+                        $noMatchMsg = (
+                            "No matching clustered task found for '" +
+                            $scheduledTaskFromOwner.TaskName + "'"
+                        )
+                        Write-Warning $noMatchMsg
                         continue
                     }
 
@@ -229,12 +243,20 @@ function Get-StmClusteredScheduledTask {
                         [PSCustomObject]$mergedHashtable
                     }
                     catch {
-                        Write-Warning "Failed to merge objects for task '$($scheduledTaskFromOwner.TaskName)': $($_.Exception.Message)"
+                        $mergeFailMsg = (
+                            "Failed to merge objects for task '" +
+                            $scheduledTaskFromOwner.TaskName + "': " + $_.Exception.Message
+                        )
+                        Write-Warning $mergeFailMsg
                     }
                 }
             }
             catch {
-                Write-Error "Failed to retrieve tasks from owner '$taskOwner': $($_.Exception.Message)"
+                $ownerErrMsg = (
+                    "Failed to retrieve tasks from owner '" + $taskOwner +
+                    "': " + $_.Exception.Message
+                )
+                Write-Error $ownerErrMsg
             }
         }
     }

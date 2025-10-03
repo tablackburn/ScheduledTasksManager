@@ -1,4 +1,4 @@
-function Enable-StmClusteredScheduledTask {
+﻿function Enable-StmClusteredScheduledTask {
     <#
     .SYNOPSIS
         Enables a disabled clustered scheduled task in a Windows failover cluster.
@@ -148,7 +148,7 @@ function Enable-StmClusteredScheduledTask {
                 return
             }
 
-            if ($PSCmdlet.ShouldProcess("$TaskName on cluster $Cluster", "Enable clustered scheduled task")) {
+            if ($PSCmdlet.ShouldProcess("$TaskName on cluster $Cluster", 'Enable clustered scheduled task')) {
                 Write-Verbose "Unregistering clustered scheduled task '$TaskName'..."
                 $newStmCimSessionParameters = @{
                     ComputerName = $Cluster

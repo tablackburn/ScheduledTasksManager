@@ -1,44 +1,47 @@
-function Export-StmClusteredScheduledTask {
+﻿function Export-StmClusteredScheduledTask {
     <#
     .SYNOPSIS
         Exports a clustered scheduled task from a Windows failover cluster.
 
     .DESCRIPTION
-        The Export-StmClusteredScheduledTask function exports a clustered scheduled task from a Windows failover cluster
-        to an XML format. This function retrieves the specified clustered scheduled task using Get-StmClusteredScheduledTask
-        and then exports it using the native Export-ScheduledTask cmdlet. The exported XML can be used to recreate the task
-        on other systems or for backup purposes.
+        The Export-StmClusteredScheduledTask function exports a clustered scheduled task from a Windows failover
+        cluster to an XML format. This function retrieves the specified clustered scheduled
+        task using Get-StmClusteredScheduledTask and then exports it using the native
+        Export-ScheduledTask cmdlet.
+        The exported XML can be used to recreate the task on other systems or for backup purposes.
 
     .PARAMETER TaskName
         Specifies the name of the clustered scheduled task to export. This parameter is mandatory.
 
     .PARAMETER Cluster
-        Specifies the name or FQDN of the cluster where the scheduled task is located. This parameter is mandatory.
+        Specifies the name or FQDN of the cluster where the scheduled task is located. This parameter is
+        mandatory.
 
     .PARAMETER Credential
-        Specifies credentials to use when connecting to the cluster. If not provided, the current user's credentials
-        will be used for the connection.
+        Specifies credentials to use when connecting to the cluster. If not provided, the current user's
+        credentials will be used for the connection.
 
     .PARAMETER FilePath
-        Specifies the path where the exported XML file should be saved. If provided, the function will save the XML
-        to the specified file path instead of returning it to the pipeline. If not provided, the XML is returned
-        to the pipeline as a string.
+        Specifies the path where the exported XML file should be saved. If provided, the function will save the
+        XML to the specified file path instead of returning it to the pipeline. If not provided, the XML is
+        returned to the pipeline as a string.
 
     .EXAMPLE
         Export-StmClusteredScheduledTask -TaskName "MyTask" -Cluster "MyCluster"
 
-        Exports the clustered scheduled task named "MyTask" from cluster "MyCluster" using the current user's credentials
-        and returns the XML to the pipeline.
+        Exports the clustered scheduled task named "MyTask" from cluster "MyCluster" using the
+        current user's credentials and returns the XML to the pipeline.
 
     .EXAMPLE
         $creds = Get-Credential
         Export-StmClusteredScheduledTask -TaskName "BackupTask" -Cluster "MyCluster.contoso.com" -Credential $creds
 
-        Exports the clustered scheduled task named "BackupTask" from cluster "MyCluster.contoso.com" using the specified credentials
-        and returns the XML to the pipeline.
+        Exports the clustered scheduled task named "BackupTask" from cluster "MyCluster.contoso.com"
+        using the specified credentials and returns the XML to the pipeline.
 
     .EXAMPLE
-        Export-StmClusteredScheduledTask -TaskName "MaintenanceTask" -Cluster "MyCluster" -FilePath "C:\Tasks\MaintenanceTask.xml"
+        Export-StmClusteredScheduledTask -TaskName "MaintenanceTask" -Cluster "MyCluster" `
+            -FilePath "C:\Tasks\MaintenanceTask.xml"
 
         Exports the clustered scheduled task and saves the XML output directly to the specified file path.
 
@@ -123,7 +126,8 @@ function Export-StmClusteredScheduledTask {
                 Write-Error "Failed to export task to file '$FilePath': $($_.Exception.Message)"
                 throw
             }
-        } else {
+        }
+        else {
             $scheduledTask.ScheduledTaskObject | Export-ScheduledTask
         }
     }

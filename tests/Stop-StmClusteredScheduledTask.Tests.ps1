@@ -15,8 +15,10 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             $mockedScheduledTaskObjectParameters = @{
                 TypeName     = 'Microsoft.Management.Infrastructure.CimInstance'
                 ArgumentList = @(
-                    'MSFT_ScheduledTask'                   # Cim class name (Get using: (Get-ScheduledTask).get_CimClass())
-                    'Root/Microsoft/Windows/TaskScheduler' # Cim namespace (Get using: (Get-ScheduledTask).CimSystemProperties)
+                    # Cim class name (Get using: (Get-ScheduledTask).get_CimClass())
+                    'MSFT_ScheduledTask'
+                    # Cim namespace (Get using: (Get-ScheduledTask).CimSystemProperties)
+                    'Root/Microsoft/Windows/TaskScheduler'
                 )
             }
             $mockedScheduledTaskObject = New-Object @mockedScheduledTaskObjectParameters
@@ -57,38 +59,54 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
 
         Context 'Parameter Validation' {
             It 'Should accept valid TaskName parameter' {
-                { Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf } | Should -Not -Throw
+                {
+                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf
+                } | Should -Not -Throw
             }
 
             It 'Should accept valid Cluster parameter' {
-                { Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf } | Should -Not -Throw
+                {
+                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf
+                } | Should -Not -Throw
             }
 
             It 'Should accept valid Credential parameter' {
                 $mockCredential = [System.Management.Automation.PSCredential]::Empty
-                { Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $mockCredential -WhatIf } | Should -Not -Throw
+                {
+                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $mockCredential -WhatIf
+                } | Should -Not -Throw
             }
 
             It 'Should reject null TaskName' {
-                { Stop-StmClusteredScheduledTask -TaskName $null -Cluster 'TestCluster' } | Should -Throw
+                {
+                    Stop-StmClusteredScheduledTask -TaskName $null -Cluster 'TestCluster'
+                } | Should -Throw
             }
 
             It 'Should reject empty TaskName' {
-                { Stop-StmClusteredScheduledTask -TaskName '' -Cluster 'TestCluster' } | Should -Throw
+                {
+                    Stop-StmClusteredScheduledTask -TaskName '' -Cluster 'TestCluster'
+                } | Should -Throw
             }
 
             It 'Should reject null Cluster' {
-                { Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster $null } | Should -Throw
+                {
+                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster $null
+                } | Should -Throw
             }
 
             It 'Should reject empty Cluster' {
-                { Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster '' } | Should -Throw
+                {
+                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster ''
+                } | Should -Throw
             }
         }
 
         Context 'Functionality' {
             It 'Should stop the clustered scheduled task successfully' {
-                { Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' } | Should -Not -Throw
+                {
+                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster'
+                } | Should -Not -Throw
                 Should -Invoke -CommandName 'Get-StmClusteredScheduledTask' -Times 1 -Exactly
                 Should -Invoke -CommandName 'Stop-ScheduledTask' -Times 1 -Exactly
             }
@@ -119,7 +137,9 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                     return $null
                 }
 
-                { Stop-StmClusteredScheduledTask -TaskName 'NonExistentTask' -Cluster 'TestCluster' } | Should -Throw
+                {
+                    Stop-StmClusteredScheduledTask -TaskName 'NonExistentTask' -Cluster 'TestCluster'
+                } | Should -Throw
                 Should -Invoke -CommandName 'New-StmError' -Times 1 -Exactly
                 Should -Invoke -CommandName 'Stop-ScheduledTask' -Times 0 -Exactly
             }
@@ -131,7 +151,9 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                     $TaskName -eq 'TestTask' -and $Cluster -eq 'TestCluster'
                 }
 
-                { Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' } | Should -Throw
+                {
+                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster'
+                } | Should -Throw
                 Should -Invoke -CommandName 'New-StmError' -Times 1 -Exactly
                 Should -Invoke -CommandName 'Stop-ScheduledTask' -Times 0 -Exactly
             }
@@ -143,7 +165,9 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                     $InputObject -eq $mockedScheduledTaskObject
                 }
 
-                { Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' } | Should -Throw
+                {
+                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster'
+                } | Should -Throw
                 Should -Invoke -CommandName 'Get-StmClusteredScheduledTask' -Times 1 -Exactly
                 Should -Invoke -CommandName 'Stop-ScheduledTask' -Times 1 -Exactly
                 Should -Invoke -CommandName 'New-StmError' -Times 1 -Exactly
@@ -166,10 +190,14 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                     }
 
                     if ($state -eq 'Running') {
-                        { Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf } | Should -Not -Throw
+                        {
+                            Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf
+                        } | Should -Not -Throw
                     }
                     else {
-                        { Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf } | Should -Not -Throw
+                        {
+                            Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf
+                        } | Should -Not -Throw
                     }
                 }
             }

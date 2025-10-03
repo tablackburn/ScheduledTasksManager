@@ -1,13 +1,14 @@
-function Stop-StmClusteredScheduledTask {
+﻿function Stop-StmClusteredScheduledTask {
     <#
     .SYNOPSIS
         Stops a running clustered scheduled task on a Windows failover cluster.
 
     .DESCRIPTION
-        The Stop-StmClusteredScheduledTask function stops a running clustered scheduled task on a Windows failover cluster.
-        This function retrieves the specified clustered scheduled task using Get-StmClusteredScheduledTask and then
-        stops it using the native Stop-ScheduledTask cmdlet. The function supports the -WhatIf and -Confirm parameters
-        for safe execution and provides verbose output for troubleshooting.
+        The Stop-StmClusteredScheduledTask function stops a running clustered scheduled task on a Windows
+        failover cluster. This function retrieves the specified clustered scheduled task using
+        Get-StmClusteredScheduledTask and then stops it using the native Stop-ScheduledTask cmdlet. The function
+        supports the -WhatIf and -Confirm parameters for safe execution and provides verbose output for
+        troubleshooting.
 
         The function performs the following operations:
         1. Retrieves the clustered scheduled task using Get-StmClusteredScheduledTask
@@ -138,8 +139,13 @@ function Stop-StmClusteredScheduledTask {
                         ErrorId           = 'StopTaskFailed'
                         ErrorCategory     = [System.Management.Automation.ErrorCategory]::WriteError
                         TargetObject      = $TaskName
-                        Message           = "Failed to stop clustered scheduled task '$TaskName'. $($_.Exception.Message)"
-                        RecommendedAction = 'Ensure the task is running and you have the necessary permissions to stop it.'
+                        Message           = (
+                            "Failed to stop clustered scheduled task '$TaskName'. $($_.Exception.Message)"
+                        )
+                        RecommendedAction = (
+                            'Ensure the task is running and you have the necessary ' +
+                            'permissions to stop it.'
+                        )
                     }
                     $errorRecord = New-StmError @errorRecordParameters
                     $PSCmdlet.ThrowTerminatingError($errorRecord)

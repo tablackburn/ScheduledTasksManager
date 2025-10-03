@@ -1,4 +1,4 @@
-function Start-StmClusteredScheduledTask {
+﻿function Start-StmClusteredScheduledTask {
     <#
     .SYNOPSIS
         Starts a clustered scheduled task on a Windows failover cluster.
@@ -22,26 +22,27 @@ function Start-StmClusteredScheduledTask {
     .EXAMPLE
         Start-StmClusteredScheduledTask -TaskName "BackupTask" -Cluster "MyCluster"
 
-        Starts the clustered scheduled task named "BackupTask" on cluster "MyCluster" using the current user's credentials.
+        Starts the clustered scheduled task named "BackupTask" on cluster "MyCluster" using the current user's
+        credentials.
 
     .EXAMPLE
         Start-StmClusteredScheduledTask -TaskName "MaintenanceTask" -Cluster "MyCluster.contoso.com" -WhatIf
 
-        Shows what would happen if the clustered scheduled task named "MaintenanceTask" were started on cluster "MyCluster.contoso.com"
-        without actually starting it.
+        Shows what would happen if the clustered scheduled task named "MaintenanceTask" were started on cluster
+        "MyCluster.contoso.com" without actually starting it.
 
     .EXAMPLE
         $creds = Get-Credential
         Start-StmClusteredScheduledTask -TaskName "ReportTask" -Cluster "MyCluster" -Credential $creds -Confirm
 
-        Starts the clustered scheduled task named "ReportTask" on cluster "MyCluster" using specified credentials
-        and prompts for confirmation before starting.
+        Starts the clustered scheduled task named "ReportTask" on cluster "MyCluster" using specified credentials and
+        prompts for confirmation before starting.
 
     .EXAMPLE
         Start-StmClusteredScheduledTask -TaskName "CleanupTask" -Cluster "MyCluster" -Verbose
 
-        Starts the clustered scheduled task named "CleanupTask" on cluster "MyCluster" with verbose output
-        to show detailed information about the operation.
+        Starts the clustered scheduled task named "CleanupTask" on cluster "MyCluster" with verbose output to show
+        detailed information about the operation.
 
     .INPUTS
         None. You cannot pipe objects to Start-StmClusteredScheduledTask.

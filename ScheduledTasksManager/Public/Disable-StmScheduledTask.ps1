@@ -1,4 +1,4 @@
-function Disable-StmScheduledTask {
+﻿function Disable-StmScheduledTask {
     <#
     .SYNOPSIS
         Disables a scheduled task on a local or remote computer.
@@ -162,13 +162,20 @@ function Disable-StmScheduledTask {
                 $task = Get-ScheduledTask @getScheduledTaskParameters
 
                 if ($task.State -eq 'Disabled') {
-                    Write-Verbose "Scheduled task '$TaskName' has been successfully disabled on computer '$ComputerName'."
+                    $successMsg = (
+                        "Scheduled task '" + $TaskName +
+                        "' has been successfully disabled on computer '" + $ComputerName + "'."
+                    )
+                    Write-Verbose $successMsg
                     if ($PassThru) {
                         Write-Output $task
                     }
                 }
                 else {
-                    Write-Error "Scheduled task '$TaskName' was not disabled successfully. Current state: $($task.State)" -ErrorAction 'Stop'
+                    Write-Error (
+                        "Scheduled task '$($TaskName)' was not disabled successfully. " +
+                        "Current state: $($task.State)"
+                    ) -ErrorAction 'Stop'
                 }
             }
             catch {
@@ -177,8 +184,14 @@ function Disable-StmScheduledTask {
                     ErrorId           = 'ScheduledTaskDisableFailed'
                     ErrorCategory     = [System.Management.Automation.ErrorCategory]::NotSpecified
                     TargetObject      = $TaskName
-                    Message           = "Failed to disable scheduled task '$TaskName' at path '$TaskPath' on computer '$ComputerName'. $($_.Exception.Message)"
-                    RecommendedAction = 'Verify the task name and path are correct, that the task exists, and that you have permission to manage scheduled tasks.'
+                    Message           = (
+                        "Failed to disable scheduled task '$TaskName' at path '$TaskPath' on computer " +
+                        "'$ComputerName'. {$_}"
+                    )
+                    RecommendedAction = (
+                        'Verify the task name and path are correct, that the task exists, and that you have ' +
+                        'permission to manage scheduled tasks.'
+                    )
                 }
                 $errorRecord = New-StmError @errorRecordParameters
                 $PSCmdlet.ThrowTerminatingError($errorRecord)

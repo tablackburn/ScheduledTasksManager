@@ -1,4 +1,4 @@
-function Get-StmClusterNode {
+﻿function Get-StmClusterNode {
     <#
     .SYNOPSIS
         Retrieves information about cluster nodes in a Windows failover cluster.
@@ -23,7 +23,8 @@ function Get-StmClusterNode {
     .EXAMPLE
         Get-StmClusterNode -Cluster "MyCluster"
 
-        Retrieves information about all nodes in the cluster named "MyCluster" using the current user's credentials.
+        Retrieves information about all nodes in the cluster named "MyCluster" using the current user's
+        credentials.
 
     .EXAMPLE
         Get-StmClusterNode -Cluster "MyCluster.contoso.com" -NodeName "Node01"
@@ -110,7 +111,7 @@ function Get-StmClusterNode {
             ErrorAction  = 'Stop'
         }
         $credentialsProvided = $PSBoundParameters.ContainsKey('Credential') -and
-            $Credential -ne [System.Management.Automation.PSCredential]::Empty
+        $Credential -ne [System.Management.Automation.PSCredential]::Empty
         if ($credentialsProvided) {
             Write-Verbose "Using provided credentials for the remote command on cluster '$Cluster'"
             $invokeCommandParameters['Credential'] = $Credential
