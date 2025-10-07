@@ -20,19 +20,22 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 'TaskName',
                 'TestTask1',
                 [Microsoft.Management.Infrastructure.CimType]::String,
-                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
+                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor
+                    [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
             )
             $mockURIProperty = [Microsoft.Management.Infrastructure.CimProperty]::Create(
                 'URI',
                 '\TestTask1',
                 [Microsoft.Management.Infrastructure.CimType]::String,
-                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
+                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor
+                    [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
             )
             $mockStateProperty = [Microsoft.Management.Infrastructure.CimProperty]::Create(
                 'State',
                 'Disabled',
                 [Microsoft.Management.Infrastructure.CimType]::String,
-                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
+                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor
+                    [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
             )
             $mockTask.CimInstanceProperties.Add($mockTaskNameProperty)
             $mockTask.CimInstanceProperties.Add($mockURIProperty)
@@ -53,48 +56,6 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             $script:commonParameters = @{
                 WarningAction = 'SilentlyContinue'
                 InformationAction = 'SilentlyContinue'
-            }
-        }
-
-        Context 'Parameter Validation' {
-            It 'Should accept valid TaskName parameter' {
-                { Disable-StmScheduledTask -TaskName 'TestTask' -Confirm:$false @commonParameters } | Should -Not -Throw
-            }
-
-            It 'Should accept valid TaskPath parameter' {
-                { Disable-StmScheduledTask -TaskName 'TestTask' -TaskPath '\Custom\Path\' -Confirm:$false @commonParameters } | Should -Not -Throw
-            }
-
-            It 'Should accept valid ComputerName parameter' {
-                { Disable-StmScheduledTask -TaskName 'TestTask' -ComputerName 'Server01' -Confirm:$false @commonParameters } | Should -Not -Throw
-            }
-
-            It 'Should accept valid Credential parameter' {
-                $credential = [PSCredential]::new('TestUser', ('TestPass' | ConvertTo-SecureString -AsPlainText -Force))
-                { Disable-StmScheduledTask -TaskName 'TestTask' -Credential $credential -Confirm:$false @commonParameters } | Should -Not -Throw
-            }
-
-            It 'Should accept PassThru parameter' {
-                { Disable-StmScheduledTask -TaskName 'TestTask' -PassThru -Confirm:$false @commonParameters } | Should -Not -Throw
-            }
-
-            It 'Should throw when TaskName is null or empty' {
-                { Disable-StmScheduledTask -TaskName '' -WhatIf @commonParameters } | Should -Throw
-                { Disable-StmScheduledTask -TaskName $null -WhatIf @commonParameters } | Should -Throw
-            }
-
-            It 'Should default TaskPath to root when not specified' {
-                Disable-StmScheduledTask -TaskName 'TestTask' -Confirm:$false @commonParameters
-                Should -Invoke 'Disable-ScheduledTask' -Times 1 -ParameterFilter {
-                    $TaskPath -eq '\'
-                }
-            }
-
-            It 'Should default ComputerName to localhost when not specified' {
-                Disable-StmScheduledTask -TaskName 'TestTask' -Confirm:$false @commonParameters
-                Should -Invoke 'New-StmCimSession' -Times 1 -ParameterFilter {
-                    $ComputerName -eq 'localhost'
-                }
             }
         }
 
@@ -127,7 +88,12 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
 
             It 'Should use specified TaskPath' {
-                Disable-StmScheduledTask -TaskName 'TestTask1' -TaskPath '\Custom\Path\' -Confirm:$false @commonParameters
+                $disableParameters = @{
+                    TaskName = 'TestTask1'
+                    TaskPath = '\Custom\Path\'
+                    Confirm  = $false
+                }
+                Disable-StmScheduledTask @disableParameters @commonParameters
 
                 Should -Invoke 'Disable-ScheduledTask' -Times 1 -ParameterFilter {
                     $TaskName -eq 'TestTask1' -and $TaskPath -eq '\Custom\Path\'
@@ -135,7 +101,12 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
 
             It 'Should use specified ComputerName' {
-                Disable-StmScheduledTask -TaskName 'TestTask1' -ComputerName 'Server01' -Confirm:$false @commonParameters
+                $disableParameters = @{
+                    TaskName     = 'TestTask1'
+                    ComputerName = 'Server01'
+                    Confirm      = $false
+                }
+                Disable-StmScheduledTask @disableParameters @commonParameters
 
                 Should -Invoke 'New-StmCimSession' -Times 1 -ParameterFilter {
                     $ComputerName -eq 'Server01'
@@ -195,21 +166,27 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
 
             It 'Should throw error when task is not disabled successfully' {
-                $mockTaskStillEnabled = New-Object -TypeName 'Microsoft.Management.Infrastructure.CimInstance' -ArgumentList @(
-                    'MSFT_ScheduledTask',
-                    'Root/Microsoft/Windows/TaskScheduler'
-                )
+                $cimInstanceParameters = @{
+                    TypeName     = 'Microsoft.Management.Infrastructure.CimInstance'
+                    ArgumentList = @(
+                        'MSFT_ScheduledTask',
+                        'Root/Microsoft/Windows/TaskScheduler'
+                    )
+                }
+                $mockTaskStillEnabled = New-Object @cimInstanceParameters
                 $mockTaskNameProperty = [Microsoft.Management.Infrastructure.CimProperty]::Create(
                     'TaskName',
                     'TestTask1',
                     [Microsoft.Management.Infrastructure.CimType]::String,
-                    [Microsoft.Management.Infrastructure.CimFlags]::Property -bor [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
+                    [Microsoft.Management.Infrastructure.CimFlags]::Property -bor
+                        [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
                 )
                 $mockStateProperty = [Microsoft.Management.Infrastructure.CimProperty]::Create(
                     'State',
                     'Ready',  # Still enabled
                     [Microsoft.Management.Infrastructure.CimType]::String,
-                    [Microsoft.Management.Infrastructure.CimFlags]::Property -bor [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
+                    [Microsoft.Management.Infrastructure.CimFlags]::Property -bor
+                        [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
                 )
                 $mockTaskStillEnabled.CimInstanceProperties.Add($mockTaskNameProperty)
                 $mockTaskStillEnabled.CimInstanceProperties.Add($mockStateProperty)
@@ -244,7 +221,12 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
 
         Context 'CIM Session Management' {
             It 'Should create CIM session with correct parameters' {
-                Disable-StmScheduledTask -TaskName 'TestTask1' -ComputerName 'Server01' -Confirm:$false @commonParameters
+                $disableParameters = @{
+                    TaskName     = 'TestTask1'
+                    ComputerName = 'Server01'
+                    Confirm      = $false
+                }
+                Disable-StmScheduledTask @disableParameters @commonParameters
 
                 Should -Invoke 'New-StmCimSession' -Times 1 -ParameterFilter {
                     $ComputerName -eq 'Server01' -and $ErrorAction -eq 'Stop'

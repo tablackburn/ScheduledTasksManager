@@ -20,19 +20,22 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 'TaskName',
                 'TestTask1',
                 [Microsoft.Management.Infrastructure.CimType]::String,
-                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
+                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor
+                    [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
             )
             $mockURIProperty = [Microsoft.Management.Infrastructure.CimProperty]::Create(
                 'URI',
                 '\TestTask1',
                 [Microsoft.Management.Infrastructure.CimType]::String,
-                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
+                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor
+                    [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
             )
             $mockStateProperty = [Microsoft.Management.Infrastructure.CimProperty]::Create(
                 'State',
                 'Ready',
                 [Microsoft.Management.Infrastructure.CimType]::String,
-                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
+                [Microsoft.Management.Infrastructure.CimFlags]::Property -bor
+                    [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
             )
             $mockTask.CimInstanceProperties.Add($mockTaskNameProperty)
             $mockTask.CimInstanceProperties.Add($mockURIProperty)

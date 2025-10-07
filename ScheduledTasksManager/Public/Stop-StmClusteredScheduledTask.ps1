@@ -37,8 +37,8 @@
         the current user's credentials.
 
     .EXAMPLE
-        $creds = Get-Credential
-        Stop-StmClusteredScheduledTask -TaskName "MaintenanceTask" -Cluster "ProdCluster" -Credential $creds
+        $credential = Get-Credential
+        Stop-StmClusteredScheduledTask -TaskName "MaintenanceTask" -Cluster "ProdCluster" -Credential $credential
 
         Stops the clustered scheduled task named "MaintenanceTask" on cluster "ProdCluster" using
         the specified credentials.

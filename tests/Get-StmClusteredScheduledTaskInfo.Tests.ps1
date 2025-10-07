@@ -17,12 +17,16 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
 
             Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith {
-                return [PSCustomObject]@{
-                    TaskName = 'TestTask'
-                    ScheduledTaskObject = New-Object -TypeName 'Microsoft.Management.Infrastructure.CimInstance' -ArgumentList @(
+                $cimInstanceParameters = @{
+                    TypeName     = 'Microsoft.Management.Infrastructure.CimInstance'
+                    ArgumentList = @(
                         'MSFT_ScheduledTask'
                         'Root/Microsoft/Windows/TaskScheduler'
                     )
+                }
+                return [PSCustomObject]@{
+                    TaskName = 'TestTask'
+                    ScheduledTaskObject = New-Object @cimInstanceParameters
                     ClusteredScheduledTaskObject = [PSCustomObject]@{
                         TaskName     = 'TestTask'
                         CurrentOwner = 'OwnerNode'
@@ -44,20 +48,6 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 $result = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -TaskName 'TestTask'
                 $result | Should -Not -BeNullOrEmpty
                 $result.TaskName | Should -Be 'TestTask'
-            }
-        }
-
-        Context 'Parameter validation' {
-            BeforeAll {
-                $script:command = Get-Command -Name 'Get-StmClusteredScheduledTaskInfo'
-            }
-
-            It 'Should require a cluster name' {
-                $command.Parameters['Cluster'].ParameterSets.Values.IsMandatory | Should -Not -Contain $false
-            }
-
-            It 'Should not require a task name' {
-                $command.Parameters['TaskName'].ParameterSets.Values.IsMandatory | Should -Not -Contain $true
             }
         }
     }

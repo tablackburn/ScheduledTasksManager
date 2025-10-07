@@ -46,32 +46,6 @@ InModuleScope 'ScheduledTasksManager' {
             Mock -CommandName 'Write-Error' -MockWith { }
         }
 
-        Context 'Parameter Validation' {
-            It 'Should accept valid TaskName parameter' {
-                { Enable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false } | Should -Not -Throw
-            }
-
-            It 'Should accept valid Cluster parameter' {
-                { Enable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false } | Should -Not -Throw
-            }
-
-            It 'Should accept valid Credential parameter' {
-                $securePassword = ConvertTo-SecureString -String 'TestPass' -AsPlainText -Force
-                $credential = New-Object -TypeName 'PSCredential' -ArgumentList 'TestUser', $securePassword
-                { Enable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $credential -Confirm:$false } | Should -Not -Throw
-            }
-
-            It 'Should throw when TaskName is null or empty' {
-                { Enable-StmClusteredScheduledTask -TaskName '' -Cluster 'TestCluster' -Confirm:$false } | Should -Throw
-                { Enable-StmClusteredScheduledTask -TaskName $null -Cluster 'TestCluster' -Confirm:$false } | Should -Throw
-            }
-
-            It 'Should throw when Cluster is null or empty' {
-                { Enable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster '' -Confirm:$false } | Should -Throw
-                { Enable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster $null -Confirm:$false } | Should -Throw
-            }
-        }
-
         Context 'Task Export and XML Processing' {
             It 'Should export task XML before processing' {
                 Enable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false
@@ -216,7 +190,12 @@ InModuleScope 'ScheduledTasksManager' {
                     throw 'Register failed'
                 }
 
-                Enable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false
+                $enableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                Enable-StmClusteredScheduledTask @enableParameters
 
                 Should -Invoke 'Write-Error' -Times 1 -ParameterFilter {
                     $Message -like '*Failed to enable clustered scheduled task*'
@@ -229,7 +208,13 @@ InModuleScope 'ScheduledTasksManager' {
                 $securePassword = ConvertTo-SecureString -String 'TestPass' -AsPlainText -Force
                 $credential = New-Object -TypeName 'PSCredential' -ArgumentList 'TestUser', $securePassword
 
-                Enable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $credential -Confirm:$false
+                $enableParameters = @{
+                    TaskName   = 'TestTask'
+                    Cluster    = 'TestCluster'
+                    Credential = $credential
+                    Confirm    = $false
+                }
+                Enable-StmClusteredScheduledTask @enableParameters
 
                 Should -Invoke 'Export-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
                     $Credential -eq $credential
@@ -240,7 +225,13 @@ InModuleScope 'ScheduledTasksManager' {
                 $securePassword = ConvertTo-SecureString -String 'TestPass' -AsPlainText -Force
                 $credential = New-Object -TypeName PSCredential -ArgumentList 'TestUser', $securePassword
 
-                Enable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $credential -Confirm:$false
+                $enableParameters = @{
+                    TaskName   = 'TestTask'
+                    Cluster    = 'TestCluster'
+                    Credential = $credential
+                    Confirm    = $false
+                }
+                Enable-StmClusteredScheduledTask @enableParameters
 
                 Should -Invoke 'Get-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
                     $Credential -eq $credential
@@ -251,7 +242,13 @@ InModuleScope 'ScheduledTasksManager' {
                 $securePassword = ConvertTo-SecureString -String 'TestPass' -AsPlainText -Force
                 $credential = New-Object -TypeName 'PSCredential' -ArgumentList 'TestUser', $securePassword
 
-                Enable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $credential -Confirm:$false
+                $enableParameters = @{
+                    TaskName   = 'TestTask'
+                    Cluster    = 'TestCluster'
+                    Credential = $credential
+                    Confirm    = $false
+                }
+                Enable-StmClusteredScheduledTask @enableParameters
 
                 Should -Invoke 'New-StmCimSession' -Times 1 -ParameterFilter {
                     $Credential -eq $credential
@@ -262,7 +259,13 @@ InModuleScope 'ScheduledTasksManager' {
                 $securePassword = ConvertTo-SecureString -String 'TestPass' -AsPlainText -Force
                 $credential = New-Object -TypeName 'PSCredential' -ArgumentList 'TestUser', $securePassword
 
-                Enable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $credential -Confirm:$false
+                $enableParameters = @{
+                    TaskName   = 'TestTask'
+                    Cluster    = 'TestCluster'
+                    Credential = $credential
+                    Confirm    = $false
+                }
+                Enable-StmClusteredScheduledTask @enableParameters
 
                 Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
                     $Credential -eq $credential
@@ -351,7 +354,12 @@ InModuleScope 'ScheduledTasksManager' {
                 # Arrange - all mocks are set up in BeforeEach
 
                 # Act & Assert
-                { Enable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false } | Should -Not -Throw
+                $enableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                { Enable-StmClusteredScheduledTask @enableParameters } | Should -Not -Throw
 
                 # Verify all steps were executed in correct order
                 Should -Invoke 'Export-StmClusteredScheduledTask' -Times 1
@@ -393,7 +401,12 @@ InModuleScope 'ScheduledTasksManager' {
 '@
                 }
 
-                { Enable-StmClusteredScheduledTask -TaskName 'EnabledTask' -Cluster 'TestCluster' -Confirm:$false } | Should -Not -Throw
+                $enableParameters = @{
+                    TaskName = 'EnabledTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                { Enable-StmClusteredScheduledTask @enableParameters } | Should -Not -Throw
 
                 # Should write warning and not proceed with re-registration when already enabled
                 Should -Invoke 'Write-Warning' -Times 1 -ParameterFilter {

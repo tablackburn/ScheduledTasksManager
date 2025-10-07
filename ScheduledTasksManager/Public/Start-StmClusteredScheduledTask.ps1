@@ -32,8 +32,8 @@
         "MyCluster.contoso.com" without actually starting it.
 
     .EXAMPLE
-        $creds = Get-Credential
-        Start-StmClusteredScheduledTask -TaskName "ReportTask" -Cluster "MyCluster" -Credential $creds -Confirm
+        $credential = Get-Credential
+        Start-StmClusteredScheduledTask -TaskName "ReportTask" -Cluster "MyCluster" -Credential $credential -Confirm
 
         Starts the clustered scheduled task named "ReportTask" on cluster "MyCluster" using specified credentials and
         prompts for confirmation before starting.

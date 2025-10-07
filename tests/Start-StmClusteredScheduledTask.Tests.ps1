@@ -15,8 +15,10 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             $mockedScheduledTaskObjectParameters = @{
                 TypeName     = 'Microsoft.Management.Infrastructure.CimInstance'
                 ArgumentList = @(
-                    'MSFT_ScheduledTask'                   # Cim class name (Get using: (Get-ScheduledTask).get_CimClass())
-                    'Root/Microsoft/Windows/TaskScheduler' # Cim namespace (Get using: (Get-ScheduledTask).CimSystemProperties)
+                    # Cim class name (Get using: (Get-ScheduledTask).get_CimClass())
+                    'MSFT_ScheduledTask'
+                    # Cim namespace (Get using: (Get-ScheduledTask).CimSystemProperties)
+                    'Root/Microsoft/Windows/TaskScheduler'
                 )
             }
             $mockedScheduledTaskObject = New-Object @mockedScheduledTaskObjectParameters

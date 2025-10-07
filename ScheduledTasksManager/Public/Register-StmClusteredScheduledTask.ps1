@@ -106,13 +106,12 @@
         file. The task is configured to run cluster-wide.
 
     .EXAMPLE
-        $creds = Get-Credential
         $parameters = @{
             TaskName    = 'MaintenanceTask'
-            Cluster    = 'MyCluster'
-            XmlPath    = 'C:\Tasks\MaintenanceTask.xml'
-            TaskType   = 'ResourceSpecific'
-            Credential = $credentials
+            Cluster     = 'MyCluster'
+            XmlPath     = 'C:\Tasks\MaintenanceTask.xml'
+            TaskType    = 'ResourceSpecific'
+            Credential  = Get-Credential
         }
         Register-StmClusteredScheduledTask @parameters
 

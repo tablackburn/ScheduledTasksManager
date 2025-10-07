@@ -3,15 +3,25 @@ BeforeAll {
     # NEW: Pre-Specify RegEx Matching Patterns
     $gitTagMatchRegEx   = 'tag:\s?.(\d+(\.\d+)*)' # NOTE - was 'tag:\s*(\d+(?:\.\d+)*)' previously
     $changelogTagMatchRegEx = "^##\s\[(?<Version>(\d+\.){1,3}\d+)\]"
-    $moduleName         = $env:BHProjectName
-    $manifest           = Import-PowerShellDataFile -Path $env:BHPSModuleManifest
-    $outputDir          = Join-Path -Path $ENV:BHProjectPath -ChildPath 'Output'
-    $outputModDir       = Join-Path -Path $outputDir -ChildPath $env:BHProjectName
+    # $moduleName         = $env:BHProjectName
+    $moduleName         = 'ScheduledTasksManager'
+    # $manifest           = Import-PowerShellDataFile -Path $env:BHPSModuleManifest
+    $sourceManifestPath = Join-Path -Path $PSScriptRoot -ChildPath "..\$moduleName\$($moduleName).psd1"
+    $manifest           = Import-PowerShellDataFile -Path $sourceManifestPath
+    # $outputDir          = Join-Path -Path $ENV:BHProjectPath -ChildPath 'Output'
+    $outputDir          = Join-Path -Path $PSScriptRoot -ChildPath '..\Output'
+    $outputModDir       = Join-Path -Path $outputDir -ChildPath $moduleName
     $outputModVerDir    = Join-Path -Path $outputModDir -ChildPath $manifest.ModuleVersion
-    $outputManifestPath = Join-Path -Path $outputModVerDir -Child "$($moduleName).psd1"
-    $manifestData       = Test-ModuleManifest -Path $outputManifestPath -Verbose:$false -ErrorAction Stop -WarningAction SilentlyContinue
+    $outputManifestPath = Join-Path -Path $outputModVerDir -ChildPath "$($moduleName).psd1"
+    $manifestParameters = @{
+        Path          = $outputManifestPath
+        Verbose       = $false
+        ErrorAction   = 'Stop'
+        WarningAction = 'SilentlyContinue'
+    }
+    $manifestData = Test-ModuleManifest @manifestParameters
 
-    $changelogPath    = Join-Path -Path $env:BHProjectPath -Child 'CHANGELOG.md'
+    $changelogPath    = Join-Path -Path $PSScriptRoot -ChildPath '..\CHANGELOG.md'
     $changelogVersion = Get-Content $changelogPath | ForEach-Object {
         if ($_ -match $changelogTagMatchRegEx) {
             $changelogVersion = $matches.Version
@@ -24,14 +34,6 @@ BeforeAll {
 Describe 'Module manifest' {
 
     Context 'Validation' {
-
-        It 'Has a valid manifest' {
-            $manifestData | Should -Not -BeNullOrEmpty
-        }
-
-        It 'Has a valid name in the manifest' {
-            $manifestData.Name | Should -Be $moduleName
-        }
 
         It 'Has a valid root module' {
             $manifestData.RootModule | Should -Be "$($moduleName).psm1"

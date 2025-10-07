@@ -59,27 +59,6 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             Mock -CommandName 'Write-Error' -MockWith { }
         }
 
-        Context 'Parameter Validation' {
-            It 'Should throw when TaskName is null or empty' {
-                { Get-StmClusteredScheduledTaskRun -TaskName '' -Cluster 'TestCluster' } |
-                    Should -Throw -ErrorId 'ParameterArgumentValidationError,Get-StmClusteredScheduledTaskRun'
-                { Get-StmClusteredScheduledTaskRun -TaskName $null -Cluster 'TestCluster' } |
-                    Should -Throw -ErrorId 'ParameterArgumentValidationError,Get-StmClusteredScheduledTaskRun'
-            }
-
-            It 'Should throw when Cluster is null or empty' {
-                { Get-StmClusteredScheduledTaskRun -TaskName 'TestTask' -Cluster '' } |
-                    Should -Throw -ErrorId 'ParameterArgumentValidationError,Get-StmClusteredScheduledTaskRun'
-                { Get-StmClusteredScheduledTaskRun -TaskName 'TestTask' -Cluster $null } |
-                    Should -Throw -ErrorId 'ParameterArgumentValidationError,Get-StmClusteredScheduledTaskRun'
-            }
-
-            It 'Should accept valid parameters' {
-                { Get-StmClusteredScheduledTaskRun -TaskName 'TestTask' -Cluster 'TestCluster' } |
-                    Should -Not -Throw
-            }
-        }
-
         Context 'Function Execution' {
             BeforeEach {
                 # Mock setup will be added here

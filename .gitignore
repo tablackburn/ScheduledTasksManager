@@ -231,6 +231,7 @@ scratch/
 
 # Test results
 testResults.xml
+out/
 
 # Coverage results
 coverage.xml

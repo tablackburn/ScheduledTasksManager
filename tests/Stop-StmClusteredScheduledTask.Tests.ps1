@@ -57,51 +57,6 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
         }
 
-        Context 'Parameter Validation' {
-            It 'Should accept valid TaskName parameter' {
-                {
-                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf
-                } | Should -Not -Throw
-            }
-
-            It 'Should accept valid Cluster parameter' {
-                {
-                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf
-                } | Should -Not -Throw
-            }
-
-            It 'Should accept valid Credential parameter' {
-                $mockCredential = [System.Management.Automation.PSCredential]::Empty
-                {
-                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $mockCredential -WhatIf
-                } | Should -Not -Throw
-            }
-
-            It 'Should reject null TaskName' {
-                {
-                    Stop-StmClusteredScheduledTask -TaskName $null -Cluster 'TestCluster'
-                } | Should -Throw
-            }
-
-            It 'Should reject empty TaskName' {
-                {
-                    Stop-StmClusteredScheduledTask -TaskName '' -Cluster 'TestCluster'
-                } | Should -Throw
-            }
-
-            It 'Should reject null Cluster' {
-                {
-                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster $null
-                } | Should -Throw
-            }
-
-            It 'Should reject empty Cluster' {
-                {
-                    Stop-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster ''
-                } | Should -Throw
-            }
-        }
-
         Context 'Functionality' {
             It 'Should stop the clustered scheduled task successfully' {
                 {

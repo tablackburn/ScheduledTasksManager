@@ -33,8 +33,8 @@
         current user's credentials and returns the XML to the pipeline.
 
     .EXAMPLE
-        $creds = Get-Credential
-        Export-StmClusteredScheduledTask -TaskName "BackupTask" -Cluster "MyCluster.contoso.com" -Credential $creds
+        $credential = Get-Credential
+        Export-StmClusteredScheduledTask -TaskName "BackupTask" -Cluster "MyCluster.contoso.com" -Credential $credential
 
         Exports the clustered scheduled task named "BackupTask" from cluster "MyCluster.contoso.com"
         using the specified credentials and returns the XML to the pipeline.

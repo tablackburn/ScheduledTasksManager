@@ -788,7 +788,7 @@ Match the hashtable formatting style used throughout existing PowerShell functio
 - Capitalize the first letter of comments
 - Avoid abbreviated words: Use `Configuration` not `Config`, `Information` not `Info`, `Parameters` not `Params`
 - Never use backticks (`) for line continuation; use parentheses or splatting
-- Avoid semicolons; use separate lines for better readability and PowerShell idiomatic style
+- Avoid semicolons; use separate lines for better readability and PowerShell idiomatic style. For hashtables, place each key-value pair on its own line instead of using semicolons to separate them on the same line.
 - Prefer `foreach` over `ForEach-Object` for better performance
 - Add `else` blocks for clarity in conditional statements
 - Use `switch` statements for multiple conditions

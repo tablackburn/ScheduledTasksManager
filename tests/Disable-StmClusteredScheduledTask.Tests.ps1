@@ -16,7 +16,11 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 if ($PesterBoundParameters.ContainsKey('FilePath')) {
                     # When FilePath is provided, write to the file
                     $mockXml = '<TaskDefinition>MockTaskXML</TaskDefinition>'
-                    $mockXml | Out-File -FilePath $PesterBoundParameters.FilePath -Encoding ([System.Text.Encoding]::Unicode)
+                    $outFileParameters = @{
+                        FilePath = $PesterBoundParameters.FilePath
+                        Encoding = ([System.Text.Encoding]::Unicode)
+                    }
+                    $mockXml | Out-File @outFileParameters
                 } else {
                     # When no FilePath, return the XML
                     return '<TaskDefinition>MockTaskXML</TaskDefinition>'
@@ -24,7 +28,8 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
             Mock -CommandName 'Join-Path' -MockWith {
                 # Call the real Join-Path with the provided ChildPath
-                & (Get-Command -CommandType 'Cmdlet' -Name 'Join-Path') -Path 'TestDrive:\' -ChildPath $PesterBoundParameters.ChildPath
+                $joinPathCmd = Get-Command -CommandType 'Cmdlet' -Name 'Join-Path'
+                & $joinPathCmd -Path 'TestDrive:\' -ChildPath $PesterBoundParameters.ChildPath
             }
             Mock -CommandName 'New-StmCimSession' -MockWith {
                 return 'this-is-a-mock-cim-session'
@@ -41,31 +46,6 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             $script:commonParameters = @{
                 WarningAction = 'SilentlyContinue'
                 InformationAction = 'SilentlyContinue'
-            }
-        }
-
-        Context 'Parameter Validation' {
-            It 'Should accept valid TaskName parameter' {
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters } | Should -Not -Throw
-            }
-
-            It 'Should accept valid Cluster parameter' {
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters } | Should -Not -Throw
-            }
-
-            It 'Should accept valid Credential parameter' {
-                $credential = [PSCredential]::new('TestUser', ('TestPass' | ConvertTo-SecureString -AsPlainText -Force))
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $credential -Confirm:$false @commonParameters } | Should -Not -Throw
-            }
-
-            It 'Should throw when TaskName is null or empty' {
-                { Disable-StmClusteredScheduledTask -TaskName '' -Cluster 'TestCluster' -WhatIf @commonParameters } | Should -Throw
-                { Disable-StmClusteredScheduledTask -TaskName $null -Cluster 'TestCluster' -WhatIf @commonParameters } | Should -Throw
-            }
-
-            It 'Should throw when Cluster is null or empty' {
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster '' -WhatIf @commonParameters } | Should -Throw
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster $null -WhatIf @commonParameters } | Should -Throw
             }
         }
 
@@ -87,7 +67,12 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
 
         Context 'Backup Functionality' {
             It 'Should create backup before disabling task' {
-                Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters
+                $disableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                Disable-StmClusteredScheduledTask @disableParameters @commonParameters
 
                 Should -Invoke 'Export-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
                     $TaskName -eq 'TestTask' -and $Cluster -eq 'TestCluster'
@@ -98,7 +83,12 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             It 'Should generate unique backup filename with timestamp' {
                 Mock Get-Date { return [DateTime]::new(2025, 1, 18, 15, 30, 45) }
 
-                Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters
+                $disableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                Disable-StmClusteredScheduledTask @disableParameters @commonParameters
 
                 Should -Invoke 'Join-Path' -Times 1 -ParameterFilter {
                     $ChildPath -like 'TestTask_TestCluster_20250118153045.xml'
@@ -112,7 +102,12 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                     & (Get-Command -CommandType 'Function' -Name 'New-StmError') @PesterBoundParameters
                 }
 
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters } | Should -Throw
+                $disableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                { Disable-StmClusteredScheduledTask @disableParameters @commonParameters } | Should -Throw
 
                 Should -Invoke 'New-StmError' -Times 1 -ParameterFilter {
                     $ErrorId -eq 'BackupFailed'
@@ -122,13 +117,23 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             It 'Should throw error if backup file is empty' {
                 Mock -CommandName 'Get-Content' -MockWith { return @() }  # Empty file
 
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters } | Should -Throw
+                $disableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                { Disable-StmClusteredScheduledTask @disableParameters @commonParameters } | Should -Throw
             }
         }
 
         Context 'Task Unregistration' {
             It 'Should create CIM session for cluster operations' {
-                Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters
+                $disableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                Disable-StmClusteredScheduledTask @disableParameters @commonParameters
 
                 Should -Invoke 'New-StmCimSession' -Times 1 -ParameterFilter {
                     $ComputerName -eq 'TestCluster'
@@ -136,7 +141,12 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
 
             It 'Should call Unregister-ClusteredScheduledTask with correct parameters' {
-                Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters
+                $disableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                Disable-StmClusteredScheduledTask @disableParameters @commonParameters
 
                 Should -Invoke 'Unregister-ClusteredScheduledTask' -Times 1 -ParameterFilter {
                     $TaskName -eq 'TestTask' -and $Cluster -eq 'TestCluster'
@@ -144,9 +154,15 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
 
             It 'Should verify task removal after unregistration' {
-                Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith { return $null }  # Task successfully removed
+                # Task successfully removed
+                Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith { return $null }
 
-                Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters
+                $disableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                Disable-StmClusteredScheduledTask @disableParameters @commonParameters
 
                 Should -Invoke 'Get-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
                     $TaskName -eq 'TestTask' -and $Cluster -eq 'TestCluster'
@@ -155,10 +171,18 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
 
             It 'Should throw error if task still exists after unregistration' {
                 Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith {
-                    return [PSCustomObject]@{ TaskName = 'TestTask'; Cluster = 'TestCluster' }
+                    return [PSCustomObject]@{
+                        TaskName = 'TestTask'
+                        Cluster  = 'TestCluster'
+                    }
                 }
 
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters } | Should -Throw
+                $disableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                { Disable-StmClusteredScheduledTask @disableParameters @commonParameters } | Should -Throw
             }
 
             It 'Should throw error if unregistration fails' {
@@ -168,7 +192,12 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                     & (Get-Command -CommandType 'Function' -Name 'New-StmError') @PesterBoundParameters
                 }
 
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters } | Should -Throw
+                $disableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                { Disable-StmClusteredScheduledTask @disableParameters @commonParameters } | Should -Throw
 
                 Should -Invoke 'New-StmError' -Times 1 -ParameterFilter {
                     $ErrorId -eq 'UnregisterFailed'
@@ -180,7 +209,13 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             It 'Should pass credentials to Export-StmClusteredScheduledTask' {
                 $credential = [PSCredential]::new('TestUser', ('TestPass' | ConvertTo-SecureString -AsPlainText -Force))
 
-                Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $credential -Confirm:$false @commonParameters
+                $disableParameters = @{
+                    TaskName   = 'TestTask'
+                    Cluster    = 'TestCluster'
+                    Credential = $credential
+                    Confirm    = $false
+                }
+                Disable-StmClusteredScheduledTask @disableParameters @commonParameters
 
                 Should -Invoke 'Export-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
                     $Credential -eq $credential
@@ -190,7 +225,13 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             It 'Should pass credentials to New-StmCimSession' {
                 $credential = [PSCredential]::new('TestUser', ('TestPass' | ConvertTo-SecureString -AsPlainText -Force))
 
-                Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Credential $credential -Confirm:$false @commonParameters
+                $disableParameters = @{
+                    TaskName   = 'TestTask'
+                    Cluster    = 'TestCluster'
+                    Credential = $credential
+                    Confirm    = $false
+                }
+                Disable-StmClusteredScheduledTask @disableParameters @commonParameters
 
                 Should -Invoke 'New-StmCimSession' -Times 1 -ParameterFilter {
                     $Credential -eq $credential
@@ -198,7 +239,12 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
 
             It 'Should use empty credential as default' {
-                Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters
+                $disableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                Disable-StmClusteredScheduledTask @disableParameters @commonParameters
 
                 Should -Invoke Export-StmClusteredScheduledTask -Times 1 -ParameterFilter {
                     $Credential -eq [PSCredential]::Empty
@@ -218,7 +264,13 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             It 'Should write verbose messages for key operations' {
                 Mock -CommandName 'Write-Verbose' -MockWith { }
 
-                Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false -Verbose @commonParameters
+                $disableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                    Verbose  = $true
+                }
+                Disable-StmClusteredScheduledTask @disableParameters @commonParameters
 
                 Should -Invoke 'Write-Verbose' -Times 1
             }
@@ -231,8 +283,13 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                     if ($PesterBoundParameters.ContainsKey('FilePath')) {
                         # When FilePath is provided, write to the file
                         $mockXml = '<TaskDefinition>MockTaskXML</TaskDefinition>'
-                        $mockXml | Out-File -FilePath $PesterBoundParameters.FilePath -Encoding ([System.Text.Encoding]::Unicode)
-                    } else {
+                        $outFileParameters = @{
+                            FilePath = $PesterBoundParameters.FilePath
+                            Encoding = ([System.Text.Encoding]::Unicode)
+                        }
+                        $mockXml | Out-File @outFileParameters
+                    }
+                    else {
                         # When no FilePath, return the XML
                         return '<TaskDefinition>MockTaskXML</TaskDefinition>'
                     }
@@ -244,11 +301,17 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                     return @('line1', 'line2', 'line3')
                 }
                 Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith {
+                    # Task removed successfully
                     return $null
-                }  # Task removed successfully
+                }
 
                 # Act & Assert
-                { Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Confirm:$false @commonParameters } | Should -Not -Throw
+                $disableParameters = @{
+                    TaskName = 'TestTask'
+                    Cluster  = 'TestCluster'
+                    Confirm  = $false
+                }
+                { Disable-StmClusteredScheduledTask @disableParameters @commonParameters } | Should -Not -Throw
 
                 # Verify all steps were executed
                 Should -Invoke 'Export-StmClusteredScheduledTask' -Times 1

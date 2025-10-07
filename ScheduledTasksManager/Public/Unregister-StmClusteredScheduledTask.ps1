@@ -33,8 +33,8 @@
         from cluster "MyCluster.contoso.com" without actually removing it.
 
     .EXAMPLE
-        $creds = Get-Credential
-        Unregister-StmClusteredScheduledTask -TaskName "TestTask" -Cluster "MyCluster" -Credential $creds -Confirm
+        $credential = Get-Credential
+        Unregister-StmClusteredScheduledTask -TaskName "TestTask" -Cluster "MyCluster" -Credential $credential -Confirm
 
         Unregisters the clustered scheduled task named "TestTask" from cluster "MyCluster" using specified credentials
         and prompts for confirmation before removing the task.

@@ -37,8 +37,8 @@
         the current user's credentials. A backup will be created before unregistering the task.
 
     .EXAMPLE
-        $creds = Get-Credential
-        Disable-StmClusteredScheduledTask -TaskName "MaintenanceTask" -Cluster "ProdCluster" -Credential $creds
+        $credential = Get-Credential
+        Disable-StmClusteredScheduledTask -TaskName "MaintenanceTask" -Cluster "ProdCluster" -Credential $credential
 
         Disables the clustered scheduled task named "MaintenanceTask" on cluster "ProdCluster" using
         the specified credentials. A backup will be created before unregistering the task.

@@ -14,14 +14,23 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
         BeforeEach {
             Mock -CommandName 'Invoke-Command' -MockWith {
                 return @(
-                    [PSCustomObject]@{ Name = 'Node1'; State = 'Up' },
-                    [PSCustomObject]@{ Name = 'Node2'; State = 'Down' }
+                    [PSCustomObject]@{
+                        Name  = 'Node1'
+                        State = 'Up'
+                    },
+                    [PSCustomObject]@{
+                        Name  = 'Node2'
+                        State = 'Down'
+                    }
                 )
             }
 
             Mock -CommandName 'Invoke-Command' -MockWith {
                 return @(
-                    [PSCustomObject]@{ Name = 'Node1'; State = 'Up' }
+                    [PSCustomObject]@{
+                        Name  = 'Node1'
+                        State = 'Up'
+                    }
                 )
             } -ParameterFilter {
                 $ArgumentList.Name -eq 'Node1'
@@ -60,7 +69,12 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
         }
 
         It 'Should use provided credentials when specified' {
-            $credential = New-Object System.Management.Automation.PSCredential('user', (ConvertTo-SecureString 'password' -AsPlainText -Force))
+            $securePassword = ConvertTo-SecureString 'password' -AsPlainText -Force
+            $credentialParameters = @{
+                TypeName     = 'System.Management.Automation.PSCredential'
+                ArgumentList = ('user', $securePassword)
+            }
+            $credential = New-Object @credentialParameters
             $result = Get-StmClusterNode -Cluster 'TestCluster' -Credential $credential
             $result | Should -Be $credential
         }

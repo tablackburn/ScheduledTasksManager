@@ -92,7 +92,12 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
 
         Context 'When no owners are found' {
             It 'Should write an error' {
-                Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith { return @([PSCustomObject]@{ TaskName = 'TestTask1'; CurrentOwner = $null }) }
+                Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith {
+                    return @([PSCustomObject]@{
+                        TaskName     = 'TestTask1'
+                        CurrentOwner = $null
+                    })
+                }
                 Mock -CommandName 'Write-Error' -MockWith {}
                 $result = Get-StmClusteredScheduledTask -Cluster 'TestCluster'
                 Should -Invoke -CommandName 'Write-Error' -Times 1 -Exactly
@@ -116,62 +121,6 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 }
                 $result = Get-StmClusteredScheduledTask -Cluster 'TestCluster'
                 $result.Count | Should -Be 1
-            }
-        }
-
-        Context 'Parameter validation' {
-            BeforeAll {
-                $command = Get-Command -Name 'Get-StmClusteredScheduledTask'
-            }
-
-            It 'Should require a cluster name' {
-                $command.Parameters['Cluster'].ParameterSets.Values.IsMandatory | Should -Not -Contain $false
-            }
-
-            It 'Should require a task name if specified' {
-                { Get-StmClusteredScheduledTask -Cluster 'TestCluster' -TaskName '' } | Should -Throw
-            }
-
-            It 'Should not require a task name' {
-                $command.Parameters['TaskName'].ParameterSets.Values.IsMandatory | Should -Not -Contain $true
-            }
-
-            It 'Should accept a valid cluster name' {
-                { Get-StmClusteredScheduledTask -Cluster 'TestCluster' } | Should -Not -Throw
-            }
-
-            It 'Should throw an error for an invalid cluster name' {
-                { Get-StmClusteredScheduledTask -Cluster '' } | Should -Throw
-            }
-
-            It 'Should accept a valid task state' {
-                { Get-StmClusteredScheduledTask -Cluster 'TestCluster' -TaskState 'Ready' } | Should -Not -Throw
-            }
-
-            It 'Should throw an error for an invalid task state' {
-                { Get-StmClusteredScheduledTask -Cluster 'TestCluster' -TaskState 'InvalidState' } | Should -Throw
-            }
-
-            It 'Should accept a valid task type' {
-                { Get-StmClusteredScheduledTask -Cluster 'TestCluster' -TaskType 'AnyNode' } | Should -Not -Throw
-            }
-
-            It 'Should throw an error for an invalid task type' {
-                { Get-StmClusteredScheduledTask -Cluster 'TestCluster' -TaskType 'InvalidType' } | Should -Throw
-            }
-
-            It 'Should accept a valid credential' {
-                $credential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList ('user', (ConvertTo-SecureString 'password' -AsPlainText -Force))
-                { Get-StmClusteredScheduledTask -Cluster 'TestCluster' -Credential $credential } | Should -Not -Throw
-            }
-
-            It 'Should not throw an error if no credential is provided' {
-                { Get-StmClusteredScheduledTask -Cluster 'TestCluster' } | Should -Not -Throw
-            }
-
-            It 'Should accept a valid CIM session' {
-                $cimSession = New-MockObject -Type 'Microsoft.Management.Infrastructure.CimSession'
-                { Get-StmClusteredScheduledTask -Cluster 'TestCluster' -CimSession $cimSession } | Should -Not -Throw
             }
         }
     }

@@ -45,11 +45,11 @@
         complete, with a timeout of 10 minutes (600 seconds).
 
     .EXAMPLE
-        $creds = Get-Credential
+        $credential = Get-Credential
         Wait-StmClusteredScheduledTask `
             -TaskName "ReportTask" `
             -Cluster "MyCluster" `
-            -Credential $creds `
+            -Credential $credential `
             -PollingIntervalSeconds 10
 
         Waits for the clustered scheduled task named "ReportTask" on cluster "MyCluster" using specified

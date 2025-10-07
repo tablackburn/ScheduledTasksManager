@@ -39,8 +39,8 @@
         the current user's credentials. The task will be re-registered with enabled status.
 
     .EXAMPLE
-        $creds = Get-Credential
-        Enable-StmClusteredScheduledTask -TaskName "MaintenanceTask" -Cluster "ProdCluster" -Credential $creds
+        $credential = Get-Credential
+        Enable-StmClusteredScheduledTask -TaskName "MaintenanceTask" -Cluster "ProdCluster" -Credential $credential
 
         Enables the clustered scheduled task named "MaintenanceTask" on cluster "ProdCluster" using
         the specified credentials. The task will be re-registered with enabled status.

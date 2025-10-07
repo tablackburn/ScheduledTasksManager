@@ -15,8 +15,10 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             $mockedScheduledTaskObjectParameters = @{
                 TypeName = 'Microsoft.Management.Infrastructure.CimInstance'
                 ArgumentList = @(
-                    'MSFT_ScheduledTask'                   # Cim class name (Get using: (Get-ScheduledTask).get_CimClass())
-                    'Root/Microsoft/Windows/TaskScheduler' # Cim namespace (Get using: (Get-ScheduledTask).CimSystemProperties)
+                    # Cim class name (Get using: (Get-ScheduledTask).get_CimClass())
+                    'MSFT_ScheduledTask'
+                    # Cim namespace (Get using: (Get-ScheduledTask).CimSystemProperties)
+                    'Root/Microsoft/Windows/TaskScheduler'
                 )
             }
             Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith {
@@ -38,19 +40,34 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
 
         It 'should complete successfully when FilePath is provided' {
             $testFilePath = 'TestDrive:\Task.xml'
-            { Export-StmClusteredScheduledTask -Cluster 'TestCluster' -TaskName 'TestTask' -FilePath $testFilePath } | Should -Not -Throw
+            $exportParameters = @{
+                Cluster  = 'TestCluster'
+                TaskName = 'TestTask'
+                FilePath = $testFilePath
+            }
+            { Export-StmClusteredScheduledTask @exportParameters } | Should -Not -Throw
         }
 
         It 'should not return output when FilePath is provided' {
             $testFilePath = 'TestDrive:\Task.xml'
-            $result = Export-StmClusteredScheduledTask -Cluster 'TestCluster' -TaskName 'TestTask' -FilePath $testFilePath
+            $exportParameters = @{
+                Cluster  = 'TestCluster'
+                TaskName = 'TestTask'
+                FilePath = $testFilePath
+            }
+            $result = Export-StmClusteredScheduledTask @exportParameters
 
             $result | Should -BeNullOrEmpty
         }
 
         It 'should create the directory if it does not exist' {
             $testFilePath = 'TestDrive:\Test\Task.xml'
-            $result = Export-StmClusteredScheduledTask -Cluster 'TestCluster' -TaskName 'TestTask' -FilePath $testFilePath
+            $exportParameters = @{
+                Cluster  = 'TestCluster'
+                TaskName = 'TestTask'
+                FilePath = $testFilePath
+            }
+            $result = Export-StmClusteredScheduledTask @exportParameters
             $result | Should -BeNullOrEmpty
             $testFilePath | Should -Exist
         }
