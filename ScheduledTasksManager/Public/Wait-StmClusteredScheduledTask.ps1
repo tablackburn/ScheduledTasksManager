@@ -151,9 +151,9 @@
             if ($elapsed.TotalSeconds -ge $TimeoutSeconds) {
                 Write-Progress -Activity $activity -Completed
                 $errorRecordParameters = @{
-                    Exception     = $null
+                    Exception     = [System.TimeoutException]::new("Timeout reached while waiting for task '$TaskName' to complete.")
                     ErrorId       = 'TimeoutReached'
-                    ErrorCategory = [System.Management.Automation.ErrorCategory]::WriteError
+                    ErrorCategory = [System.Management.Automation.ErrorCategory]::OperationTimeout
                     TargetObject  = $TaskName
                     Message       = "Timeout reached while waiting for task '$TaskName' to complete."
                 }

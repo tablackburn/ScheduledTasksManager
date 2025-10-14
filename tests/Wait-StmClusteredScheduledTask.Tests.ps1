@@ -66,5 +66,39 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 $TaskName -eq $parameters.TaskName -and $Cluster -eq $parameters.Cluster
             }
         }
+
+        It 'Should throw a proper timeout exception with correct error details' {
+            Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith {
+                return [PSCustomObject]@{
+                    ScheduledTaskObject = [PSCustomObject]@{
+                        State = 'Running'
+                    }
+                }
+            }
+
+            $parameters = @{
+                TaskName               = 'TestTask'
+                Cluster                = 'TestCluster'
+                PollingIntervalSeconds = 1
+                TimeoutSeconds         = 1
+            }
+
+            $errorThrown = $null
+            try {
+                Wait-StmClusteredScheduledTask @parameters
+            }
+            catch {
+                $errorThrown = $_
+            }
+
+            # Verify error was thrown
+            $errorThrown | Should -Not -BeNullOrEmpty
+
+            # Verify error message contains expected text
+            $errorThrown.Exception.Message | Should -BeLike "*Timeout reached while waiting for task 'TestTask' to complete*"
+
+            # Verify error ID is correct
+            $errorThrown.FullyQualifiedErrorId | Should -BeLike "TimeoutReached*"
+        }
     }
 }
