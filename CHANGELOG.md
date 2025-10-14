@@ -8,6 +8,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.6.0] - 2025-10-14
+
+### Added
+
+- `Get-StmClusteredScheduledTaskInfo` now includes `RunningDuration` property showing how long a clustered task has been running
+- `RunningDuration` returns a TimeSpan object for easy formatting and is null when task is not running
+
 ## [0.5.1] - 2025-10-14
 
 ### Fixed

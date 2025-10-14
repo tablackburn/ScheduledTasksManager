@@ -62,8 +62,16 @@
         $session = New-CimSession -ComputerName "MyCluster"
         Get-StmClusteredScheduledTaskInfo -TaskName "CleanupTask" -Cluster "MyCluster" -CimSession $session
 
-    Retrieves detailed information about the clustered scheduled task named "CleanupTask" using an
-    existing CIM session.
+        Retrieves detailed information about the clustered scheduled task named "CleanupTask" using an
+        existing CIM session.
+
+    .EXAMPLE
+        Get-StmClusteredScheduledTaskInfo -TaskName "LongRunningTask" -Cluster "MyCluster" |
+            Where-Object { $_.TaskState -eq 'Running' } |
+            Select-Object TaskName, TaskState, LastRunTime, RunningDuration
+
+        Retrieves information about a running clustered scheduled task and displays how long it has been
+        running. The RunningDuration property shows elapsed time as a TimeSpan object.
 
     .INPUTS
         None. You cannot pipe objects to Get-StmClusteredScheduledTaskInfo.
@@ -80,6 +88,7 @@
         - LastTaskResult: The result of the last task execution
         - NextRunTime: The next scheduled run time
         - NumberOfMissedRuns: The number of times the task failed to run
+        - RunningDuration: TimeSpan showing how long the task has been running (null if not running)
         - ClusteredScheduledTaskObject: The underlying clustered scheduled task object
         - ScheduledTaskInfoObject: The underlying scheduled task info object
 
@@ -201,6 +210,23 @@
             ($mergedHashtable.Keys -contains 'ClusteredScheduledTaskObject')) {
             $mergedHashtable['TaskName'] = $mergedHashtable['ClusteredScheduledTaskObject'].TaskName
         }
+
+        # Calculate running duration if task is currently running
+        # The State property comes from ScheduledTaskObject (in ClusteredScheduledTask output)
+        # Check if task is running by looking at the State property from the original task
+        if ($scheduledTask.State -and
+            ([string]$scheduledTask.State) -eq 'Running' -and
+            ($mergedHashtable.Keys -contains 'LastRunTime') -and
+            ($null -ne $mergedHashtable['LastRunTime'])) {
+
+            $runningDuration = (Get-Date) - $mergedHashtable['LastRunTime']
+            $mergedHashtable['RunningDuration'] = $runningDuration
+            Write-Verbose "Task '$($mergedHashtable['TaskName'])' has been running for $($runningDuration.ToString())"
+        }
+        else {
+            $mergedHashtable['RunningDuration'] = $null
+        }
+
         [PSCustomObject]$mergedHashtable
     }
 
