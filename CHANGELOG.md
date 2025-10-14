@@ -8,6 +8,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.5.1] - 2025-10-14
+
+### Fixed
+
+- Fixed `Wait-StmClusteredScheduledTask` timeout exception error where null exception parameter caused "Cannot bind argument to parameter 'Exception' because it is null" error
+- Changed timeout error category from `WriteError` to `OperationTimeout` for better semantic accuracy
+- Added comprehensive test coverage for timeout exception handling
+
 ## [0.5.0] - 2025-10-02
 
 ### Added
