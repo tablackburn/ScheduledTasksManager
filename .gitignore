@@ -246,4 +246,7 @@ coverage.xml
 # Exclude .NET assemblies from source
 *.dll
 
+# Backup files
+*.bak
+
 # End of https://www.toptal.com/developers/gitignore/api/powershell

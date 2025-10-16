@@ -19,6 +19,11 @@ Properties {
     # instead of 88.6%. Setting threshold to 0 until bug is fixed.
     # See: https://github.com/psake/PowerShellBuild/issues (bug reported)
     $PSBPreference.Test.CodeCoverage.Threshold = 0.0
+
+    # PSScriptAnalyzer configuration (PowerShellBuild 0.7.3+)
+    # Override default to use project-specific PSScriptAnalyzer settings
+    # Default is PowerShellBuild's own settings file, but we want to use ours
+    $PSBPreference.Test.ScriptAnalysis.SettingsPath = 'PSScriptAnalyzerSettings.psd1'
 }
 
 Task -Name 'Default' -Depends 'Test'

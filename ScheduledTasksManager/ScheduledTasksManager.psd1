@@ -12,7 +12,7 @@
     RootModule           = 'ScheduledTasksManager.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.6.0'
+    ModuleVersion        = '0.7.0'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')
@@ -87,6 +87,7 @@ extending the ScheduledTasks module from Microsoft
         'Get-StmClusteredScheduledTaskRun',
         'Get-StmClusterNode',
         'Get-StmScheduledTask',
+        'Get-StmScheduledTaskInfo',
         'Get-StmScheduledTaskRun',
         'Register-StmClusteredScheduledTask',
         'Start-StmClusteredScheduledTask',

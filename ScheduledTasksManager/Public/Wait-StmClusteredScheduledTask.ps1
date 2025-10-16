@@ -150,12 +150,13 @@
 
             if ($elapsed.TotalSeconds -ge $TimeoutSeconds) {
                 Write-Progress -Activity $activity -Completed
+                $timeoutMessage = "Timeout reached while waiting for task '$TaskName' to complete."
                 $errorRecordParameters = @{
-                    Exception     = [System.TimeoutException]::new("Timeout reached while waiting for task '$TaskName' to complete.")
+                    Exception     = [System.TimeoutException]::new($timeoutMessage)
                     ErrorId       = 'TimeoutReached'
                     ErrorCategory = [System.Management.Automation.ErrorCategory]::OperationTimeout
                     TargetObject  = $TaskName
-                    Message       = "Timeout reached while waiting for task '$TaskName' to complete."
+                    Message       = $timeoutMessage
                 }
                 $errorRecord = New-StmError @errorRecordParameters
                 $PSCmdlet.ThrowTerminatingError($errorRecord)
