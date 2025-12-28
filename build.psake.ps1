@@ -49,7 +49,9 @@ Task -Name 'Init_Integration' -Description 'Load integration test environment va
     }
 }
 
-Task -Name 'Test' -FromModule 'PowerShellBuild' -MinimumVersion '0.7.3' -Depends 'Init_Integration'
+# Set Test task dependencies before loading from module (adds Init_Integration while keeping Pester, Analyze)
+$PSBTestDependency = @('Init_Integration', 'Pester', 'Analyze')
+Task -Name 'Test' -FromModule 'PowerShellBuild' -MinimumVersion '0.7.3'
 
 # Integration tests require AutomatedLab and a Hyper-V host
 # Run Initialize-IntegrationLab.ps1 first to deploy the test lab
