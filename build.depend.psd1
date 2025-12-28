@@ -1,23 +1,25 @@
+# Build dependencies for ScheduledTasksManager
+# These are the modules needed for building and testing the module
 @{
-    PSDepend = @{
-        Version = '0.3.8'
+    PSDependOptions    = @{
+        Target     = 'CurrentUser'
+        Parameters = @{
+            Repository = 'PSGallery'
+        }
     }
-    PSDependOptions = @{
-        Target = 'CurrentUser'
-    }
-    'Pester' = @{
-        Version = '5.7.1'
+    'Pester'           = @{
+        Version    = '5.7.1'
         Parameters = @{
             SkipPublisherCheck = $true
         }
     }
-    'psake' = @{
+    'psake'            = @{
         Version = '4.9.1'
     }
-    'BuildHelpers' = @{
+    'BuildHelpers'     = @{
         Version = '2.0.16'
     }
-    'PowerShellBuild' = @{
+    'PowerShellBuild'  = @{
         Version = '0.7.3'
     }
     'PSScriptAnalyzer' = @{

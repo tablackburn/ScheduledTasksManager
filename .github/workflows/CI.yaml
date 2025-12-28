@@ -8,6 +8,8 @@ on:
       - '.github/workflows/CI.yaml' # We want to run this workflow on any changes to this file
       - 'ScheduledTasksManager/**'
       - 'build.ps1'
+      - 'build.psake.ps1'
+      - 'build.depend.psd1'
       - 'tests/**'
   pull_request:
     branches:

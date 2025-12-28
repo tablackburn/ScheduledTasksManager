@@ -253,3 +253,4 @@ coverage.xml
 
 # Integration test configuration (contains environment-specific values)
 integration-test-config.json
+tests/local.settings.ps1

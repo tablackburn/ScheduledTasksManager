@@ -1,0 +1,23 @@
+# ScheduledTasksManager Integration Test Configuration
+# Copy this file to local.settings.ps1 and customize as needed
+# local.settings.ps1 is gitignored and will not be committed
+
+# Integration tests use the JSON config file by default
+# This file is for additional environment-specific overrides
+
+# OPTIONAL: Override integration test config path
+# $env:STM_INTEGRATION_CONFIG = 'C:\path\to\custom\integration-test-config.json'
+
+# OPTIONAL: Remote Hyper-V host for lab deployment
+# $env:STM_REMOTE_HYPER_V_HOST = 'yourserver.domain.com'
+# $env:STM_REMOTE_CREDENTIAL = (Get-Credential -Message 'Enter credentials for remote Hyper-V host')
+
+# OPTIONAL: Skip lab start/stop during test runs (for faster iteration)
+# $env:STM_SKIP_LAB_LIFECYCLE = 'true'
+
+# USAGE:
+# Before running integration tests, run:
+#   . ./tests/local.settings.ps1
+# Or the build system will automatically source this file
+
+Write-Host "Integration test environment configured" -ForegroundColor Green
