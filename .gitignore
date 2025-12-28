@@ -250,3 +250,6 @@ coverage.xml
 *.bak
 
 # End of https://www.toptal.com/developers/gitignore/api/powershell
+
+# Integration test configuration (contains environment-specific values)
+integration-test-config.json

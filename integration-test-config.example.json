@@ -1,0 +1,44 @@
+{
+  "_comment": "Copy this file to integration-test-config.json and update values for your environment",
+
+  "lab": {
+    "name": "StmTestLab",
+    "domainName": "stmtest.local",
+    "adminUser": "Install",
+    "adminPassword": "P@ssw0rd1"
+  },
+
+  "network": {
+    "addressSpace": "192.168.100.0/24",
+    "clusterIp": "192.168.100.50",
+    "networkPrefix": "192.168.100"
+  },
+
+  "cluster": {
+    "name": "STMCLUSTER",
+    "virtualSwitch": "intnet_StmTestLab"
+  },
+
+  "virtualMachines": {
+    "domainController": "STMDC01",
+    "clusterNodes": ["STMNODE01", "STMNODE02"]
+  },
+
+  "paths": {
+    "labModulePath": "C:\\ScheduledTasksManager",
+    "labDataPath": "C:\\ProgramData\\AutomatedLab\\Labs",
+    "exportPath": "C:\\AutomatedLab-Export",
+    "vmPath": "C:\\AutomatedLab-VMs"
+  },
+
+  "remote": {
+    "hostname": "yourserver",
+    "labSetupPath": "C:\\LabSetup",
+    "localModulePath": "C:\\Path\\To\\Your\\ScheduledTasksManager"
+  },
+
+  "test": {
+    "taskName": "StmIntegrationTest",
+    "snapshotName": "IntegrationTestBaseline"
+  }
+}
