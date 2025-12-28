@@ -23,4 +23,10 @@
     'PSScriptAnalyzer' = @{
         Version = '1.24.0'
     }
+
+    # Optional: Integration tests only
+    # AutomatedLab is required for running integration tests against a real failover cluster
+    # It is NOT installed automatically - install manually if needed:
+    #   Install-Module -Name AutomatedLab -Scope CurrentUser
+    # Then run: tests/Integration/Initialize-IntegrationLab.ps1
 }

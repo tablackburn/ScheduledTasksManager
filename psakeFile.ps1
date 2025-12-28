@@ -29,3 +29,49 @@ Properties {
 Task -Name 'Default' -Depends 'Test'
 
 Task -Name 'Test' -FromModule 'PowerShellBuild' -MinimumVersion '0.7.3'
+
+# Integration tests require AutomatedLab and a Hyper-V host
+# Run Initialize-IntegrationLab.ps1 first to deploy the test lab
+Task -Name 'Integration' -Description 'Run integration tests against a real failover cluster' {
+    $integrationTestPath = Join-Path $PSScriptRoot 'tests/Integration'
+
+    # Check if lab is available
+    $alModule = Get-Module -Name AutomatedLab -ListAvailable
+    if (-not $alModule) {
+        Write-Warning "AutomatedLab module not installed. Install it and run Initialize-IntegrationLab.ps1 first."
+        Write-Warning "Install-Module -Name AutomatedLab -Scope CurrentUser"
+        return
+    }
+
+    Import-Module AutomatedLab -Force
+    $labs = Get-Lab -List -ErrorAction SilentlyContinue
+    if ('StmTestLab' -notin $labs) {
+        Write-Warning "Integration lab 'StmTestLab' not deployed."
+        Write-Warning "Run: $integrationTestPath\Initialize-IntegrationLab.ps1"
+        return
+    }
+
+    # Start the lab
+    Write-Host "Starting integration lab..." -ForegroundColor Cyan
+    $labInfo = & "$integrationTestPath\Start-IntegrationLab.ps1"
+
+    # Run integration tests
+    Write-Host "Running integration tests..." -ForegroundColor Cyan
+    $pesterConfig = New-PesterConfiguration
+    $pesterConfig.Run.Path = "$integrationTestPath\*.Integration.Tests.ps1"
+    $pesterConfig.Output.Verbosity = 'Detailed'
+    $pesterConfig.TestResult.Enabled = $true
+    $pesterConfig.TestResult.OutputPath = 'tests/Integration/out/integrationTestResults.xml'
+    $pesterConfig.TestResult.OutputFormat = 'JUnitXml'
+
+    $result = Invoke-Pester -Configuration $pesterConfig
+
+    # Stop the lab
+    Write-Host "Stopping integration lab..." -ForegroundColor Cyan
+    & "$integrationTestPath\Stop-IntegrationLab.ps1"
+
+    # Fail build if tests failed
+    if ($result.FailedCount -gt 0) {
+        throw "$($result.FailedCount) integration test(s) failed."
+    }
+}

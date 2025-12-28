@@ -36,7 +36,7 @@ extending the ScheduledTasks module from Microsoft
 '@
 
     # Minimum version of the PowerShell engine required by this module
-    PowerShellVersion    = '6.0'
+    PowerShellVersion    = '5.1'
 
     # Name of the PowerShell host required by this module
     # PowerShellHostName = ''

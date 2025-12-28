@@ -211,6 +211,12 @@
             $mergedHashtable['TaskName'] = $mergedHashtable['ClusteredScheduledTaskObject'].TaskName
         }
 
+        # Ensure top-level State property from the original scheduled task
+        # Convert enum to string to ensure proper serialization through remoting
+        if ($scheduledTask.State) {
+            $mergedHashtable['State'] = [string]$scheduledTask.State
+        }
+
         # Calculate running duration if task is currently running
         # The State property comes from ScheduledTaskObject (in ClusteredScheduledTask output)
         # Check if task is running by looking at the State property from the original task

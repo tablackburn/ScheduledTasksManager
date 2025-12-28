@@ -117,7 +117,7 @@
             try {
                 $outFileParameters = @{
                     FilePath = $FilePath
-                    Encoding = [System.Text.Encoding]::Unicode
+                    Encoding = 'unicode'
                 }
                 $scheduledTask.ScheduledTaskObject | Export-ScheduledTask | Out-File @outFileParameters
                 Write-Verbose "Successfully exported task to: $FilePath"
