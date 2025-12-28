@@ -49,8 +49,66 @@ Task -Name 'Init_Integration' -Description 'Load integration test environment va
     }
 }
 
-# Set Test task dependencies before loading from module (adds Init_Integration while keeping Pester, Analyze)
-$PSBTestDependency = @('Init_Integration', 'Pester', 'Analyze')
+# Custom Pester task that excludes Integration tests
+# This replaces the PowerShellBuild Pester task via $PSBPesterDependency
+$unitTestPreReqs = {
+    $result = $true
+    if (-not $PSBPreference.Test.Enabled) {
+        Write-Warning 'Pester testing is not enabled.'
+        $result = $false
+    }
+    if (-not (Get-Module -Name Pester -ListAvailable)) {
+        Write-Warning 'Pester module is not installed'
+        $result = $false
+    }
+    if (-not (Test-Path -Path $PSBPreference.Test.RootDir)) {
+        Write-Warning "Test directory [$($PSBPreference.Test.RootDir)] not found"
+        $result = $false
+    }
+    return $result
+}
+
+Task -Name 'UnitTest' -Depends 'Build' -PreCondition $unitTestPreReqs -Description 'Execute Pester tests (excluding Integration)' {
+    # Remove any previously imported project modules and import from the output dir
+    $moduleManifest = Join-Path $PSBPreference.Build.ModuleOutDir "$($PSBPreference.General.ModuleName).psd1"
+    Get-Module $PSBPreference.General.ModuleName | Remove-Module -Force -ErrorAction SilentlyContinue
+    Import-Module $moduleManifest -Force
+
+    Push-Location -LiteralPath $PSBPreference.Test.RootDir
+
+    try {
+        $configuration = [PesterConfiguration]::Default
+        $configuration.Output.Verbosity = 'Detailed'
+        $configuration.Run.PassThru = $true
+        $configuration.Run.SkipRemainingOnFailure = 'None'
+        $configuration.Run.ExcludePath = @('**/Integration/**')  # Exclude integration tests
+        $configuration.TestResult.Enabled = -not [string]::IsNullOrEmpty($PSBPreference.Test.OutputFile)
+        $configuration.TestResult.OutputPath = $PSBPreference.Test.OutputFile
+        $configuration.TestResult.OutputFormat = $PSBPreference.Test.OutputFormat
+
+        if ($PSBPreference.Test.CodeCoverage.Enabled) {
+            $configuration.CodeCoverage.Enabled = $true
+            if ($PSBPreference.Test.CodeCoverage.Files.Count -gt 0) {
+                $configuration.CodeCoverage.Path = $PSBPreference.Test.CodeCoverage.Files
+            }
+            $configuration.CodeCoverage.OutputPath = $PSBPreference.Test.CodeCoverage.OutputFile
+            $configuration.CodeCoverage.OutputFormat = $PSBPreference.Test.CodeCoverage.OutputFormat
+        }
+
+        $testResult = Invoke-Pester -Configuration $configuration
+
+        if ($testResult.FailedCount -gt 0) {
+            throw 'One or more Pester tests failed'
+        }
+    }
+    finally {
+        Pop-Location
+        Remove-Module $PSBPreference.General.ModuleName -ErrorAction SilentlyContinue
+    }
+}
+
+# Use UnitTest instead of PowerShellBuild's Pester task
+$PSBTestDependency = @('Init_Integration', 'UnitTest', 'Analyze')
 Task -Name 'Test' -FromModule 'PowerShellBuild' -MinimumVersion '0.7.3'
 
 # Integration tests require AutomatedLab and a Hyper-V host
