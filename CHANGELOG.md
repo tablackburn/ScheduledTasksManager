@@ -8,6 +8,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.9.0] - 2025-12-29
+
+### Added
+
+- 8 new standalone scheduled task cmdlets with built-in credential support for remote management:
+  - `Enable-StmScheduledTask` - Enable scheduled tasks on local or remote computers
+  - `Export-StmScheduledTask` - Export scheduled task configuration to XML
+  - `Import-StmScheduledTask` - Import scheduled tasks from XML files
+  - `Register-StmScheduledTask` - Register new scheduled tasks
+  - `Start-StmScheduledTask` - Start scheduled tasks
+  - `Stop-StmScheduledTask` - Stop running scheduled tasks
+  - `Unregister-StmScheduledTask` - Remove scheduled tasks
+  - `Wait-StmScheduledTask` - Wait for scheduled task completion
+- These cmdlets provide a simpler interface than the native ScheduledTasks module by handling CIM session creation internally via `-Credential` parameter
+
 ## [0.8.2] - 2025-12-29
 
 ### Fixed
