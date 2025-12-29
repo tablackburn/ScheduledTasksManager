@@ -8,6 +8,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.1] - 2025-12-29
+
+### Changed
+
+- Updated private helper functions to follow coding standards
+  - Added `[CmdletBinding()]` and `[OutputType()]` attributes to `Initialize-XPathFilter`, `Join-XPathFilter`
+  - Moved comment-based help to correct location (before `param()` block)
+  - Fixed variable naming to use camelCase in `Get-WinEventXPathFilter`
+  - Fixed `$True`/`$False` to `$true`/`$false` per PowerShell conventions
+- Fixed PSScriptAnalyzer warnings for line length and indentation in `Get-StmClusteredScheduledTask` and `Import-StmClusteredScheduledTask`
+
+### Added
+
+- Expanded test coverage for `Get-StmScheduledTask` and `Get-StmClusterNode` functions
+
 ## [0.8.0] - 2025-12-29
 
 ### Added
