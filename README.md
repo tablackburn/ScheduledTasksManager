@@ -95,6 +95,14 @@ Import-StmClusteredScheduledTask -Cluster "NewCluster" -Path ".\BackupTask.xml"
 | `Get-StmScheduledTaskInfo` | Get detailed task information with run duration |
 | `Get-StmScheduledTaskRun` | Get task run history with event details |
 | `Disable-StmScheduledTask` | Disable a scheduled task on local or remote computers |
+| `Enable-StmScheduledTask` | Enable a scheduled task on local or remote computers |
+| `Export-StmScheduledTask` | Export task configuration to XML |
+| `Import-StmScheduledTask` | Import task configuration from XML |
+| `Register-StmScheduledTask` | Register a new scheduled task |
+| `Unregister-StmScheduledTask` | Remove a scheduled task |
+| `Start-StmScheduledTask` | Manually start a scheduled task |
+| `Stop-StmScheduledTask` | Stop a running scheduled task |
+| `Wait-StmScheduledTask` | Wait for a scheduled task to complete |
 
 ### Cluster Utilities
 
@@ -190,7 +198,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 ### Testing
 
-The module includes comprehensive Pester tests with 92%+ code coverage. Run tests with:
+The module includes comprehensive Pester tests with 93%+ code coverage. Run tests with:
 
 ```powershell
 ./build.ps1 -Task Test
