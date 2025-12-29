@@ -110,6 +110,7 @@ function Get-WinEventXPathFilter {
     #>
 
     [CmdletBinding()]
+    [OutputType([string])]
     param(
         [String[]]
         $ID,
@@ -179,7 +180,7 @@ function Get-WinEventXPathFilter {
     #endregion Exclude ID filter
 
     #region Date filters
-    $Now = Get-Date
+    $currentDateTime = Get-Date
 
     # Time in XPath is filtered based on the number of milliseconds
     # between the creation of the event and when the XPath filter is
@@ -188,18 +189,18 @@ function Get-WinEventXPathFilter {
     # The timediff xpath function is used against the SystemTime
     # attribute of the TimeCreated node.
     if ($StartTime) {
-        $Diff = [Math]::Round($Now.Subtract($StartTime).TotalMilliseconds)
+        $timeDifferenceMilliseconds = [Math]::Round($currentDateTime.Subtract($StartTime).TotalMilliseconds)
         $joinParameters = @{
-            NewFilter      = "*[System[TimeCreated[timediff(@SystemTime) <= $Diff]]]"
+            NewFilter      = "*[System[TimeCreated[timediff(@SystemTime) <= $timeDifferenceMilliseconds]]]"
             ExistingFilter = $filter
         }
         $filter = Join-XPathFilter @joinParameters
     }
 
     if ($EndTime) {
-        $Diff = [Math]::Round($Now.Subtract($EndTime).TotalMilliseconds)
+        $timeDifferenceMilliseconds = [Math]::Round($currentDateTime.Subtract($EndTime).TotalMilliseconds)
         $joinParameters = @{
-            NewFilter      = "*[System[TimeCreated[timediff(@SystemTime) >= $Diff]]]"
+            NewFilter      = "*[System[TimeCreated[timediff(@SystemTime) >= $timeDifferenceMilliseconds]]]"
             ExistingFilter = $filter
         }
         $filter = Join-XPathFilter @joinParameters
@@ -260,18 +261,18 @@ function Get-WinEventXPathFilter {
     # events that have any of the submitted
     # keywords assigned.
     if ($Keywords) {
-        $keyword_filter = ''
+        $keywordFilter = ''
 
         foreach ($item in $Keywords) {
-            if ($keyword_filter) {
-                $keyword_filter = $keyword_filter -bor $item
+            if ($keywordFilter) {
+                $keywordFilter = $keywordFilter -bor $item
             }
             else {
-                $keyword_filter = $item
+                $keywordFilter = $item
             }
         }
 
-        $filter = Join-XPathFilter -ExistingFilter $filter -NewFilter "*[System[band(Keywords,$keyword_filter)]]"
+        $filter = Join-XPathFilter -ExistingFilter $filter -NewFilter "*[System[band(Keywords,$keywordFilter)]]"
     }
     #endregion Keyword filter
 
