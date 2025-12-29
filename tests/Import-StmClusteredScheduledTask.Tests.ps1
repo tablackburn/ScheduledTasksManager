@@ -504,6 +504,96 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
         }
 
+        Context 'Task Existence Check in Import-SingleTask' {
+            BeforeEach {
+                $xmlFilePath = Join-Path -Path 'TestDrive:\' -ChildPath 'Task.xml'
+                Set-Content -Path $xmlFilePath -Value $script:validXml
+                $script:xmlFilePath = $xmlFilePath
+            }
+
+            It 'Should write verbose message when task does not exist' {
+                Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith {
+                    throw 'Task not found'
+                }
+
+                $parameters = @{
+                    Path     = $script:xmlFilePath
+                    Cluster  = 'TestCluster'
+                    TaskType = 'AnyNode'
+                }
+
+                $verboseOutput = Import-StmClusteredScheduledTask @parameters -Verbose 4>&1 |
+                    Out-String
+
+                $verboseOutput | Should -Match "does not exist on cluster"
+            }
+
+            It 'Should pass credentials to Unregister when Force is used and task exists' {
+                $securePassword = ConvertTo-SecureString -String 'P@ssw0rd!' -AsPlainText -Force
+                $testCredential = [System.Management.Automation.PSCredential]::new('TestUser', $securePassword)
+
+                Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith {
+                    return [PSCustomObject]@{ TaskName = 'TestTask' }
+                }
+
+                $parameters = @{
+                    Path       = $script:xmlFilePath
+                    Cluster    = 'TestCluster'
+                    TaskType   = 'AnyNode'
+                    Force      = $true
+                    Credential = $testCredential
+                }
+
+                Import-StmClusteredScheduledTask @parameters
+
+                Should -Invoke -CommandName Unregister-StmClusteredScheduledTask -Times 1 -ParameterFilter {
+                    $null -ne $Credential
+                }
+            }
+        }
+
+        Context 'File Read Errors' {
+            It 'Should throw error when file cannot be read' {
+                # Create a file then make it inaccessible by having Get-Content fail
+                $xmlFilePath = Join-Path -Path 'TestDrive:\' -ChildPath 'LockedTask.xml'
+                Set-Content -Path $xmlFilePath -Value $script:validXml
+
+                Mock -CommandName 'Get-Content' -MockWith {
+                    throw 'Access denied'
+                }
+
+                $parameters = @{
+                    Path     = $xmlFilePath
+                    Cluster  = 'TestCluster'
+                    TaskType = 'AnyNode'
+                }
+
+                { Import-StmClusteredScheduledTask @parameters -ErrorAction Stop } | Should -Throw
+            }
+
+            It 'Should have ReadError category when file read fails' {
+                $xmlFilePath = Join-Path -Path 'TestDrive:\' -ChildPath 'LockedTask2.xml'
+                Set-Content -Path $xmlFilePath -Value $script:validXml
+
+                Mock -CommandName 'Get-Content' -MockWith {
+                    throw 'File locked'
+                }
+
+                $parameters = @{
+                    Path     = $xmlFilePath
+                    Cluster  = 'TestCluster'
+                    TaskType = 'AnyNode'
+                }
+
+                try {
+                    Import-StmClusteredScheduledTask @parameters -ErrorAction Stop
+                }
+                catch {
+                    $_.FullyQualifiedErrorId | Should -BeLike '*XmlFileReadFailed*'
+                }
+            }
+        }
+
         Context 'Verbose Logging' {
             BeforeEach {
                 $xmlFilePath = Join-Path -Path 'TestDrive:\' -ChildPath 'Task.xml'

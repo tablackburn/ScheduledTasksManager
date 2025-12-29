@@ -13,9 +13,9 @@ Documentation automatically updated at [tablackburn.github.io/ScheduledTasksMana
 
 ScheduledTasksManager provides comprehensive functions for managing scheduled tasks in Windows environments, with special focus on clustered scenarios:
 
-- **Clustered Task Management**: Register, enable, disable, start, and monitor scheduled tasks across failover cluster nodes
+- **Clustered Task Management**: Register, enable, disable, start, stop, and monitor scheduled tasks across failover cluster nodes
 - **Task Information & Monitoring**: Retrieve detailed task information, run history, and cluster node details
-- **Configuration Management**: Export and import task configurations for backup and deployment
+- **Configuration Management**: Export and import task configurations for backup, migration, and deployment
 - **Advanced Filtering**: Filter tasks by state, type, and ownership across cluster nodes
 - **Credential Management**: Secure authentication with cluster nodes using credentials or CIM sessions
 
@@ -33,9 +33,9 @@ Managing scheduled tasks in Windows Server Failover Clusters can be complex and 
 
 ### Prerequisites
 
-- Windows Server with Failover Clustering feature installed
-- PowerShell 6.0 or later
-- Appropriate permissions to manage clustered scheduled tasks
+- Windows PowerShell 5.1 or PowerShell 7+
+- Windows Server with Failover Clustering feature (for cluster functions)
+- Appropriate permissions to manage scheduled tasks
 
 ### Installation
 
@@ -54,26 +54,104 @@ Import-Module ScheduledTasksManager
 # Get all clustered scheduled tasks
 Get-StmClusteredScheduledTask -Cluster "MyCluster"
 
-# Register a new clustered task
-Register-StmClusteredScheduledTask -Cluster "MyCluster" -TaskName "BackupTask" -TaskType "ClusterWide"
+# Get detailed task information including run duration
+Get-StmClusteredScheduledTaskInfo -Cluster "MyCluster" -TaskName "BackupTask"
 
-# Start a clustered task
+# Start a clustered task and wait for completion
 Start-StmClusteredScheduledTask -Cluster "MyCluster" -TaskName "BackupTask"
+Wait-StmClusteredScheduledTask -Cluster "MyCluster" -TaskName "BackupTask" -Timeout 300
+
+# Export task configuration for backup
+Export-StmClusteredScheduledTask -Cluster "MyCluster" -TaskName "BackupTask" -FilePath ".\BackupTask.xml"
+
+# Import task configuration to another cluster
+Import-StmClusteredScheduledTask -Cluster "NewCluster" -Path ".\BackupTask.xml"
 ```
 
-### Available Functions
+## Available Functions
 
-- `Get-StmClusteredScheduledTask` - Retrieve clustered scheduled tasks
-- `Get-StmClusteredScheduledTaskInfo` - Get detailed task information
-- `Get-StmClusterNode` - Retrieve cluster node information
-- `Get-StmScheduledTaskRun` - Get task run history
-- `Register-StmClusteredScheduledTask` - Register new clustered tasks
-- `Unregister-StmClusteredScheduledTask` - Remove clustered tasks
-- `Enable-StmClusteredScheduledTask` - Enable clustered tasks
-- `Disable-StmClusteredScheduledTask` - Disable clustered tasks
-- `Start-StmClusteredScheduledTask` - Manually start tasks
-- `Wait-StmClusteredScheduledTask` - Wait for task completion
-- `Export-StmClusteredScheduledTask` - Export task configurations
+### Clustered Task Management
+
+| Function | Description |
+|----------|-------------|
+| `Get-StmClusteredScheduledTask` | Retrieve clustered scheduled tasks from a failover cluster |
+| `Get-StmClusteredScheduledTaskInfo` | Get detailed task information including run times and duration |
+| `Get-StmClusteredScheduledTaskRun` | Get task run history from all cluster nodes |
+| `Register-StmClusteredScheduledTask` | Register a new clustered scheduled task |
+| `Unregister-StmClusteredScheduledTask` | Remove a clustered scheduled task |
+| `Enable-StmClusteredScheduledTask` | Enable a disabled clustered task |
+| `Disable-StmClusteredScheduledTask` | Disable a clustered task (creates backup) |
+| `Start-StmClusteredScheduledTask` | Manually start a clustered task |
+| `Stop-StmClusteredScheduledTask` | Stop a running clustered task |
+| `Wait-StmClusteredScheduledTask` | Wait for a clustered task to complete |
+| `Export-StmClusteredScheduledTask` | Export task configuration to XML |
+| `Import-StmClusteredScheduledTask` | Import task configuration from XML |
+
+### Local Task Management
+
+| Function | Description |
+|----------|-------------|
+| `Get-StmScheduledTask` | Retrieve scheduled tasks from local or remote computers |
+| `Get-StmScheduledTaskInfo` | Get detailed task information with run duration |
+| `Get-StmScheduledTaskRun` | Get task run history with event details |
+| `Disable-StmScheduledTask` | Disable a scheduled task on local or remote computers |
+
+### Cluster Utilities
+
+| Function | Description |
+|----------|-------------|
+| `Get-StmClusterNode` | Retrieve cluster node information |
+
+## Usage Examples
+
+### Working with Clustered Tasks
+
+```powershell
+# Get all tasks on a cluster
+$tasks = Get-StmClusteredScheduledTask -Cluster "YOURCLUSTER"
+
+# Filter by state
+$runningTasks = Get-StmClusteredScheduledTask -Cluster "YOURCLUSTER" -TaskState Running
+
+# Get task with credentials
+$cred = Get-Credential
+Get-StmClusteredScheduledTask -Cluster "YOURCLUSTER" -Credential $cred
+```
+
+### Monitoring Task Runs
+
+```powershell
+# Get recent task runs from all cluster nodes
+Get-StmClusteredScheduledTaskRun -Cluster "YOURCLUSTER" -TaskName "BackupTask" -MaxRuns 10
+
+# Get local task runs with detailed timing
+Get-StmScheduledTaskRun -TaskName "MyTask" -MaxRuns 5
+```
+
+### Backup and Migration
+
+```powershell
+# Export all tasks from a cluster to a directory
+$tasks = Get-StmClusteredScheduledTask -Cluster "OldCluster"
+foreach ($task in $tasks) {
+    Export-StmClusteredScheduledTask -Cluster "OldCluster" -TaskName $task.TaskName -FilePath ".\Backup\$($task.TaskName).xml"
+}
+
+# Import all tasks to a new cluster
+Import-StmClusteredScheduledTask -Cluster "NewCluster" -DirectoryPath ".\Backup" -Force
+```
+
+### Error Handling
+
+```powershell
+# All functions support standard PowerShell error handling
+try {
+    Start-StmClusteredScheduledTask -Cluster "YOURCLUSTER" -TaskName "NonExistent" -ErrorAction Stop
+}
+catch {
+    Write-Warning "Task failed: $($_.Exception.Message)"
+}
+```
 
 ## Getting Help
 
@@ -81,6 +159,7 @@ Start-StmClusteredScheduledTask -Cluster "MyCluster" -TaskName "BackupTask"
 
 - **Module Help**: `Get-Help about_ScheduledTasksManager`
 - **Function Help**: `Get-Help Get-StmClusteredScheduledTask -Full`
+- **Online Docs**: [tablackburn.github.io/ScheduledTasksManager](https://tablackburn.github.io/ScheduledTasksManager/)
 - **Examples**: Each function includes comprehensive examples
 
 ### Support
@@ -111,7 +190,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 ### Testing
 
-The module includes comprehensive Pester tests. Run tests with:
+The module includes comprehensive Pester tests with 92%+ code coverage. Run tests with:
 
 ```powershell
 ./build.ps1 -Task Test

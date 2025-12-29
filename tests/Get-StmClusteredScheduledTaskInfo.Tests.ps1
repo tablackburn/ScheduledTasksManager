@@ -52,6 +52,107 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
         }
 
+        Context 'Parameter Handling' {
+            It 'Should retrieve all tasks when TaskName is not specified' {
+                $verboseOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match 'Retrieving all tasks on cluster'
+            }
+
+            It 'Should pass TaskType to Get-StmClusteredScheduledTask when specified' {
+                Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -TaskType ClusterWide
+                Should -Invoke -CommandName 'Get-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $TaskType -eq 'ClusterWide'
+                }
+            }
+
+            It 'Should write verbose message when TaskType is specified' {
+                $verboseOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -TaskType ClusterWide -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match "Filtering tasks by type.*ClusterWide"
+            }
+
+            It 'Should write verbose message when no TaskType filter applied' {
+                $verboseOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match 'No specific task type filter applied'
+            }
+
+            It 'Should pass TaskState to Get-StmClusteredScheduledTask when specified' {
+                Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -TaskState Ready
+                Should -Invoke -CommandName 'Get-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $TaskState -eq 'Ready'
+                }
+            }
+
+            It 'Should write verbose message when TaskState is specified' {
+                $verboseOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -TaskState Ready -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match "Filtering tasks by state.*Ready"
+            }
+
+            It 'Should write verbose message when no TaskState filter applied' {
+                $verboseOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match 'No specific task state filter applied'
+            }
+        }
+
+        Context 'CimSession and Credential Handling' {
+            It 'Should pass CimSession to Get-StmClusteredScheduledTask when specified' -Skip:$true {
+                # CimSession requires an actual connection, skip in unit tests
+            }
+
+            It 'Should write verbose message when CimSession is provided' -Skip:$true {
+                # CimSession requires an actual connection, skip in unit tests
+            }
+
+            It 'Should pass Credential to Get-StmClusteredScheduledTask when specified' {
+                $testCredential = [PSCredential]::new(
+                    'TestUser',
+                    (ConvertTo-SecureString -String 'TestPassword' -AsPlainText -Force)
+                )
+                Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -Credential $testCredential
+                Should -Invoke -CommandName 'Get-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $null -ne $Credential -and $Credential -ne [System.Management.Automation.PSCredential]::Empty
+                }
+            }
+
+            It 'Should write verbose message when Credential is provided' {
+                $testCredential = [PSCredential]::new(
+                    'TestUser',
+                    (ConvertTo-SecureString -String 'TestPassword' -AsPlainText -Force)
+                )
+                $verboseOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -Credential $testCredential -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match 'Using provided credentials for cluster'
+            }
+
+            It 'Should write verbose message when no CimSession or Credential provided' {
+                $verboseOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match 'No CIM session or credentials provided, using default credentials'
+            }
+        }
+
+        Context 'When no tasks are found' {
+            BeforeEach {
+                Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith {
+                    return @()
+                }
+            }
+
+            It 'Should write warning when no tasks are found' {
+                $warningOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' 3>&1
+                $warningOutput | Should -Match 'No scheduled tasks found on cluster'
+            }
+
+            It 'Should return nothing when no tasks are found' {
+                $result = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' 3>$null
+                $result | Should -BeNullOrEmpty
+            }
+        }
+
         Context 'When task is running' {
             BeforeEach {
                 Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith {
@@ -109,6 +210,12 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 $expectedMinutes = ((Get-Date) - $startTime).TotalMinutes
                 $result.RunningDuration.TotalMinutes | Should -BeGreaterOrEqual ($expectedMinutes - 1)
                 $result.RunningDuration.TotalMinutes | Should -BeLessOrEqual ($expectedMinutes + 1)
+            }
+
+            It 'Should write verbose message with running duration' {
+                $verboseOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -TaskName 'RunningTask' -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match 'has been running for'
             }
         }
 
@@ -183,6 +290,32 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             It 'Should set RunningDuration to null when LastRunTime is null' {
                 $result = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -TaskName 'NewTask'
                 $result.RunningDuration | Should -BeNullOrEmpty
+            }
+        }
+
+        Context 'Verbose Output' {
+            It 'Should write start message' {
+                $verboseOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match "Starting Get-StmClusteredScheduledTaskInfo on cluster.*TestCluster"
+            }
+
+            It 'Should write completion message' {
+                $verboseOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match "Completed Get-StmClusteredScheduledTaskInfo for cluster.*TestCluster"
+            }
+
+            It 'Should write message about merging properties' {
+                $verboseOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match 'Merging properties from clustered scheduled task and task info'
+            }
+
+            It 'Should write verbose message when TaskName is specified' {
+                $verboseOutput = Get-StmClusteredScheduledTaskInfo -Cluster 'TestCluster' -TaskName 'TestTask' -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match "Filtering tasks by name.*TestTask"
             }
         }
     }
