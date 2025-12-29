@@ -8,6 +8,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.0] - 2025-12-29
+
+### Added
+
+- `Import-StmClusteredScheduledTask` - Import clustered scheduled tasks from XML files, complementing `Export-StmClusteredScheduledTask`
+  - Single file import with `-Path` parameter
+  - XML string import with `-Xml` parameter
+  - Bulk directory import with `-DirectoryPath` parameter (imports all .xml files)
+  - Auto-extracts task name from XML `RegistrationInfo/URI` element
+  - Optional `-TaskName` override for single imports
+  - `-Force` parameter to overwrite existing tasks
+  - Progress reporting for bulk imports
+  - Continues on partial failures in bulk mode with summary report
+- `Get-TaskNameFromXml` private helper function for XML task name extraction
+
+### Fixed
+
+- Build system now works around PowerShellBuild 0.7.3 bug in `Test-PSBuildScriptAnalysis.ps1` (typo: `$_Severity` instead of `$_.Severity` causing null reference exception)
+- Added custom `ScriptAnalysis` task until PowerShellBuild releases a fix
+
 ## [0.7.0] - 2025-10-15
 
 ### Added
