@@ -81,7 +81,9 @@ extending the ScheduledTasks module from Microsoft
         'Disable-StmClusteredScheduledTask',
         'Disable-StmScheduledTask',
         'Enable-StmClusteredScheduledTask',
+        'Enable-StmScheduledTask',
         'Export-StmClusteredScheduledTask',
+        'Export-StmScheduledTask',
         'Get-StmClusteredScheduledTask',
         'Get-StmClusteredScheduledTaskInfo',
         'Get-StmClusteredScheduledTaskRun',
@@ -90,11 +92,17 @@ extending the ScheduledTasks module from Microsoft
         'Get-StmScheduledTaskInfo',
         'Get-StmScheduledTaskRun',
         'Import-StmClusteredScheduledTask',
+        'Import-StmScheduledTask',
         'Register-StmClusteredScheduledTask',
+        'Register-StmScheduledTask',
         'Start-StmClusteredScheduledTask',
+        'Start-StmScheduledTask',
         'Stop-StmClusteredScheduledTask',
+        'Stop-StmScheduledTask',
         'Unregister-StmClusteredScheduledTask',
-        'Wait-StmClusteredScheduledTask'
+        'Unregister-StmScheduledTask',
+        'Wait-StmClusteredScheduledTask',
+        'Wait-StmScheduledTask'
     )
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry,
