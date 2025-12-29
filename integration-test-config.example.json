@@ -5,7 +5,9 @@
     "name": "StmTestLab",
     "domainName": "stmtest.local",
     "adminUser": "Install",
-    "adminPassword": "P@ssw0rd1"
+    "adminPassword": "P@ssw0rd1",
+    "_mode_comment": "Set to 'local' for AutomatedLab on this machine, 'remote' for AutomatedLab on another server",
+    "mode": "local"
   },
 
   "network": {
@@ -25,16 +27,17 @@
   },
 
   "paths": {
-    "labModulePath": "C:\\ScheduledTasksManager",
-    "labDataPath": "C:\\ProgramData\\AutomatedLab\\Labs",
-    "exportPath": "C:\\AutomatedLab-Export",
-    "vmPath": "C:\\AutomatedLab-VMs"
+    "labModulePath": "C:\ScheduledTasksManager",
+    "labDataPath": "C:\ProgramData\AutomatedLab\Labs",
+    "exportPath": "C:\AutomatedLab-Export",
+    "vmPath": "C:\AutomatedLab-VMs"
   },
 
   "remote": {
+    "_comment": "Only used when lab.mode is 'remote'",
     "hostname": "yourserver",
-    "labSetupPath": "C:\\LabSetup",
-    "localModulePath": "C:\\Path\\To\\Your\\ScheduledTasksManager"
+    "labSetupPath": "C:\LabSetup",
+    "localModulePath": "C:\Path\To\Your\ScheduledTasksManager"
   },
 
   "test": {

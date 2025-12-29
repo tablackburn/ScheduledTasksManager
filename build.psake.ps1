@@ -158,47 +158,75 @@ $PSBTestDependency = @('Init_Integration', 'UnitTest', 'ScriptAnalysis')
 Task -Name 'Test' -FromModule 'PowerShellBuild' -MinimumVersion '0.7.3'
 
 # Integration tests require AutomatedLab and a Hyper-V host
-# Run Initialize-IntegrationLab.ps1 first to deploy the test lab
+# Supports two modes:
+#   - local: AutomatedLab on this machine (default)
+#   - remote: AutomatedLab on a remote server (set lab.mode = "remote" in config)
 Task -Name 'Integration' -Description 'Run integration tests against a real failover cluster' {
     $integrationTestPath = Join-Path $PSScriptRoot 'tests/Integration'
 
-    # Check if lab is available
-    $alModule = Get-Module -Name AutomatedLab -ListAvailable
-    if (-not $alModule) {
-        Write-Warning "AutomatedLab module not installed. Install it and run Initialize-IntegrationLab.ps1 first."
-        Write-Warning "Install-Module -Name AutomatedLab -Scope CurrentUser"
+    # Load configuration to determine mode
+    Import-Module "$integrationTestPath\IntegrationTestConfig.psm1" -Force
+    if (-not (Test-IntegrationTestConfig)) {
+        Write-Warning "Integration test configuration not found."
+        Write-Warning "Copy integration-test-config.example.json to integration-test-config.json and update values."
         return
     }
 
-    Import-Module AutomatedLab -Force
-    $labs = Get-Lab -List -ErrorAction SilentlyContinue
-    if ('StmTestLab' -notin $labs) {
-        Write-Warning "Integration lab 'StmTestLab' not deployed."
-        Write-Warning "Run: $integrationTestPath\Initialize-IntegrationLab.ps1"
-        return
+    $config = Get-IntegrationTestConfig
+    $labMode = if ($config.lab.mode) { $config.lab.mode } else { 'local' }
+
+    Write-Host "Integration test mode: $labMode" -ForegroundColor Cyan
+
+    if ($labMode -eq 'remote') {
+        # Remote mode: Run tests on the remote server that has AutomatedLab
+        $remoteHost = $config.remote.hostname
+        Write-Host "Running integration tests on remote server: $remoteHost" -ForegroundColor Yellow
+
+        & "$integrationTestPath\Invoke-RemoteIntegrationTest.ps1" -Action Test
+
+        Write-Host "Remote integration tests completed." -ForegroundColor Green
     }
+    else {
+        # Local mode: AutomatedLab is on this machine
+        $alModule = Get-Module -Name AutomatedLab -ListAvailable
+        if (-not $alModule) {
+            Write-Warning "AutomatedLab module not installed. Install it and run Initialize-IntegrationLab.ps1 first."
+            Write-Warning "Install-Module -Name AutomatedLab -Scope CurrentUser"
+            Write-Warning "Or set lab.mode to 'remote' in config to run tests on a remote server."
+            return
+        }
 
-    # Start the lab
-    Write-Host "Starting integration lab..." -ForegroundColor Cyan
-    $labInfo = & "$integrationTestPath\Start-IntegrationLab.ps1"
+        Import-Module AutomatedLab -Force
+        $labName = $config.lab.name
+        $labs = Get-Lab -List -ErrorAction SilentlyContinue
+        if ($labName -notin $labs) {
+            Write-Warning "Integration lab '$labName' not deployed."
+            Write-Warning "Run: $integrationTestPath\Initialize-IntegrationLab.ps1"
+            return
+        }
 
-    # Run integration tests
-    Write-Host "Running integration tests..." -ForegroundColor Cyan
-    $pesterConfig = New-PesterConfiguration
-    $pesterConfig.Run.Path = "$integrationTestPath\*.Integration.Tests.ps1"
-    $pesterConfig.Output.Verbosity = 'Detailed'
-    $pesterConfig.TestResult.Enabled = $true
-    $pesterConfig.TestResult.OutputPath = 'tests/Integration/out/integrationTestResults.xml'
-    $pesterConfig.TestResult.OutputFormat = 'NUnitXml'
+        # Start the lab
+        Write-Host "Starting integration lab..." -ForegroundColor Cyan
+        $labInfo = & "$integrationTestPath\Start-IntegrationLab.ps1"
 
-    $result = Invoke-Pester -Configuration $pesterConfig
+        # Run integration tests
+        Write-Host "Running integration tests..." -ForegroundColor Cyan
+        $pesterConfig = New-PesterConfiguration
+        $pesterConfig.Run.Path = "$integrationTestPath\*.Integration.Tests.ps1"
+        $pesterConfig.Output.Verbosity = 'Detailed'
+        $pesterConfig.TestResult.Enabled = $true
+        $pesterConfig.TestResult.OutputPath = 'tests/Integration/out/integrationTestResults.xml'
+        $pesterConfig.TestResult.OutputFormat = 'NUnitXml'
 
-    # Stop the lab
-    Write-Host "Stopping integration lab..." -ForegroundColor Cyan
-    & "$integrationTestPath\Stop-IntegrationLab.ps1"
+        $result = Invoke-Pester -Configuration $pesterConfig
 
-    # Fail build if tests failed
-    if ($result.FailedCount -gt 0) {
-        throw "$($result.FailedCount) integration test(s) failed."
+        # Stop the lab
+        Write-Host "Stopping integration lab..." -ForegroundColor Cyan
+        & "$integrationTestPath\Stop-IntegrationLab.ps1"
+
+        # Fail build if tests failed
+        if ($result.FailedCount -gt 0) {
+            throw "$($result.FailedCount) integration test(s) failed."
+        }
     }
 }

@@ -22,8 +22,6 @@
     .\Invoke-RemoteIntegrationTest.ps1 -Action Test
 #>
 
-#Requires -RunAsAdministrator
-
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
@@ -201,20 +199,43 @@ switch ($Action) {
             Write-Host "  Copied: integration-test-config.json -> C:\" -ForegroundColor Gray
         }
 
-        # Run tests
+        # Run tests and capture results
         Write-Host ""
         Write-Host "Running Pester tests..." -ForegroundColor Yellow
         Write-Host ""
 
-        Invoke-Command -Session $session -ScriptBlock {
+        $testResult = Invoke-Command -Session $session -ScriptBlock {
             param($LabSetupPath)
             Set-Location $LabSetupPath
-            Invoke-Pester -Path "$LabSetupPath\ClusteredScheduledTask.Integration.Tests.ps1" -Output Detailed
+
+            $pesterConfig = New-PesterConfiguration
+            $pesterConfig.Run.Path = "$LabSetupPath\ClusteredScheduledTask.Integration.Tests.ps1"
+            $pesterConfig.Run.PassThru = $true
+            $pesterConfig.Output.Verbosity = 'Detailed'
+
+            $result = Invoke-Pester -Configuration $pesterConfig
+
+            # Return summary that can be serialized across the remote session
+            [PSCustomObject]@{
+                TotalCount   = $result.TotalCount
+                PassedCount  = $result.PassedCount
+                FailedCount  = $result.FailedCount
+                SkippedCount = $result.SkippedCount
+                Duration     = $result.Duration.ToString()
+            }
         } -ArgumentList $labSetupPath
 
         Remove-PSSession $session
+
         Write-Host ""
         Write-Host "=== Test Run Complete ===" -ForegroundColor Cyan
+        $resultColor = if ($testResult.FailedCount -gt 0) { 'Red' } else { 'Green' }
+        Write-Host "  Passed: $($testResult.PassedCount) | Failed: $($testResult.FailedCount) | Skipped: $($testResult.SkippedCount)" -ForegroundColor $resultColor
+
+        # Fail if tests failed
+        if ($testResult.FailedCount -gt 0) {
+            throw "$($testResult.FailedCount) integration test(s) failed on remote server $TargetServer."
+        }
     }
 
     'Cleanup' {
