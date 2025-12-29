@@ -8,6 +8,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.2] - 2025-12-29
+
+### Fixed
+
+- Bug fix: Multiple result codes handling in `Get-StmScheduledTaskRun`
+  - Removed incorrect `Select-Object -ExpandProperty 'ResultCode'` on string array
+  - Now correctly returns multiple result codes as an array when present
+- PSScriptAnalyzer warnings: Reformatted long `.EXAMPLE` lines using splatting
+
+### Changed
+
+- Build system: Updated ScriptAnalysis task to analyze only `.ps1` files
+  - Excludes auto-generated `.psd1` module manifests from analysis
+- Test coverage improved from 92.4% to 95.0%
+  - Expanded `Get-StmClusteredScheduledTaskInfo` tests (6 → 25 tests)
+  - Expanded `Get-StmScheduledTaskRun` tests with edge case coverage
+  - Expanded `Import-StmClusteredScheduledTask` tests
+- Improved README documentation with function tables and usage examples
+
 ## [0.8.1] - 2025-12-29
 
 ### Changed
