@@ -491,11 +491,53 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
         }
 
         Context 'Multiple Result Codes' {
-            # Skip: This test exposes a bug in the multiple result codes handling
-            # (lines 355-361 try to expand 'ResultCode' property on strings)
-            # The code path is rarely triggered and requires a separate fix
-            It 'Should write verbose message about multiple result codes' -Skip:$true {
-                # Bug: Line 357 uses ExpandProperty = 'ResultCode' on string array
+            BeforeEach {
+                # Create events with multiple different result codes
+                $mockStartEvent = New-MockObject -Type 'System.Diagnostics.Eventing.Reader.EventLogRecord' -Methods @{
+                    ToXml = {
+                        return '<Event><EventData><Data Name="ResultCode">0</Data></EventData></Event>'
+                    }
+                } -Properties @{
+                    ActivityId  = 'multi-result'
+                    RecordId    = 1
+                    TimeCreated = [datetime]::Now
+                }
+                $mockMidEvent = New-MockObject -Type 'System.Diagnostics.Eventing.Reader.EventLogRecord' -Methods @{
+                    ToXml = {
+                        return '<Event><EventData><Data Name="ResultCode">1</Data></EventData></Event>'
+                    }
+                } -Properties @{
+                    ActivityId  = 'multi-result'
+                    RecordId    = 2
+                    TimeCreated = [datetime]::Now.AddSeconds(1)
+                }
+                $mockEndEvent = New-MockObject -Type 'System.Diagnostics.Eventing.Reader.EventLogRecord' -Methods @{
+                    ToXml = {
+                        return '<Event><EventData><Data Name="ResultCode">2</Data></EventData></Event>'
+                    }
+                } -Properties @{
+                    ActivityId  = 'multi-result'
+                    RecordId    = 3
+                    TimeCreated = [datetime]::Now.AddSeconds(2)
+                }
+
+                Mock -CommandName 'Get-WinEvent' -MockWith {
+                    return @($mockEndEvent, $mockMidEvent, $mockStartEvent)
+                } -ParameterFilter {
+                    $FilterXPath -eq "*[EventData[Data[@Name='TaskName'] = '\TestTask1']]"
+                }
+            }
+
+            It 'Should write verbose message about multiple result codes' {
+                $verboseOutput = Get-StmScheduledTaskRun -TaskName 'TestTask1' -Verbose 4>&1 |
+                    Out-String
+                $verboseOutput | Should -Match 'Multiple ResultCode'
+            }
+
+            It 'Should return multiple result codes as array' {
+                $result = Get-StmScheduledTaskRun -TaskName 'TestTask1'
+                $result.ResultCode | Should -Not -BeNullOrEmpty
+                $result.ResultCode.Count | Should -BeGreaterThan 1
             }
         }
 

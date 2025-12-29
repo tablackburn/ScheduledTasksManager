@@ -66,7 +66,13 @@ function Import-StmClusteredScheduledTask {
         URI element.
 
     .EXAMPLE
-        Import-StmClusteredScheduledTask -Path 'C:\Tasks\Task.xml' -Cluster 'MyCluster' -TaskType 'AnyNode' -TaskName 'CustomName'
+        $params = @{
+            Path     = 'C:\Tasks\Task.xml'
+            Cluster  = 'MyCluster'
+            TaskType = 'AnyNode'
+            TaskName = 'CustomName'
+        }
+        Import-StmClusteredScheduledTask @params
 
         Imports a clustered scheduled task from an XML file, overriding the task name with 'CustomName'.
 
@@ -84,7 +90,14 @@ function Import-StmClusteredScheduledTask {
 
     .EXAMPLE
         $credential = Get-Credential
-        Import-StmClusteredScheduledTask -Path 'C:\Tasks\Task.xml' -Cluster 'MyCluster.contoso.com' -TaskType 'ResourceSpecific' -Credential $credential -Force
+        $params = @{
+            Path       = 'C:\Tasks\Task.xml'
+            Cluster    = 'MyCluster.contoso.com'
+            TaskType   = 'ResourceSpecific'
+            Credential = $credential
+            Force      = $true
+        }
+        Import-StmClusteredScheduledTask @params
 
         Imports a clustered scheduled task using specified credentials, replacing any existing task with the
         same name.

@@ -30,7 +30,12 @@ function Get-StmClusteredScheduledTaskRun {
         cluster "MyCluster".
 
     .EXAMPLE
-        Get-StmClusteredScheduledTaskRun -TaskName "MaintenanceTask" -Cluster "MyCluster.contoso.com" -TaskPath "\CustomTasks\"
+        $params = @{
+            TaskName = "MaintenanceTask"
+            Cluster  = "MyCluster.contoso.com"
+            TaskPath = "\CustomTasks\"
+        }
+        Get-StmClusteredScheduledTaskRun @params
 
         Retrieves the run history for the "MaintenanceTask" located in the "\CustomTasks\" path from
         all nodes in the cluster "MyCluster.contoso.com".

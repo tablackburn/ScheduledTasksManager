@@ -122,14 +122,18 @@ $scriptAnalysisPreReqs = {
 }
 
 Task -Name 'ScriptAnalysis' -Depends 'Build' -PreCondition $scriptAnalysisPreReqs -Description 'Execute PSScriptAnalyzer' {
-    $analysisParams = @{
-        Path        = $PSBPreference.Build.ModuleOutDir
-        Settings    = $PSBPreference.Test.ScriptAnalysis.SettingsPath
-        Recurse     = $true
-        ErrorAction = 'SilentlyContinue'
-    }
+    # Get only .ps1 files (exclude .psd1 module manifests which are auto-generated)
+    $ps1Files = Get-ChildItem -Path $PSBPreference.Build.ModuleOutDir -Filter '*.ps1' -Recurse
 
-    $results = Invoke-ScriptAnalyzer @analysisParams
+    $results = @()
+    foreach ($file in $ps1Files) {
+        $analysisParams = @{
+            Path        = $file.FullName
+            Settings    = $PSBPreference.Test.ScriptAnalysis.SettingsPath
+            ErrorAction = 'SilentlyContinue'
+        }
+        $results += Invoke-ScriptAnalyzer @analysisParams
+    }
 
     if ($results) {
         $results | Format-Table -AutoSize

@@ -352,13 +352,9 @@
                             "Multiple ResultCode(s) found for activity ID '$activityId' of task " +
                             "'$($currentTask.TaskName)'"
                         )
-                        $selectObjectParameters = @{
-                            InputObject    = $resultCode
-                            ExpandProperty = 'ResultCode'
-                            Unique         = $true
-                        }
-                        $runDetails['ResultCode'] = Select-Object @selectObjectParameters
-                        Write-Verbose "Using multiple ResultCode(s): $($runDetails['ResultCode'] | Out-String)"
+                        # $resultCode is already an array of unique string values from Select-Object -Unique above
+                        $runDetails['ResultCode'] = $resultCode
+                        Write-Verbose "Using multiple ResultCode(s): $($runDetails['ResultCode'] -join ', ')"
                     }
                     else {
                         Write-Verbose (
