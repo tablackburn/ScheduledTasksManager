@@ -89,6 +89,7 @@ extending the ScheduledTasks module from Microsoft
         'Get-StmScheduledTask',
         'Get-StmScheduledTaskInfo',
         'Get-StmScheduledTaskRun',
+        'Import-StmClusteredScheduledTask',
         'Register-StmClusteredScheduledTask',
         'Start-StmClusteredScheduledTask',
         'Stop-StmClusteredScheduledTask',

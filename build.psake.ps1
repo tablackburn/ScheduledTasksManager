@@ -32,9 +32,11 @@ properties {
     $PSBPreference.Test.CodeCoverage.Threshold = 0.0
 
     # PSScriptAnalyzer configuration (PowerShellBuild 0.7.3+)
-    # Override default to use project-specific PSScriptAnalyzer settings
-    # Default is PowerShellBuild's own settings file, but we want to use ours
-    $PSBPreference.Test.ScriptAnalysis.SettingsPath = 'PSScriptAnalyzerSettings.psd1'
+    # Disable built-in analysis due to PowerShellBuild 0.7.3 bug:
+    # Test-PSBuildScriptAnalysis.ps1 line 32-34 has typo "$_Severity" instead of "$_.Severity"
+    # causing null reference exception. We use a custom ScriptAnalysis task until fixed.
+    $PSBPreference.Test.ScriptAnalysis.Enabled = $false
+    $PSBPreference.Test.ScriptAnalysis.SettingsPath = Join-Path -Path $PSScriptRoot -ChildPath 'PSScriptAnalyzerSettings.psd1'
 }
 
 Task -Name 'Default' -Depends 'Test'
@@ -107,8 +109,48 @@ Task -Name 'UnitTest' -Depends 'Build' -PreCondition $unitTestPreReqs -Descripti
     }
 }
 
-# Use UnitTest instead of PowerShellBuild's Pester task
-$PSBTestDependency = @('Init_Integration', 'UnitTest', 'Analyze')
+# Custom ScriptAnalysis task to work around PowerShellBuild 0.7.3 bug
+# Bug: Test-PSBuildScriptAnalysis.ps1 uses "$_Severity" instead of "$_.Severity" (missing dot)
+# This causes null reference exception when PSScriptAnalyzer returns results
+$scriptAnalysisPreReqs = {
+    $result = $true
+    if (-not (Get-Module -Name PSScriptAnalyzer -ListAvailable)) {
+        Write-Warning 'PSScriptAnalyzer module is not installed'
+        $result = $false
+    }
+    return $result
+}
+
+Task -Name 'ScriptAnalysis' -Depends 'Build' -PreCondition $scriptAnalysisPreReqs -Description 'Execute PSScriptAnalyzer' {
+    $analysisParams = @{
+        Path        = $PSBPreference.Build.ModuleOutDir
+        Settings    = $PSBPreference.Test.ScriptAnalysis.SettingsPath
+        Recurse     = $true
+        ErrorAction = 'SilentlyContinue'
+    }
+
+    $results = Invoke-ScriptAnalyzer @analysisParams
+
+    if ($results) {
+        $results | Format-Table -AutoSize
+
+        $errors = $results | Where-Object { $_.Severity -eq 'Error' }
+        if ($errors) {
+            throw "PSScriptAnalyzer found $($errors.Count) error(s)"
+        }
+
+        $warnings = $results | Where-Object { $_.Severity -eq 'Warning' }
+        if ($warnings) {
+            Write-Warning "PSScriptAnalyzer found $($warnings.Count) warning(s)"
+        }
+    }
+    else {
+        Write-Host 'PSScriptAnalyzer found no issues' -ForegroundColor Green
+    }
+}
+
+# Use UnitTest and custom ScriptAnalysis instead of PowerShellBuild's built-in tasks
+$PSBTestDependency = @('Init_Integration', 'UnitTest', 'ScriptAnalysis')
 Task -Name 'Test' -FromModule 'PowerShellBuild' -MinimumVersion '0.7.3'
 
 # Integration tests require AutomatedLab and a Hyper-V host
