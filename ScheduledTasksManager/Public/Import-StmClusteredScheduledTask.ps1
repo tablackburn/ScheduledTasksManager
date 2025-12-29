@@ -181,14 +181,20 @@ function Import-StmClusteredScheduledTask {
 
         # Validate that TaskName is not used with Directory parameter set
         if ($PSCmdlet.ParameterSetName -eq 'Directory' -and $PSBoundParameters.ContainsKey('TaskName')) {
-            $errorMsg = 'The -TaskName parameter cannot be used with -DirectoryPath. Task names are extracted from each XML file.'
+            $errorMsg = (
+                'The -TaskName parameter cannot be used with -DirectoryPath. ' +
+                'Task names are extracted from each XML file.'
+            )
             $errorRecordParameters = @{
                 Exception         = [System.ArgumentException]::new($errorMsg)
                 ErrorId           = 'InvalidParameterCombination'
                 ErrorCategory     = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 TargetObject      = $DirectoryPath
                 Message           = $errorMsg
-                RecommendedAction = 'Remove the -TaskName parameter when using -DirectoryPath, or use -Path for single file import with a custom task name.'
+                RecommendedAction = (
+                    'Remove the -TaskName parameter when using -DirectoryPath, ' +
+                    'or use -Path for single file import with a custom task name.'
+                )
             }
             $errorRecord = New-StmError @errorRecordParameters
             $PSCmdlet.ThrowTerminatingError($errorRecord)
@@ -197,8 +203,9 @@ function Import-StmClusteredScheduledTask {
         # Validate file/directory exists based on parameter set
         if ($PSCmdlet.ParameterSetName -eq 'XmlFile') {
             if (-not (Test-Path -Path $Path -PathType Leaf)) {
+                $exceptionMessage = "The file '$Path' was not found."
                 $errorRecordParameters = @{
-                    Exception         = [System.IO.FileNotFoundException]::new("The file '$Path' was not found.")
+                    Exception         = [System.IO.FileNotFoundException]::new($exceptionMessage)
                     ErrorId           = 'XmlFileNotFound'
                     ErrorCategory     = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                     TargetObject      = $Path
@@ -211,13 +218,18 @@ function Import-StmClusteredScheduledTask {
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'Directory') {
             if (-not (Test-Path -Path $DirectoryPath -PathType Container)) {
+                $exceptionMessage = "The directory '$DirectoryPath' was not found."
                 $errorRecordParameters = @{
-                    Exception         = [System.IO.DirectoryNotFoundException]::new("The directory '$DirectoryPath' was not found.")
+                    Exception         = [System.IO.DirectoryNotFoundException]::new($exceptionMessage)
                     ErrorId           = 'DirectoryNotFound'
                     ErrorCategory     = [System.Management.Automation.ErrorCategory]::ObjectNotFound
                     TargetObject      = $DirectoryPath
-                    Message           = "The directory '$DirectoryPath' does not exist or is not accessible."
-                    RecommendedAction = 'Verify the directory path is correct and the directory exists.'
+                    Message           = (
+                        "The directory '$DirectoryPath' does not exist or is not accessible."
+                    )
+                    RecommendedAction = (
+                        'Verify the directory path is correct and the directory exists.'
+                    )
                 }
                 $errorRecord = New-StmError @errorRecordParameters
                 $PSCmdlet.ThrowTerminatingError($errorRecord)
@@ -292,7 +304,10 @@ function Import-StmClusteredScheduledTask {
                         $extractedName = Get-TaskNameFromXml -XmlContent $xmlContent
 
                         if ([string]::IsNullOrWhiteSpace($extractedName)) {
-                            throw "Could not extract task name from XML. The RegistrationInfo/URI element is missing or empty."
+                            throw (
+                                'Could not extract task name from XML. ' +
+                                'The RegistrationInfo/URI element is missing or empty.'
+                            )
                         }
 
                         $importParams = @{
@@ -325,7 +340,11 @@ function Import-StmClusteredScheduledTask {
                 Write-Verbose "Import completed: $successCount of $totalFiles task(s) imported successfully"
 
                 if ($failedTasks.Count -gt 0) {
-                    Write-Warning "$($failedTasks.Count) task(s) failed to import. See FailedTasks property for details."
+                    $warningMessage = (
+                        "$($failedTasks.Count) task(s) failed to import. " +
+                        'See FailedTasks property for details.'
+                    )
+                    Write-Warning $warningMessage
                 }
 
                 [PSCustomObject]@{
@@ -386,12 +405,20 @@ function Import-SingleTask {
         $effectiveTaskName = Get-TaskNameFromXml -XmlContent $XmlContent
         if ([string]::IsNullOrWhiteSpace($effectiveTaskName)) {
             $errorRecordParameters = @{
-                Exception         = [System.InvalidOperationException]::new('Could not determine task name from XML.')
+                Exception         = [System.InvalidOperationException]::new(
+                    'Could not determine task name from XML.'
+                )
                 ErrorId           = 'TaskNameNotFound'
                 ErrorCategory     = [System.Management.Automation.ErrorCategory]::InvalidData
                 TargetObject      = $XmlContent
-                Message           = 'Could not extract task name from XML. The RegistrationInfo/URI element is missing or empty.'
-                RecommendedAction = 'Ensure the XML contains a valid RegistrationInfo/URI element, or use the -TaskName parameter to specify the task name.'
+                Message           = (
+                    'Could not extract task name from XML. ' +
+                    'The RegistrationInfo/URI element is missing or empty.'
+                )
+                RecommendedAction = (
+                    'Ensure the XML contains a valid RegistrationInfo/URI element, ' +
+                    'or use the -TaskName parameter to specify the task name.'
+                )
             }
             $errorRecord = New-StmError @errorRecordParameters
             $PSCmdlet.ThrowTerminatingError($errorRecord)
@@ -437,15 +464,20 @@ function Import-SingleTask {
             }
         }
         else {
+            $exceptionMessage = (
+                "A clustered scheduled task named '$effectiveTaskName' " +
+                "already exists on cluster '$Cluster'."
+            )
             $errorRecordParameters = @{
-                Exception         = [System.InvalidOperationException]::new(
-                    "A clustered scheduled task named '$effectiveTaskName' already exists on cluster '$Cluster'."
-                )
+                Exception         = [System.InvalidOperationException]::new($exceptionMessage)
                 ErrorId           = 'TaskAlreadyExists'
                 ErrorCategory     = [System.Management.Automation.ErrorCategory]::ResourceExists
                 TargetObject      = $effectiveTaskName
-                Message           = "A clustered scheduled task named '$effectiveTaskName' already exists on cluster '$Cluster'. Use -Force to overwrite."
-                RecommendedAction = 'Use the -Force parameter to overwrite the existing task, or choose a different task name with -TaskName.'
+                Message           = "$exceptionMessage Use -Force to overwrite."
+                RecommendedAction = (
+                    'Use the -Force parameter to overwrite the existing task, ' +
+                    'or choose a different task name with -TaskName.'
+                )
             }
             $errorRecord = New-StmError @errorRecordParameters
             $PSCmdlet.ThrowTerminatingError($errorRecord)
@@ -478,8 +510,14 @@ function Import-SingleTask {
                 ErrorId           = 'TaskRegistrationFailed'
                 ErrorCategory     = [System.Management.Automation.ErrorCategory]::OperationStopped
                 TargetObject      = $effectiveTaskName
-                Message           = "Failed to register clustered scheduled task '$effectiveTaskName' on cluster '$Cluster'. $($_.Exception.Message)"
-                RecommendedAction = 'Verify the XML is valid Task Scheduler format, the cluster is accessible, and you have appropriate permissions.'
+                Message           = (
+                    "Failed to register clustered scheduled task '$effectiveTaskName' " +
+                    "on cluster '$Cluster'. $($_.Exception.Message)"
+                )
+                RecommendedAction = (
+                    'Verify the XML is valid Task Scheduler format, ' +
+                    'the cluster is accessible, and you have appropriate permissions.'
+                )
             }
             $errorRecord = New-StmError @errorRecordParameters
             $PSCmdlet.ThrowTerminatingError($errorRecord)

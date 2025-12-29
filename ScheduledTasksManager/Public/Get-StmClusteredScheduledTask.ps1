@@ -166,10 +166,12 @@
         }
         Write-Verbose "Found $($clusteredScheduledTasks.Count) clustered scheduled task(s) on cluster '$Cluster'"
 
-        $uniqueTaskOwners = @($clusteredScheduledTasks |
+        $uniqueTaskOwners = @(
+            $clusteredScheduledTasks |
                 Select-Object -ExpandProperty 'CurrentOwner' |
-                    Where-Object { -not [string]::IsNullOrEmpty($_) } |
-                        Select-Object -Unique)
+                Where-Object { -not [string]::IsNullOrEmpty($_) } |
+                Select-Object -Unique
+        )
         if ($uniqueTaskOwners.Count -eq 0) {
             Write-Error (
                 "No current owners found for tasks in cluster '$Cluster'. " +
