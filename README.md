@@ -5,6 +5,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/tablackburn/ScheduledTasksManager/CI.yaml?branch=main)](https://github.com/tablackburn/ScheduledTasksManager/actions/workflows/CI.yaml)
 ![Platform](https://img.shields.io/powershellgallery/p/ScheduledTasksManager)
 [![AI Assisted](https://img.shields.io/badge/AI-Assisted-blue)](https://claude.ai)
+[![License](https://img.shields.io/github/license/tablackburn/ScheduledTasksManager)](LICENSE)
 
 `ScheduledTasksManager` is a PowerShell module for managing both local and clustered scheduled tasks on Windows systems. It supports operations in standalone environments as well as Windows Server Failover Clusters, extending the capabilities of the built-in `ScheduledTasks` module from Microsoft.
 
