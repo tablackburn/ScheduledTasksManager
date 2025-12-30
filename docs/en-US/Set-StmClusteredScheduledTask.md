@@ -14,17 +14,17 @@ Modifies a clustered scheduled task in a Windows failover cluster.
 
 ### ByName (Default)
 ```
-Set-StmClusteredScheduledTask [-TaskName] <String> [-Cluster] <String> [[-Action] <CimInstance[]>]
- [[-Trigger] <CimInstance[]>] [[-Settings] <CimInstance>] [[-Principal] <CimInstance>] [[-User] <String>]
- [[-Password] <String>] [[-TaskType] <ClusterTaskTypeEnum>] [[-Credential] <PSCredential>] [-PassThru]
+Set-StmClusteredScheduledTask -TaskName <String> -Cluster <String> [-Action <CimInstance[]>]
+ [-Trigger <CimInstance[]>] [-Settings <CimInstance>] [-Principal <CimInstance>] [-User <String>]
+ [-Password <String>] [-TaskType <ClusterTaskTypeEnum>] [-Credential <PSCredential>] [-PassThru]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### ByInputObject
 ```
-Set-StmClusteredScheduledTask [-InputObject] <CimInstance> [-Cluster] <String> [[-Action] <CimInstance[]>]
- [[-Trigger] <CimInstance[]>] [[-Settings] <CimInstance>] [[-Principal] <CimInstance>] [[-User] <String>]
- [[-Password] <String>] [[-TaskType] <ClusterTaskTypeEnum>] [[-Credential] <PSCredential>] [-PassThru]
+Set-StmClusteredScheduledTask -InputObject <CimInstance> -Cluster <String> [-Action <CimInstance[]>]
+ [-Trigger <CimInstance[]>] [-Settings <CimInstance>] [-Principal <CimInstance>] [-User <String>]
+ [-Password <String>] [-TaskType <ClusterTaskTypeEnum>] [-Credential <PSCredential>] [-PassThru]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
@@ -106,54 +106,6 @@ Modifies the action of a clustered task and returns the modified task object.
 
 ## PARAMETERS
 
-### -TaskName
-Specifies the name of the clustered scheduled task to modify. This parameter is mandatory when using
-the ByName parameter set and must match the exact name of the task as it appears in the cluster.
-
-```yaml
-Type: String
-Parameter Sets: ByName
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -InputObject
-Specifies a clustered scheduled task object to modify. This parameter accepts pipeline input from
-Get-StmClusteredScheduledTask. When using this parameter, the TaskName is extracted from the object.
-
-```yaml
-Type: CimInstance
-Parameter Sets: ByInputObject
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: True (ByValue)
-Accept wildcard characters: False
-```
-
-### -Cluster
-Specifies the name or FQDN of the cluster where the scheduled task is located. This parameter
-is mandatory and must be a valid Windows failover cluster.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Action
 Specifies an array of action objects that define what the task executes. Use New-ScheduledTaskAction
 to create action objects. When specified, this replaces all existing actions on the task.
@@ -170,14 +122,29 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Trigger
-Specifies an array of trigger objects that define when the task runs. Use New-ScheduledTaskTrigger
-to create trigger objects. When specified, this replaces all existing triggers on the task.
+### -Cluster
+Specifies the name or FQDN of the cluster where the scheduled task is located. This parameter
+is mandatory and must be a valid Windows failover cluster.
 
 ```yaml
-Type: CimInstance[]
+Type: String
 Parameter Sets: (All)
 Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Confirm
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
 
 Required: False
 Position: Named
@@ -186,12 +153,60 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Settings
-Specifies a settings object that defines task behavior. Use New-ScheduledTaskSettingsSet to create
-a settings object. When specified, this merges with existing task settings.
+### -Credential
+Specifies credentials to use when connecting to the cluster. If not specified, the current user's
+credentials are used for the connection.
+
+```yaml
+Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: [System.Management.Automation.PSCredential]::Empty
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InputObject
+Specifies a clustered scheduled task object to modify. This parameter accepts pipeline input from
+Get-StmClusteredScheduledTask. When using this parameter, the TaskName is extracted from the object.
 
 ```yaml
 Type: CimInstance
+Parameter Sets: ByInputObject
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
+### -PassThru
+Returns an object representing the modified clustered scheduled task. By default, this cmdlet does
+not generate any output.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Password
+Specifies the password for the user account specified by the User parameter. This is an
+alternative to using the Principal parameter. Cannot be used together with the Principal parameter.
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -219,6 +234,73 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Settings
+Specifies a settings object that defines task behavior. Use New-ScheduledTaskSettingsSet to create
+a settings object. When specified, this merges with existing task settings.
+
+```yaml
+Type: CimInstance
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TaskName
+Specifies the name of the clustered scheduled task to modify. This parameter is mandatory when using
+the ByName parameter set and must match the exact name of the task as it appears in the cluster.
+
+```yaml
+Type: String
+Parameter Sets: ByName
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -TaskType
+Specifies the cluster task type. Valid values are:
+- ResourceSpecific: Task runs on a specific cluster resource
+- AnyNode: Task can run on any cluster node
+- ClusterWide: Task runs on all cluster nodes
+
+```yaml
+Type: ClusterTaskTypeEnum
+Parameter Sets: (All)
+Aliases:
+Accepted values: ResourceSpecific, AnyNode, ClusterWide
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Trigger
+Specifies an array of trigger objects that define when the task runs. Use New-ScheduledTaskTrigger
+to create trigger objects. When specified, this replaces all existing triggers on the task.
+
+```yaml
+Type: CimInstance[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -User
 Specifies the user account under which the task runs. This is an alternative to using the
 Principal parameter. Cannot be used together with the Principal parameter.
@@ -235,72 +317,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Password
-Specifies the password for the user account specified by the User parameter. This is an
-alternative to using the Principal parameter. Cannot be used together with the Principal parameter.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -TaskType
-Specifies the cluster task type. Valid values are:
-- ResourceSpecific: Task runs on a specific cluster resource
-- AnyNode: Task can run on any cluster node
-- ClusterWide: Task runs on all cluster nodes
-
-```yaml
-Type: ClusterTaskTypeEnum
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Credential
-Specifies credentials to use when connecting to the cluster. If not specified, the current user's
-credentials are used for the connection.
-
-```yaml
-Type: PSCredential
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: [System.Management.Automation.PSCredential]::Empty
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PassThru
-Returns an object representing the modified clustered scheduled task. By default, this cmdlet does
-not generate any output.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -WhatIf
 Shows what would happen if the cmdlet runs. The cmdlet is not run.
 
@@ -308,21 +324,6 @@ Shows what would happen if the cmdlet runs. The cmdlet is not run.
 Type: SwitchParameter
 Parameter Sets: (All)
 Aliases: wi
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Confirm
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
 
 Required: False
 Position: Named

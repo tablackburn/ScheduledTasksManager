@@ -14,17 +14,17 @@ Modifies a scheduled task on a local or remote computer.
 
 ### ByName (Default)
 ```
-Set-StmScheduledTask [-TaskName] <String> [[-TaskPath] <String>] [[-Action] <CimInstance[]>]
- [[-Trigger] <CimInstance[]>] [[-Settings] <CimInstance>] [[-Principal] <CimInstance>] [[-User] <String>]
- [[-Password] <String>] [[-ComputerName] <String>] [[-Credential] <PSCredential>] [-PassThru]
+Set-StmScheduledTask -TaskName <String> [-TaskPath <String>] [-Action <CimInstance[]>]
+ [-Trigger <CimInstance[]>] [-Settings <CimInstance>] [-Principal <CimInstance>] [-User <String>]
+ [-Password <String>] [-ComputerName <String>] [-Credential <PSCredential>] [-PassThru]
  [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### ByInputObject
 ```
-Set-StmScheduledTask [-InputObject] <CimInstance> [[-Action] <CimInstance[]>] [[-Trigger] <CimInstance[]>]
- [[-Settings] <CimInstance>] [[-Principal] <CimInstance>] [[-User] <String>] [[-Password] <String>]
- [[-Credential] <PSCredential>] [-PassThru] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
+Set-StmScheduledTask -InputObject <CimInstance> [-Action <CimInstance[]>] [-Trigger <CimInstance[]>]
+ [-Settings <CimInstance>] [-Principal <CimInstance>] [-User <String>] [-Password <String>]
+ [-Credential <PSCredential>] [-PassThru] [-ProgressAction <ActionPreference>] [-WhatIf] [-Confirm]
  [<CommonParameters>]
 ```
 
@@ -100,141 +100,12 @@ user account that the task runs under.
 
 ## PARAMETERS
 
-### -TaskName
-Specifies the name of the scheduled task to modify. This parameter is mandatory when using the ByName
-parameter set and must match the exact name of the task as it appears in the Task Scheduler.
-
-```yaml
-Type: String
-Parameter Sets: ByName
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -TaskPath
-Specifies the path of the scheduled task to modify. The task path represents the folder structure in the
-Task Scheduler where the task is located (e.g., '\Microsoft\Windows\PowerShell\'). If not specified, the
-root path ('\') will be used.
-
-```yaml
-Type: String
-Parameter Sets: ByName
-Aliases:
-
-Required: False
-Position: 2
-Default value: \
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -InputObject
-Specifies a scheduled task object to modify. This parameter accepts pipeline input from Get-StmScheduledTask
-or Get-ScheduledTask. When using this parameter, the TaskName and TaskPath are extracted from the object.
-
-```yaml
-Type: CimInstance
-Parameter Sets: ByInputObject
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: True (ByValue)
-Accept wildcard characters: False
-```
-
 ### -Action
 Specifies an array of action objects that define what the task executes. Use New-ScheduledTaskAction to
 create action objects. When specified, this replaces all existing actions on the task.
 
 ```yaml
 Type: CimInstance[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Trigger
-Specifies an array of trigger objects that define when the task runs. Use New-ScheduledTaskTrigger to
-create trigger objects. When specified, this replaces all existing triggers on the task.
-
-```yaml
-Type: CimInstance[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Settings
-Specifies a settings object that defines task behavior. Use New-ScheduledTaskSettingsSet to create a
-settings object. When specified, this replaces the existing task settings.
-
-```yaml
-Type: CimInstance
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Principal
-Specifies a principal object that defines the security context for the task. Use New-ScheduledTaskPrincipal
-to create a principal object. This parameter cannot be used together with User or Password parameters.
-
-```yaml
-Type: CimInstance
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -User
-Specifies the user account under which the task runs. This is an alternative to using the Principal
-parameter. Cannot be used together with the Principal parameter.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Password
-Specifies the password for the user account specified by the User parameter. This is an alternative to
-using the Principal parameter. Cannot be used together with the Principal parameter.
-
-```yaml
-Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -262,6 +133,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Confirm
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Credential
 Specifies credentials to use when connecting to a remote computer. If not specified, the current user's
 credentials are used for the connection. This parameter is relevant when connecting to remote computers
@@ -276,6 +162,22 @@ Required: False
 Position: Named
 Default value: [System.Management.Automation.PSCredential]::Empty
 Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InputObject
+Specifies a scheduled task object to modify. This parameter accepts pipeline input from Get-StmScheduledTask
+or Get-ScheduledTask. When using this parameter, the TaskName and TaskPath are extracted from the object.
+
+```yaml
+Type: CimInstance
+Parameter Sets: ByInputObject
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
@@ -295,13 +197,14 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -WhatIf
-Shows what would happen if the cmdlet runs. The cmdlet is not run.
+### -Password
+Specifies the password for the user account specified by the User parameter. This is an alternative to
+using the Principal parameter. Cannot be used together with the Principal parameter.
 
 ```yaml
-Type: SwitchParameter
+Type: String
 Parameter Sets: (All)
-Aliases: wi
+Aliases:
 
 Required: False
 Position: Named
@@ -310,13 +213,110 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Confirm
-Prompts you for confirmation before running the cmdlet.
+### -Principal
+Specifies a principal object that defines the security context for the task. Use New-ScheduledTaskPrincipal
+to create a principal object. This parameter cannot be used together with User or Password parameters.
+
+```yaml
+Type: CimInstance
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Settings
+Specifies a settings object that defines task behavior. Use New-ScheduledTaskSettingsSet to create a
+settings object. When specified, this replaces the existing task settings.
+
+```yaml
+Type: CimInstance
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TaskName
+Specifies the name of the scheduled task to modify. This parameter is mandatory when using the ByName
+parameter set and must match the exact name of the task as it appears in the Task Scheduler.
+
+```yaml
+Type: String
+Parameter Sets: ByName
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -TaskPath
+Specifies the path of the scheduled task to modify. The task path represents the folder structure in the
+Task Scheduler where the task is located (e.g., '\Microsoft\Windows\PowerShell\'). If not specified, the
+root path ('\') will be used.
+
+```yaml
+Type: String
+Parameter Sets: ByName
+Aliases:
+
+Required: False
+Position: Named
+Default value: \
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -Trigger
+Specifies an array of trigger objects that define when the task runs. Use New-ScheduledTaskTrigger to
+create trigger objects. When specified, this replaces all existing triggers on the task.
+
+```yaml
+Type: CimInstance[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -User
+Specifies the user account under which the task runs. This is an alternative to using the Principal
+parameter. Cannot be used together with the Principal parameter.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WhatIf
+Shows what would happen if the cmdlet runs. The cmdlet is not run.
 
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: cf
+Aliases: wi
 
 Required: False
 Position: Named
