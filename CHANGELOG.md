@@ -8,6 +8,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.10.1] - 2025-12-30
+
+### Fixed
+
+- PSScriptAnalyzer warnings across multiple cmdlets:
+  - Fixed unused variable assignments (`$result` → `$null`)
+  - Fixed long lines using array join pattern and splatting
+  - Fixed brace placement in switch/if statements
+  - Fixed hashtable alignment issues
+  - Fixed indentation inconsistencies
+- Files updated: `Set-StmClusteredScheduledTask`, `Set-StmScheduledTask`, `Export-StmScheduledTask`, `Register-StmScheduledTask`, `Unregister-StmScheduledTask`, `Wait-StmScheduledTask`
+
 ## [0.10.0] - 2025-12-29
 
 ### Added
