@@ -95,6 +95,8 @@ extending the ScheduledTasks module from Microsoft
         'Import-StmScheduledTask',
         'Register-StmClusteredScheduledTask',
         'Register-StmScheduledTask',
+        'Set-StmClusteredScheduledTask',
+        'Set-StmScheduledTask',
         'Start-StmClusteredScheduledTask',
         'Start-StmScheduledTask',
         'Stop-StmClusteredScheduledTask',
