@@ -151,6 +151,15 @@ Describe "Test help for <_.Name>" -ForEach $commands {
         $command                = $_
         $commandName            = $_.Name
         $commandHelp            = Get-Help -Name $command.Name -ErrorAction 'SilentlyContinue'
+
+        # DEBUG: Check if help is loading correctly for Set-Stm cmdlets during test execution
+        if ($command.Name -like 'Set-Stm*') {
+            Write-Host "=== BeforeAll Debug for $($command.Name) ===" -ForegroundColor Yellow
+            Write-Host "Module loaded: $((Get-Module ScheduledTasksManager).ModuleBase)" -ForegroundColor Yellow
+            Write-Host "Synopsis: $($commandHelp.Synopsis)" -ForegroundColor Yellow
+            Write-Host "Synopsis type: $($commandHelp.Synopsis.GetType().Name)" -ForegroundColor Yellow
+            Write-Host "Description null: $($null -eq $commandHelp.Description)" -ForegroundColor Yellow
+        }
         $commandParameters      = global:FilterOutCommonParameters -Parameters $command.ParameterSets.Parameters
         $commandParameterNames  = $commandParameters.Name
         $helpParameters         = global:FilterOutCommonParameters -Parameters $commandHelp.Parameters.Parameter
