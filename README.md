@@ -6,6 +6,7 @@
 ![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/ScheduledTasksManager)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/tablackburn/ScheduledTasksManager/.github/workflows/CI.yaml?branch=main)
 ![PowerShell Gallery](https://img.shields.io/powershellgallery/p/ScheduledTasksManager)
+[![AI Assisted](https://img.shields.io/badge/AI-Assisted-blue)](https://claude.ai)
 
 Documentation automatically updated at [tablackburn.github.io/ScheduledTasksManager](https://tablackburn.github.io/ScheduledTasksManager/)
 
@@ -181,6 +182,10 @@ catch {
 - **PowerShell Gallery**: [ScheduledTasksManager](https://www.powershellgallery.com/packages/ScheduledTasksManager)
 - **GitHub Repository**: [tablackburn/ScheduledTasksManager](https://github.com/tablackburn/ScheduledTasksManager)
 
+
+## Acknowledgments
+
+This project was developed with assistance from [Claude](https://claude.ai) by Anthropic.
 ## Project Maintenance
 
 ### Maintainer
