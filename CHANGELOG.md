@@ -8,6 +8,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.10.0] - 2025-12-29
+
+### Added
+
+- `Set-StmScheduledTask` - Modify scheduled task properties (Actions, Triggers, Settings, Principal) on local or remote computers
+  - Two parameter sets: `ByName` for direct task identification, `ByInputObject` for pipeline input
+  - Full credential support via CIM sessions
+  - WhatIf/Confirm support with ConfirmImpact = Medium
+  - PassThru parameter to return modified task object
+- `Set-StmClusteredScheduledTask` - Modify clustered scheduled task properties in failover clusters
+  - Same modification capabilities as standalone variant plus TaskType
+  - Uses Export/Unregister/Register pattern (no native Set-ClusteredScheduledTask exists)
+  - Pipeline support from Get-StmClusteredScheduledTask
+
 ## [0.9.0] - 2025-12-29
 
 ### Added
