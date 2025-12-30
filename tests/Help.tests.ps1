@@ -33,6 +33,12 @@
 param()
 
 BeforeDiscovery {
+    # DEBUG: Output module and help paths for troubleshooting
+    Write-Host "=== Help.tests.ps1 BeforeDiscovery Debug ===" -ForegroundColor Magenta
+    Write-Host "PSScriptRoot: $PSScriptRoot"
+    Write-Host "BHBuildOutput: $Env:BHBuildOutput"
+    Write-Host "BHProjectName: $Env:BHProjectName"
+
     function global:FilterOutCommonParameters {
         <#
         .SYNOPSIS
@@ -85,6 +91,20 @@ BeforeDiscovery {
     # Remove all versions of the module from the session. Pester can't handle multiple versions.
     Get-Module $Env:BHProjectName | Remove-Module -Force -ErrorAction 'Ignore'
     Import-Module -Name $moduleManifestPath -Verbose:$false -ErrorAction 'Stop'
+
+    # DEBUG: Check module location and help file
+    $loadedModule = Get-Module $Env:BHProjectName
+    Write-Host "Module loaded from: $($loadedModule.ModuleBase)" -ForegroundColor Magenta
+    $helpXmlPath = Join-Path $loadedModule.ModuleBase "en-US\ScheduledTasksManager-help.xml"
+    Write-Host "Help XML exists: $(Test-Path $helpXmlPath)" -ForegroundColor Magenta
+    if (Test-Path $helpXmlPath) {
+        Write-Host "Help XML size: $((Get-Item $helpXmlPath).Length) bytes" -ForegroundColor Magenta
+    }
+
+    # DEBUG: Test Get-Help for Set-StmScheduledTask specifically
+    $testHelp = Get-Help Set-StmScheduledTask -ErrorAction SilentlyContinue
+    Write-Host "Set-StmScheduledTask Synopsis: $($testHelp.Synopsis)" -ForegroundColor Magenta
+    Write-Host "Set-StmScheduledTask Description null: $($null -eq $testHelp.Description)" -ForegroundColor Magenta
 
     # Get module commands
     $getCommandParameters = @{
