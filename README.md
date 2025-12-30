@@ -186,6 +186,7 @@ catch {
 ## Acknowledgments
 
 This project was developed with assistance from [Claude](https://claude.ai) by Anthropic.
+
 ## Project Maintenance
 
 ### Maintainer
