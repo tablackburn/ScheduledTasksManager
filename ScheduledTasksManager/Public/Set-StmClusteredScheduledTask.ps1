@@ -98,7 +98,13 @@ function Set-StmClusteredScheduledTask {
     .EXAMPLE
         $settings = New-ScheduledTaskSettingsSet -RunOnlyIfNetworkAvailable -WakeToRun
         $credential = Get-Credential
-        Set-StmClusteredScheduledTask -TaskName 'SyncTask' -Cluster 'MyCluster' -Settings $settings -Credential $credential
+        $params = @{
+            TaskName   = 'SyncTask'
+            Cluster    = 'MyCluster'
+            Settings   = $settings
+            Credential = $credential
+        }
+        Set-StmClusteredScheduledTask @params
 
         Modifies the settings of the clustered scheduled task using specified credentials for the
         cluster connection.
@@ -237,7 +243,10 @@ function Set-StmClusteredScheduledTask {
         $modificationParams = @('Action', 'Trigger', 'Settings', 'Principal', 'User', 'Password', 'TaskType')
         $hasModification = $modificationParams | Where-Object { $PSBoundParameters.ContainsKey($_) }
         if (-not $hasModification) {
-            $errorMsg = 'At least one task property (Action, Trigger, Settings, Principal, User, Password, or TaskType) must be specified.'
+            $errorMsg = @(
+                'At least one task property (Action, Trigger, Settings, Principal,'
+                'User, Password, or TaskType) must be specified.'
+            ) -join ' '
             $errorRecordParameters = @{
                 Exception         = [System.ArgumentException]::new($errorMsg)
                 ErrorId           = 'NoModificationSpecified'
@@ -317,20 +326,21 @@ function Set-StmClusteredScheduledTask {
 
                 # Add new actions
                 foreach ($act in $Action) {
-                    $execElement = $taskXmlDocument.CreateElement('Exec', $taskXmlDocument.DocumentElement.NamespaceURI)
+                    $ns = $taskXmlDocument.DocumentElement.NamespaceURI
+                    $execElement = $taskXmlDocument.CreateElement('Exec', $ns)
 
-                    $cmdElement = $taskXmlDocument.CreateElement('Command', $taskXmlDocument.DocumentElement.NamespaceURI)
+                    $cmdElement = $taskXmlDocument.CreateElement('Command', $ns)
                     $cmdElement.InnerText = $act.Execute
                     $execElement.AppendChild($cmdElement) | Out-Null
 
                     if ($act.Arguments) {
-                        $argsElement = $taskXmlDocument.CreateElement('Arguments', $taskXmlDocument.DocumentElement.NamespaceURI)
+                        $argsElement = $taskXmlDocument.CreateElement('Arguments', $ns)
                         $argsElement.InnerText = $act.Arguments
                         $execElement.AppendChild($argsElement) | Out-Null
                     }
 
                     if ($act.WorkingDirectory) {
-                        $wdElement = $taskXmlDocument.CreateElement('WorkingDirectory', $taskXmlDocument.DocumentElement.NamespaceURI)
+                        $wdElement = $taskXmlDocument.CreateElement('WorkingDirectory', $ns)
                         $wdElement.InnerText = $act.WorkingDirectory
                         $execElement.AppendChild($wdElement) | Out-Null
                     }
@@ -350,46 +360,57 @@ function Set-StmClusteredScheduledTask {
                 foreach ($trig in $Trigger) {
                     $triggerElement = $null
                     $triggerType = $trig.CimClass.CimClassName
+                    $ns = $taskXmlDocument.DocumentElement.NamespaceURI
 
                     switch -Wildcard ($triggerType) {
                         '*Daily*' {
-                            $triggerElement = $taskXmlDocument.CreateElement('CalendarTrigger', $taskXmlDocument.DocumentElement.NamespaceURI)
-                            $schedByDay = $taskXmlDocument.CreateElement('ScheduleByDay', $taskXmlDocument.DocumentElement.NamespaceURI)
-                            $daysInterval = $taskXmlDocument.CreateElement('DaysInterval', $taskXmlDocument.DocumentElement.NamespaceURI)
-                            $daysInterval.InnerText = if ($trig.DaysInterval) { $trig.DaysInterval } else { '1' }
+                            $triggerElement = $taskXmlDocument.CreateElement('CalendarTrigger', $ns)
+                            $schedByDay = $taskXmlDocument.CreateElement('ScheduleByDay', $ns)
+                            $daysInterval = $taskXmlDocument.CreateElement('DaysInterval', $ns)
+                            $daysInterval.InnerText = if ($trig.DaysInterval) {
+                                $trig.DaysInterval
+                            }
+                            else {
+                                '1'
+                            }
                             $schedByDay.AppendChild($daysInterval) | Out-Null
                             $triggerElement.AppendChild($schedByDay) | Out-Null
                         }
                         '*Weekly*' {
-                            $triggerElement = $taskXmlDocument.CreateElement('CalendarTrigger', $taskXmlDocument.DocumentElement.NamespaceURI)
-                            $schedByWeek = $taskXmlDocument.CreateElement('ScheduleByWeek', $taskXmlDocument.DocumentElement.NamespaceURI)
+                            $triggerElement = $taskXmlDocument.CreateElement('CalendarTrigger', $ns)
+                            $schedByWeek = $taskXmlDocument.CreateElement('ScheduleByWeek', $ns)
                             $triggerElement.AppendChild($schedByWeek) | Out-Null
                         }
                         '*Once*' {
-                            $triggerElement = $taskXmlDocument.CreateElement('TimeTrigger', $taskXmlDocument.DocumentElement.NamespaceURI)
+                            $triggerElement = $taskXmlDocument.CreateElement('TimeTrigger', $ns)
                         }
                         '*Logon*' {
-                            $triggerElement = $taskXmlDocument.CreateElement('LogonTrigger', $taskXmlDocument.DocumentElement.NamespaceURI)
+                            $triggerElement = $taskXmlDocument.CreateElement('LogonTrigger', $ns)
                         }
                         '*Boot*' {
-                            $triggerElement = $taskXmlDocument.CreateElement('BootTrigger', $taskXmlDocument.DocumentElement.NamespaceURI)
+                            $triggerElement = $taskXmlDocument.CreateElement('BootTrigger', $ns)
                         }
                         default {
-                            $triggerElement = $taskXmlDocument.CreateElement('TimeTrigger', $taskXmlDocument.DocumentElement.NamespaceURI)
+                            $triggerElement = $taskXmlDocument.CreateElement('TimeTrigger', $ns)
                         }
                     }
 
                     if ($triggerElement) {
                         # Add start boundary if available
                         if ($trig.StartBoundary) {
-                            $startBoundary = $taskXmlDocument.CreateElement('StartBoundary', $taskXmlDocument.DocumentElement.NamespaceURI)
+                            $startBoundary = $taskXmlDocument.CreateElement('StartBoundary', $ns)
                             $startBoundary.InnerText = $trig.StartBoundary
                             $triggerElement.PrependChild($startBoundary) | Out-Null
                         }
 
                         # Add enabled status
-                        $enabled = $taskXmlDocument.CreateElement('Enabled', $taskXmlDocument.DocumentElement.NamespaceURI)
-                        $enabled.InnerText = if ($trig.Enabled -eq $false) { 'false' } else { 'true' }
+                        $enabled = $taskXmlDocument.CreateElement('Enabled', $ns)
+                        $enabled.InnerText = if ($trig.Enabled -eq $false) {
+                            'false'
+                        }
+                        else {
+                            'true'
+                        }
                         $triggerElement.AppendChild($enabled) | Out-Null
 
                         $triggersNode.AppendChild($triggerElement) | Out-Null
@@ -401,21 +422,22 @@ function Set-StmClusteredScheduledTask {
             if ($PSBoundParameters.ContainsKey('Settings')) {
                 Write-Verbose 'Modifying Settings in task XML...'
                 $settingsNode = $taskXmlDocument.Task.Settings
+                $ns = $taskXmlDocument.DocumentElement.NamespaceURI
 
                 # Map common settings properties to XML elements
                 $settingsMap = @{
-                    'AllowDemandStart'             = 'AllowStartOnDemand'
-                    'AllowHardTerminate'           = 'AllowHardTerminate'
-                    'DisallowStartIfOnBatteries'   = 'DisallowStartIfOnBatteries'
-                    'StopIfGoingOnBatteries'       = 'StopIfGoingOnBatteries'
-                    'Hidden'                       = 'Hidden'
-                    'RunOnlyIfNetworkAvailable'    = 'RunOnlyIfNetworkAvailable'
-                    'Enabled'                      = 'Enabled'
-                    'WakeToRun'                    = 'WakeToRun'
-                    'RunOnlyIfIdle'                = 'RunOnlyIfIdle'
-                    'StartWhenAvailable'           = 'StartWhenAvailable'
+                    'AllowDemandStart'                = 'AllowStartOnDemand'
+                    'AllowHardTerminate'              = 'AllowHardTerminate'
+                    'DisallowStartIfOnBatteries'      = 'DisallowStartIfOnBatteries'
+                    'StopIfGoingOnBatteries'          = 'StopIfGoingOnBatteries'
+                    'Hidden'                          = 'Hidden'
+                    'RunOnlyIfNetworkAvailable'       = 'RunOnlyIfNetworkAvailable'
+                    'Enabled'                         = 'Enabled'
+                    'WakeToRun'                       = 'WakeToRun'
+                    'RunOnlyIfIdle'                   = 'RunOnlyIfIdle'
+                    'StartWhenAvailable'              = 'StartWhenAvailable'
                     'DisallowStartOnRemoteAppSession' = 'DisallowStartOnRemoteAppSession'
-                    'UseUnifiedSchedulingEngine'   = 'UseUnifiedSchedulingEngine'
+                    'UseUnifiedSchedulingEngine'      = 'UseUnifiedSchedulingEngine'
                 }
 
                 foreach ($prop in $settingsMap.Keys) {
@@ -427,7 +449,7 @@ function Set-StmClusteredScheduledTask {
                             $existingNode.InnerText = $value.ToString().ToLower()
                         }
                         else {
-                            $newNode = $taskXmlDocument.CreateElement($xmlProp, $taskXmlDocument.DocumentElement.NamespaceURI)
+                            $newNode = $taskXmlDocument.CreateElement($xmlProp, $ns)
                             $newNode.InnerText = $value.ToString().ToLower()
                             $settingsNode.AppendChild($newNode) | Out-Null
                         }
@@ -441,7 +463,7 @@ function Set-StmClusteredScheduledTask {
                         $priorityNode.InnerText = $Settings.Priority.ToString()
                     }
                     else {
-                        $newNode = $taskXmlDocument.CreateElement('Priority', $taskXmlDocument.DocumentElement.NamespaceURI)
+                        $newNode = $taskXmlDocument.CreateElement('Priority', $ns)
                         $newNode.InnerText = $Settings.Priority.ToString()
                         $settingsNode.AppendChild($newNode) | Out-Null
                     }
@@ -454,7 +476,7 @@ function Set-StmClusteredScheduledTask {
                         $limitNode.InnerText = $Settings.ExecutionTimeLimit.ToString()
                     }
                     else {
-                        $newNode = $taskXmlDocument.CreateElement('ExecutionTimeLimit', $taskXmlDocument.DocumentElement.NamespaceURI)
+                        $newNode = $taskXmlDocument.CreateElement('ExecutionTimeLimit', $ns)
                         $newNode.InnerText = $Settings.ExecutionTimeLimit.ToString()
                         $settingsNode.AppendChild($newNode) | Out-Null
                     }
@@ -466,6 +488,7 @@ function Set-StmClusteredScheduledTask {
                 Write-Verbose 'Modifying Principal in task XML...'
                 $principalsNode = $taskXmlDocument.Task.Principals
                 $principalNode = $principalsNode.Principal
+                $ns = $taskXmlDocument.DocumentElement.NamespaceURI
 
                 if ($Principal.UserId) {
                     $userIdNode = $principalNode.SelectSingleNode('UserId')
@@ -473,7 +496,7 @@ function Set-StmClusteredScheduledTask {
                         $userIdNode.InnerText = $Principal.UserId
                     }
                     else {
-                        $newNode = $taskXmlDocument.CreateElement('UserId', $taskXmlDocument.DocumentElement.NamespaceURI)
+                        $newNode = $taskXmlDocument.CreateElement('UserId', $ns)
                         $newNode.InnerText = $Principal.UserId
                         $principalNode.AppendChild($newNode) | Out-Null
                     }
@@ -482,18 +505,30 @@ function Set-StmClusteredScheduledTask {
                 if ($Principal.LogonType) {
                     $logonTypeNode = $principalNode.SelectSingleNode('LogonType')
                     $logonTypeValue = switch ($Principal.LogonType) {
-                        'Password' { 'Password' }
-                        'S4U' { 'S4U' }
-                        'Interactive' { 'InteractiveToken' }
-                        'InteractiveOrPassword' { 'InteractiveTokenOrPassword' }
-                        'ServiceAccount' { 'ServiceAccount' }
-                        default { $Principal.LogonType.ToString() }
+                        'Password' {
+                            'Password'
+                        }
+                        'S4U' {
+                            'S4U'
+                        }
+                        'Interactive' {
+                            'InteractiveToken'
+                        }
+                        'InteractiveOrPassword' {
+                            'InteractiveTokenOrPassword'
+                        }
+                        'ServiceAccount' {
+                            'ServiceAccount'
+                        }
+                        default {
+                            $Principal.LogonType.ToString()
+                        }
                     }
                     if ($logonTypeNode) {
                         $logonTypeNode.InnerText = $logonTypeValue
                     }
                     else {
-                        $newNode = $taskXmlDocument.CreateElement('LogonType', $taskXmlDocument.DocumentElement.NamespaceURI)
+                        $newNode = $taskXmlDocument.CreateElement('LogonType', $ns)
                         $newNode.InnerText = $logonTypeValue
                         $principalNode.AppendChild($newNode) | Out-Null
                     }
@@ -502,15 +537,21 @@ function Set-StmClusteredScheduledTask {
                 if ($Principal.RunLevel) {
                     $runLevelNode = $principalNode.SelectSingleNode('RunLevel')
                     $runLevelValue = switch ($Principal.RunLevel) {
-                        'Highest' { 'HighestAvailable' }
-                        'Limited' { 'LeastPrivilege' }
-                        default { $Principal.RunLevel.ToString() }
+                        'Highest' {
+                            'HighestAvailable'
+                        }
+                        'Limited' {
+                            'LeastPrivilege'
+                        }
+                        default {
+                            $Principal.RunLevel.ToString()
+                        }
                     }
                     if ($runLevelNode) {
                         $runLevelNode.InnerText = $runLevelValue
                     }
                     else {
-                        $newNode = $taskXmlDocument.CreateElement('RunLevel', $taskXmlDocument.DocumentElement.NamespaceURI)
+                        $newNode = $taskXmlDocument.CreateElement('RunLevel', $ns)
                         $newNode.InnerText = $runLevelValue
                         $principalNode.AppendChild($newNode) | Out-Null
                     }
@@ -522,13 +563,14 @@ function Set-StmClusteredScheduledTask {
                 Write-Verbose 'Modifying User in task XML...'
                 $principalsNode = $taskXmlDocument.Task.Principals
                 $principalNode = $principalsNode.Principal
+                $ns = $taskXmlDocument.DocumentElement.NamespaceURI
 
                 $userIdNode = $principalNode.SelectSingleNode('UserId')
                 if ($userIdNode) {
                     $userIdNode.InnerText = $User
                 }
                 else {
-                    $newNode = $taskXmlDocument.CreateElement('UserId', $taskXmlDocument.DocumentElement.NamespaceURI)
+                    $newNode = $taskXmlDocument.CreateElement('UserId', $ns)
                     $newNode.InnerText = $User
                     $principalNode.AppendChild($newNode) | Out-Null
                 }
@@ -540,7 +582,7 @@ function Set-StmClusteredScheduledTask {
                         $logonTypeNode.InnerText = 'Password'
                     }
                     else {
-                        $newNode = $taskXmlDocument.CreateElement('LogonType', $taskXmlDocument.DocumentElement.NamespaceURI)
+                        $newNode = $taskXmlDocument.CreateElement('LogonType', $ns)
                         $newNode.InnerText = 'Password'
                         $principalNode.AppendChild($newNode) | Out-Null
                     }
@@ -564,7 +606,8 @@ function Set-StmClusteredScheduledTask {
                 }
                 Unregister-ClusteredScheduledTask @unregisterParams
 
-                Write-Verbose "Re-registering clustered scheduled task '$effectiveTaskName' with modified configuration..."
+                $msg = "Re-registering clustered task '$effectiveTaskName'..."
+                Write-Verbose $msg
                 $registerParams = @{
                     TaskName   = $effectiveTaskName
                     Cluster    = $Cluster
@@ -573,7 +616,7 @@ function Set-StmClusteredScheduledTask {
                     Credential = $Credential
                 }
 
-                $result = Register-StmClusteredScheduledTask @registerParams
+                $null = Register-StmClusteredScheduledTask @registerParams
 
                 $successMsg = "Clustered scheduled task '$effectiveTaskName' has been successfully modified."
                 Write-Verbose $successMsg

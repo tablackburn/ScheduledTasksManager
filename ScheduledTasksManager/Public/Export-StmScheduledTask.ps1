@@ -58,7 +58,13 @@ function Export-StmScheduledTask {
 
     .EXAMPLE
         $credentials = Get-Credential
-        Export-StmScheduledTask -TaskName "ReportTask" -ComputerName "Server02" -Credential $credentials -FilePath "C:\Export\ReportTask.xml"
+        $params = @{
+            TaskName     = 'ReportTask'
+            ComputerName = 'Server02'
+            Credential   = $credentials
+            FilePath     = 'C:\Export\ReportTask.xml'
+        }
+        Export-StmScheduledTask @params
 
         Exports a task from a remote computer using specified credentials and saves to a file.
 
@@ -141,7 +147,7 @@ function Export-StmScheduledTask {
                 CimSession  = $cimSession
                 ErrorAction = 'Stop'
             }
-            $task = Get-ScheduledTask @getScheduledTaskParameters
+            $null = Get-ScheduledTask @getScheduledTaskParameters
 
             # Export to XML
             $exportScheduledTaskParameters = @{

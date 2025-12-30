@@ -155,14 +155,21 @@ function Wait-StmScheduledTask {
 
                 if ($task.State -ne 'Running') {
                     $stopwatch.Stop()
-                    $elapsedMsg = "Task '$TaskName' is no longer running. State: $($task.State). " +
-                        "Elapsed time: $([math]::Round($stopwatch.Elapsed.TotalSeconds, 1)) seconds."
+                    $elapsed = [math]::Round($stopwatch.Elapsed.TotalSeconds, 1)
+                    $elapsedMsg = @(
+                        "Task '$TaskName' is no longer running."
+                        "State: $($task.State). Elapsed time: $elapsed seconds."
+                    ) -join ' '
                     Write-Verbose $elapsedMsg
                     return $true
                 }
 
                 $remainingSeconds = [math]::Round($TimeoutSeconds - $stopwatch.Elapsed.TotalSeconds, 0)
-                Write-Verbose "Task '$TaskName' is still running. Waiting $PollingIntervalSeconds seconds... ($remainingSeconds seconds remaining)"
+                $waitMsg = @(
+                    "Task '$TaskName' is still running."
+                    "Waiting $PollingIntervalSeconds seconds... ($remainingSeconds seconds remaining)"
+                ) -join ' '
+                Write-Verbose $waitMsg
                 Start-Sleep -Seconds $PollingIntervalSeconds
             }
 

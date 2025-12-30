@@ -136,7 +136,11 @@ function Unregister-StmScheduledTask {
     process {
         if ($PSCmdlet.ShouldProcess("$TaskName at $TaskPath on $ComputerName", 'Unregister (delete) scheduled task')) {
             try {
-                Write-Verbose "Unregistering scheduled task '$TaskName' at path '$TaskPath' on computer '$ComputerName'..."
+                $verboseMsg = @(
+                    "Unregistering scheduled task '$TaskName'"
+                    "at path '$TaskPath' on computer '$ComputerName'..."
+                ) -join ' '
+                Write-Verbose $verboseMsg
                 $unregisterScheduledTaskParameters = @{
                     TaskName    = $TaskName
                     TaskPath    = $TaskPath

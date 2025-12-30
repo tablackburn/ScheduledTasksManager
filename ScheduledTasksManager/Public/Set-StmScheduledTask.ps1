@@ -96,7 +96,8 @@ function Set-StmScheduledTask {
         is available and to wake the computer if needed.
 
     .EXAMPLE
-        Get-StmScheduledTask -TaskName 'ReportTask' | Set-StmScheduledTask -User 'DOMAIN\ServiceAccount' -Password 'P@ssw0rd'
+        Get-StmScheduledTask -TaskName 'ReportTask' |
+            Set-StmScheduledTask -User 'DOMAIN\ServiceAccount' -Password 'P@ssw0rd'
 
         Uses pipeline input to modify the user account under which the task runs.
 
@@ -109,7 +110,14 @@ function Set-StmScheduledTask {
 
     .EXAMPLE
         $cred = Get-Credential
-        Set-StmScheduledTask -TaskName 'RemoteTask' -ComputerName 'Server02' -Credential $cred -User 'LocalAdmin' -Password 'Secret123'
+        $params = @{
+            TaskName     = 'RemoteTask'
+            ComputerName = 'Server02'
+            Credential   = $cred
+            User         = 'LocalAdmin'
+            Password     = 'Secret123'
+        }
+        Set-StmScheduledTask @params
 
         Modifies a task on a remote server using specified credentials for the connection, and changes the
         user account that the task runs under.
@@ -233,7 +241,10 @@ function Set-StmScheduledTask {
         $modificationParams = @('Action', 'Trigger', 'Settings', 'Principal', 'User', 'Password')
         $hasModification = $modificationParams | Where-Object { $PSBoundParameters.ContainsKey($_) }
         if (-not $hasModification) {
-            $errorMsg = 'At least one task property (Action, Trigger, Settings, Principal, User, or Password) must be specified.'
+            $errorMsg = @(
+                'At least one task property (Action, Trigger, Settings, Principal,'
+                'User, or Password) must be specified.'
+            ) -join ' '
             $errorRecordParameters = @{
                 Exception         = [System.ArgumentException]::new($errorMsg)
                 ErrorId           = 'NoModificationSpecified'
@@ -300,7 +311,11 @@ function Set-StmScheduledTask {
             $operation = 'Set scheduled task properties'
 
             if ($PSCmdlet.ShouldProcess($target, $operation)) {
-                Write-Verbose "Modifying scheduled task '$effectiveTaskName' at path '$effectiveTaskPath' on computer '$effectiveComputerName'..."
+                $verboseMsg = @(
+                    "Modifying scheduled task '$effectiveTaskName'"
+                    "at path '$effectiveTaskPath' on computer '$effectiveComputerName'..."
+                ) -join ' '
+                Write-Verbose $verboseMsg
 
                 # Build Set-ScheduledTask parameters
                 $setScheduledTaskParameters = @{

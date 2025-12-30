@@ -161,7 +161,11 @@ function Register-StmScheduledTask {
             }
 
             if ($PSCmdlet.ShouldProcess("$TaskName at $TaskPath on $ComputerName", 'Register scheduled task')) {
-                Write-Verbose "Registering scheduled task '$TaskName' at path '$TaskPath' on computer '$ComputerName'..."
+                $verboseMsg = @(
+                    "Registering scheduled task '$TaskName'"
+                    "at path '$TaskPath' on computer '$ComputerName'..."
+                ) -join ' '
+                Write-Verbose $verboseMsg
 
                 $registerScheduledTaskParameters = @{
                     TaskName    = $TaskName
