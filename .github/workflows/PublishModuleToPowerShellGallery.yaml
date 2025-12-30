@@ -80,6 +80,47 @@ jobs:
             --title "v${{ steps.version.outputs.version }}" \
             --generate-notes
 
+      - name: Build and Debug Help Generation
+        if: steps.check_release.outputs.exists == 'false' && steps.check_psgallery.outputs.IN_GALLERY == 'False'
+        run: |
+          # Build the module first
+          ./build.ps1 -Task 'Build' -Bootstrap
+
+          # Debug: Show the output directory structure
+          Write-Host "=== Output Directory Structure ===" -ForegroundColor Cyan
+          Get-ChildItem -Path "./Output" -Recurse | Select-Object FullName
+
+          # Debug: Check if help XML exists
+          $helpXmlPath = "./Output/ScheduledTasksManager/0.10.0/en-US/ScheduledTasksManager-help.xml"
+          if (Test-Path $helpXmlPath) {
+              Write-Host "=== Help XML exists ===" -ForegroundColor Green
+              Write-Host "File size: $((Get-Item $helpXmlPath).Length) bytes"
+
+              # Check for Set-StmScheduledTask in the help XML
+              $content = Get-Content $helpXmlPath -Raw
+              if ($content -match 'Set-StmScheduledTask') {
+                  Write-Host "=== Set-StmScheduledTask found in help XML ===" -ForegroundColor Green
+                  # Show the synopsis section
+                  if ($content -match '(?s)<command:name>Set-StmScheduledTask</command:name>.*?<maml:description>.*?<maml:para>(.*?)</maml:para>') {
+                      Write-Host "Synopsis from XML: $($matches[1].Substring(0, [Math]::Min(100, $matches[1].Length)))..."
+                  }
+              } else {
+                  Write-Host "=== ERROR: Set-StmScheduledTask NOT found in help XML ===" -ForegroundColor Red
+              }
+          } else {
+              Write-Host "=== ERROR: Help XML not found at $helpXmlPath ===" -ForegroundColor Red
+          }
+
+          # Debug: Import module and check Get-Help
+          Write-Host ""
+          Write-Host "=== Testing Get-Help ===" -ForegroundColor Cyan
+          $modulePath = "./Output/ScheduledTasksManager/0.10.0/ScheduledTasksManager.psd1"
+          Import-Module $modulePath -Force
+          $help = Get-Help Set-StmScheduledTask
+          Write-Host "Synopsis type: $($help.Synopsis.GetType().Name)"
+          Write-Host "Synopsis value: $($help.Synopsis)"
+          Write-Host "Description: $($help.Description.Text)"
+
       - name: Publish to PSGallery
         if: steps.check_release.outputs.exists == 'false' && steps.check_psgallery.outputs.IN_GALLERY == 'False'
         env:
