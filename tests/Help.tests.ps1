@@ -33,12 +33,6 @@
 param()
 
 BeforeDiscovery {
-    # DEBUG: Output module and help paths for troubleshooting
-    Write-Host "=== Help.tests.ps1 BeforeDiscovery Debug ===" -ForegroundColor Magenta
-    Write-Host "PSScriptRoot: $PSScriptRoot"
-    Write-Host "BHBuildOutput: $Env:BHBuildOutput"
-    Write-Host "BHProjectName: $Env:BHProjectName"
-
     function global:FilterOutCommonParameters {
         <#
         .SYNOPSIS
@@ -92,20 +86,6 @@ BeforeDiscovery {
     Get-Module $Env:BHProjectName | Remove-Module -Force -ErrorAction 'Ignore'
     Import-Module -Name $moduleManifestPath -Verbose:$false -ErrorAction 'Stop'
 
-    # DEBUG: Check module location and help file
-    $loadedModule = Get-Module $Env:BHProjectName
-    Write-Host "Module loaded from: $($loadedModule.ModuleBase)" -ForegroundColor Magenta
-    $helpXmlPath = Join-Path $loadedModule.ModuleBase "en-US\ScheduledTasksManager-help.xml"
-    Write-Host "Help XML exists: $(Test-Path $helpXmlPath)" -ForegroundColor Magenta
-    if (Test-Path $helpXmlPath) {
-        Write-Host "Help XML size: $((Get-Item $helpXmlPath).Length) bytes" -ForegroundColor Magenta
-    }
-
-    # DEBUG: Test Get-Help for Set-StmScheduledTask specifically
-    $testHelp = Get-Help Set-StmScheduledTask -ErrorAction SilentlyContinue
-    Write-Host "Set-StmScheduledTask Synopsis: $($testHelp.Synopsis)" -ForegroundColor Magenta
-    Write-Host "Set-StmScheduledTask Description null: $($null -eq $testHelp.Description)" -ForegroundColor Magenta
-
     # Get module commands
     $getCommandParameters = @{
         Module      = (Get-Module $Env:BHProjectName)
@@ -133,6 +113,17 @@ BeforeAll {
         }
         Invoke-psake @invokePsakeParameters
     }
+
+    # Ensure module is imported from Output directory (other test files may reimport from source)
+    # This is critical for help tests because help XML only exists in Output directory
+    $projectRoot = Split-Path -Parent $PSScriptRoot
+    $sourceManifest = Join-Path $projectRoot "$Env:BHProjectName/$Env:BHProjectName.psd1"
+    $moduleVersion = (Import-PowerShellDataFile -Path $sourceManifest).ModuleVersion
+    $buildOutput = Join-Path $projectRoot "Output/$Env:BHProjectName/$moduleVersion"
+    $moduleManifestPath = Join-Path -Path $buildOutput -ChildPath "$Env:BHProjectName.psd1"
+
+    Get-Module $Env:BHProjectName | Remove-Module -Force -ErrorAction 'Ignore'
+    Import-Module -Name $moduleManifestPath -Verbose:$false -ErrorAction 'Stop'
 }
 
 Describe "Test help for <_.Name>" -ForEach $commands {
@@ -151,15 +142,6 @@ Describe "Test help for <_.Name>" -ForEach $commands {
         $command                = $_
         $commandName            = $_.Name
         $commandHelp            = Get-Help -Name $command.Name -ErrorAction 'SilentlyContinue'
-
-        # DEBUG: Check if help is loading correctly for Set-Stm cmdlets during test execution
-        if ($command.Name -like 'Set-Stm*') {
-            Write-Host "=== BeforeAll Debug for $($command.Name) ===" -ForegroundColor Yellow
-            Write-Host "Module loaded: $((Get-Module ScheduledTasksManager).ModuleBase)" -ForegroundColor Yellow
-            Write-Host "Synopsis: $($commandHelp.Synopsis)" -ForegroundColor Yellow
-            Write-Host "Synopsis type: $($commandHelp.Synopsis.GetType().Name)" -ForegroundColor Yellow
-            Write-Host "Description null: $($null -eq $commandHelp.Description)" -ForegroundColor Yellow
-        }
         $commandParameters      = global:FilterOutCommonParameters -Parameters $command.ParameterSets.Parameters
         $commandParameterNames  = $commandParameters.Name
         $helpParameters         = global:FilterOutCommonParameters -Parameters $commandHelp.Parameters.Parameter
