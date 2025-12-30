@@ -1,4 +1,8 @@
 function Set-StmClusteredScheduledTask {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingUsernameAndPasswordParams', '',
+        Justification = 'Mirrors native scheduled task cmdlet interface which uses User/Password strings')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '',
+        Justification = 'Mirrors native scheduled task cmdlet interface which uses plain text password')]
     <#
     .SYNOPSIS
         Modifies a clustered scheduled task in a Windows failover cluster.

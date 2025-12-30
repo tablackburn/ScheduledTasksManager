@@ -1,4 +1,8 @@
 function Set-StmScheduledTask {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingUsernameAndPasswordParams', '',
+        Justification = 'Mirrors native Set-ScheduledTask cmdlet interface which uses User/Password strings')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '',
+        Justification = 'Mirrors native Set-ScheduledTask cmdlet interface which uses plain text password')]
     <#
     .SYNOPSIS
         Modifies a scheduled task on a local or remote computer.
