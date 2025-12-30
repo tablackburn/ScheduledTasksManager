@@ -1,12 +1,12 @@
 # ScheduledTasksManager
 
-`ScheduledTasksManager` is a PowerShell module for managing both local and clustered scheduled tasks on Windows systems. It supports operations in standalone environments as well as Windows Server Failover Clusters, extending the capabilities of the built-in `ScheduledTasks` module from Microsoft.
-
-[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ScheduledTasksManager)](https://www.powershellgallery.com/packages/ScheduledTasksManager/)
-![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/ScheduledTasksManager)
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/tablackburn/ScheduledTasksManager/.github/workflows/CI.yaml?branch=main)
-![PowerShell Gallery](https://img.shields.io/powershellgallery/p/ScheduledTasksManager)
+[![PowerShell Gallery Downloads](https://img.shields.io/powershellgallery/dt/ScheduledTasksManager)](https://www.powershellgallery.com/packages/ScheduledTasksManager/)
+[![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/ScheduledTasksManager)](https://www.powershellgallery.com/packages/ScheduledTasksManager/)
+[![CI](https://img.shields.io/github/actions/workflow/status/tablackburn/ScheduledTasksManager/CI.yaml?branch=main)](https://github.com/tablackburn/ScheduledTasksManager/actions/workflows/CI.yaml)
+![Platform](https://img.shields.io/powershellgallery/p/ScheduledTasksManager)
 [![AI Assisted](https://img.shields.io/badge/AI-Assisted-blue)](https://claude.ai)
+
+`ScheduledTasksManager` is a PowerShell module for managing both local and clustered scheduled tasks on Windows systems. It supports operations in standalone environments as well as Windows Server Failover Clusters, extending the capabilities of the built-in `ScheduledTasks` module from Microsoft.
 
 Documentation automatically updated at [tablackburn.github.io/ScheduledTasksManager](https://tablackburn.github.io/ScheduledTasksManager/)
 
