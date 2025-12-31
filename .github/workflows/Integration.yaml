@@ -30,9 +30,6 @@ jobs:
         oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
         oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
         tags: tag:ci
-        args: --accept-routes --accept-dns=false
-      env:
-        TS_DEBUG_LOG: 1
 
     - name: Check Lab Availability
       id: lab-check
