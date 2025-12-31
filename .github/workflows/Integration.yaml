@@ -1,0 +1,110 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ScheduledTasksManager/**'
+      - 'tests/**'
+      - '.github/workflows/Integration.yaml'
+  workflow_dispatch:
+    inputs:
+      restore_snapshot:
+        description: 'Restore lab to baseline snapshot before testing'
+        type: boolean
+        default: false
+
+jobs:
+  integration-test:
+    name: Run Integration Tests
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Connect to Tailscale
+      uses: tailscale/github-action@v4
+      with:
+        oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+        oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+        tags: tag:ci
+
+    - name: Check Lab Availability
+      id: lab-check
+      env:
+        HYPERV_HOST: ${{ secrets.TS_HYPER_V_HOST }}
+      run: |
+        $available = $false
+
+        if ([string]::IsNullOrEmpty($env:HYPERV_HOST)) {
+          Write-Warning "TS_HYPER_V_HOST secret not configured - skipping integration tests"
+        }
+        else {
+          Write-Host "Checking connectivity to $env:HYPERV_HOST..."
+
+          # Check if host is reachable via ICMP
+          $pingResult = Test-Connection -ComputerName $env:HYPERV_HOST -Count 2 -Quiet -ErrorAction SilentlyContinue
+          if ($pingResult) {
+            Write-Host "  Host is reachable via ping"
+
+            # Check if WinRM port is open
+            $winrmResult = Test-NetConnection -ComputerName $env:HYPERV_HOST -Port 5985 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+            if ($winrmResult.TcpTestSucceeded) {
+              Write-Host "  WinRM port 5985 is open"
+              $available = $true
+            }
+            else {
+              Write-Warning "  WinRM port 5985 is not accessible"
+            }
+          }
+          else {
+            Write-Warning "  Host is not reachable via ping"
+          }
+        }
+
+        "lab-available=$available" >> $env:GITHUB_OUTPUT
+
+        if (-not $available) {
+          Write-Host ""
+          Write-Host "::warning::Lab environment not available - integration tests will be skipped"
+        }
+        else {
+          Write-Host ""
+          Write-Host "Lab environment is available - proceeding with integration tests"
+        }
+
+    - name: Run Integration Tests
+      if: steps.lab-check.outputs.lab-available == 'True'
+      env:
+        HYPERV_HOST: ${{ secrets.TS_HYPER_V_HOST }}
+        HYPERV_USER: ${{ secrets.HYPERV_USERNAME }}
+        HYPERV_PASS: ${{ secrets.HYPERV_PASSWORD }}
+        RESTORE_SNAPSHOT: ${{ github.event.inputs.restore_snapshot }}
+      run: |
+        $params = @{}
+        if ($env:RESTORE_SNAPSHOT -eq 'true') {
+          $params['RestoreSnapshot'] = $true
+        }
+        ./tests/Integration/Invoke-CIIntegrationTest.ps1 @params
+
+    - name: Upload Test Results
+      if: steps.lab-check.outputs.lab-available == 'True' && (success() || failure())
+      uses: actions/upload-artifact@v4
+      with:
+        name: integration-test-results
+        path: ./tests/Integration/out/
+        if-no-files-found: ignore
+
+    - name: Integration Tests Skipped
+      if: steps.lab-check.outputs.lab-available != 'True'
+      run: |
+        Write-Host "Integration tests were skipped because the lab environment is not available."
+        Write-Host ""
+        Write-Host "This is expected if:"
+        Write-Host "  - The Hyper-V host is offline or not connected to Tailscale"
+        Write-Host "  - GitHub secrets are not configured (TS_OAUTH_CLIENT_ID, TS_OAUTH_SECRET, TS_HYPER_V_HOST)"
+        Write-Host "  - Tailscale ACLs don't allow the CI tag to reach the host"
+        Write-Host ""
+        Write-Host "The PR is not blocked by this - integration tests are best-effort."
