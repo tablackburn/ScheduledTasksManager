@@ -1,0 +1,171 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ScheduledTasksManager/**'
+      - 'tests/**'
+      - '.github/workflows/Integration.yaml'
+  workflow_dispatch:
+    inputs:
+      restore_snapshot:
+        description: 'Restore lab to baseline snapshot before testing'
+        type: boolean
+        default: false
+
+concurrency:
+  group: integration-tests
+  cancel-in-progress: false
+
+jobs:
+  integration-test:
+    name: Run Integration Tests
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Connect to Tailscale
+      id: tailscale
+      uses: tailscale/github-action@v4
+      continue-on-error: true
+      with:
+        oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+        oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+        tags: tag:ci
+
+    - name: Tailscale Connection Failed
+      if: steps.tailscale.outcome == 'failure'
+      run: |
+        Write-Host "::warning::Tailscale connection failed - integration tests will be skipped"
+        Write-Host ""
+        Write-Host "Common causes:"
+        Write-Host "  - OAuth client missing 'Auth Keys' scope (read+write required)"
+        Write-Host "  - OAuth client missing 'Devices' scope (read+write required)"
+        Write-Host "  - tag:ci not properly configured in ACL tagOwners"
+        Write-Host "  - OAuth credentials expired or invalid"
+        Write-Host ""
+        Write-Host "See: https://tailscale.com/kb/1276/tailscale-github-action"
+
+    - name: Check Lab Availability
+      id: lab-check
+      if: steps.tailscale.outcome == 'success'
+      env:
+        HYPERV_HOST: ${{ secrets.TS_HYPER_V_HOST }}
+      run: |
+        $available = $false
+        $maxRetries = 3
+        $retryDelay = 10
+
+        if ([string]::IsNullOrEmpty($env:HYPERV_HOST)) {
+          Write-Warning "TS_HYPER_V_HOST secret not configured - skipping integration tests"
+        }
+        else {
+          for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
+            Write-Host "Checking connectivity to $env:HYPERV_HOST (attempt $attempt/$maxRetries)..."
+
+            # Check if host is reachable via ICMP
+            $pingResult = Test-Connection -ComputerName $env:HYPERV_HOST -Count 2 -Quiet -ErrorAction SilentlyContinue
+            if ($pingResult) {
+              Write-Host "  Host is reachable via ping"
+
+              # Check if WinRM port is open
+              $winrmResult = Test-NetConnection -ComputerName $env:HYPERV_HOST -Port 5985 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+              if ($winrmResult.TcpTestSucceeded) {
+                Write-Host "  WinRM port 5985 is open"
+                $available = $true
+                break
+              }
+              else {
+                Write-Warning "  WinRM port 5985 is not accessible"
+              }
+            }
+            else {
+              Write-Warning "  Host is not reachable via ping"
+            }
+
+            if ($attempt -lt $maxRetries) {
+              Write-Host "  Retrying in $retryDelay seconds..."
+              Start-Sleep -Seconds $retryDelay
+            }
+          }
+        }
+
+        "lab-available=$available" >> $env:GITHUB_OUTPUT
+
+        if (-not $available) {
+          Write-Host ""
+          Write-Host "::warning::Lab environment not available - integration tests will be skipped"
+        }
+        else {
+          Write-Host ""
+          Write-Host "Lab environment is available - proceeding with integration tests"
+        }
+
+    - name: Run Integration Tests
+      if: steps.tailscale.outcome == 'success' && steps.lab-check.outputs.lab-available == 'True'
+      env:
+        HYPERV_HOST: ${{ secrets.TS_HYPER_V_HOST }}
+        HYPERV_USER: ${{ secrets.HYPERV_USERNAME }}
+        HYPERV_PASS: ${{ secrets.HYPERV_PASSWORD }}
+        RESTORE_SNAPSHOT: ${{ github.event.inputs.restore_snapshot }}
+      run: |
+        # Copy example config for CI (uses default lab values)
+        Copy-Item -Path ./integration-test-config.example.json -Destination ./integration-test-config.json
+
+        # Add Hyper-V host to TrustedHosts for WinRM (runner is not domain-joined)
+        Set-Item WSMan:\localhost\Client\TrustedHosts -Value $env:HYPERV_HOST -Force
+
+        $params = @{}
+        if ($env:RESTORE_SNAPSHOT -eq 'true') {
+          $params['RestoreSnapshot'] = $true
+        }
+
+        # Retry logic for transient failures
+        $maxRetries = 2
+        $lastError = $null
+
+        for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
+          try {
+            Write-Host "Running integration tests (attempt $attempt/$maxRetries)..."
+            ./tests/Integration/Invoke-CIIntegrationTest.ps1 @params
+            $lastError = $null
+            break
+          }
+          catch {
+            $lastError = $_
+            Write-Warning "Attempt $attempt failed: $($_.Exception.Message)"
+            if ($attempt -lt $maxRetries) {
+              Write-Host "Retrying in 30 seconds..."
+              Start-Sleep -Seconds 30
+            }
+          }
+        }
+
+        if ($lastError) {
+          throw $lastError
+        }
+
+    - name: Upload Test Results
+      if: steps.tailscale.outcome == 'success' && steps.lab-check.outputs.lab-available == 'True' && (success() || failure())
+      uses: actions/upload-artifact@v4
+      with:
+        name: integration-test-results
+        path: ./tests/Integration/out/
+        if-no-files-found: ignore
+
+    - name: Integration Tests Skipped
+      if: steps.tailscale.outcome == 'failure' || steps.lab-check.outputs.lab-available != 'True'
+      run: |
+        Write-Host "Integration tests were skipped because the lab environment is not available."
+        Write-Host ""
+        Write-Host "This is expected if:"
+        Write-Host "  - Tailscale connection failed (check OAuth client scopes)"
+        Write-Host "  - The Hyper-V host is offline or not connected to Tailscale"
+        Write-Host "  - GitHub secrets are not configured (TS_OAUTH_CLIENT_ID, TS_OAUTH_SECRET, TS_HYPER_V_HOST)"
+        Write-Host "  - Tailscale ACLs don't allow the CI tag to reach the host"
+        Write-Host ""
+        Write-Host "The PR is not blocked by this - integration tests are best-effort."
