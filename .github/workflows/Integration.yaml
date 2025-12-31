@@ -1,11 +1,17 @@
 name: Integration Tests
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'ScheduledTasksManager/**'
+      - 'tests/Integration/**'
+      - '.github/workflows/Integration.yaml'
   pull_request:
     branches: [main]
     paths:
       - 'ScheduledTasksManager/**'
-      - 'tests/**'
+      - 'tests/Integration/**'
       - '.github/workflows/Integration.yaml'
   workflow_dispatch:
     inputs:
