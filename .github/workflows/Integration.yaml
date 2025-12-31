@@ -99,6 +99,9 @@ jobs:
         HYPERV_PASS: ${{ secrets.HYPERV_PASSWORD }}
         RESTORE_SNAPSHOT: ${{ github.event.inputs.restore_snapshot }}
       run: |
+        # Copy example config for CI (uses default lab values)
+        Copy-Item -Path ./integration-test-config.example.json -Destination ./integration-test-config.json
+
         $params = @{}
         if ($env:RESTORE_SNAPSHOT -eq 'true') {
           $params['RestoreSnapshot'] = $true
