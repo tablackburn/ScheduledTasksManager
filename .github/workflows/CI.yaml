@@ -31,3 +31,8 @@ jobs:
       with:
         name: test-results
         path: ./tests/out/testResults.xml
+    - uses: codecov/codecov-action@v5
+      if: ${{ !env.ACT }}
+      with:
+        files: ./coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
