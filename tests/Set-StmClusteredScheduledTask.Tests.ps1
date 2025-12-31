@@ -184,12 +184,208 @@ InModuleScope 'ScheduledTasksManager' {
                     $Xml -like '*<Command>notepad.exe</Command>*'
                 }
             }
+
+            It 'Should include Arguments in task XML when Action has Arguments' {
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Action $mockAction -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<Arguments>-test</Arguments>*'
+                }
+            }
+
+            It 'Should include WorkingDirectory in task XML when Action has WorkingDirectory' {
+                $actionWithWorkingDir = New-ScheduledTaskAction -Execute 'notepad.exe' -WorkingDirectory 'C:\Temp'
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Action $actionWithWorkingDir -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<WorkingDirectory>C:\Temp</WorkingDirectory>*'
+                }
+            }
+        }
+
+        Context 'Trigger Modification' {
+            It 'Should modify Triggers in task XML when Trigger parameter is specified' {
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Trigger $mockTrigger -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1
+            }
+
+            It 'Should handle Daily trigger type' {
+                $dailyTrigger = New-ScheduledTaskTrigger -Daily -At '3:00 AM'
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Trigger $dailyTrigger -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<CalendarTrigger*' -and $Xml -like '*<ScheduleByDay*' -and $Xml -like '*<DaysInterval>*'
+                }
+            }
+
+            It 'Should handle Weekly trigger type' {
+                $weeklyTrigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At '3:00 AM'
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Trigger $weeklyTrigger -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<CalendarTrigger*' -and $Xml -like '*<ScheduleByWeek*'
+                }
+            }
+
+            It 'Should handle Once trigger type (TimeTrigger)' {
+                $onceTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddHours(1)
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Trigger $onceTrigger -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<TimeTrigger*'
+                }
+            }
+
+            It 'Should handle AtLogon trigger type' {
+                $logonTrigger = New-ScheduledTaskTrigger -AtLogon
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Trigger $logonTrigger -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<LogonTrigger*'
+                }
+            }
+
+            It 'Should handle AtStartup trigger type' {
+                $bootTrigger = New-ScheduledTaskTrigger -AtStartup
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Trigger $bootTrigger -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<BootTrigger*'
+                }
+            }
+
+            It 'Should set trigger Enabled status to false when trigger is disabled' {
+                $disabledTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddHours(1)
+                $disabledTrigger.Enabled = $false
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Trigger $disabledTrigger -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<Enabled>false</Enabled>*'
+                }
+            }
+
+            It 'Should include StartBoundary when trigger has StartBoundary' {
+                $triggerWithStart = New-ScheduledTaskTrigger -Once -At '2024-06-15T10:00:00'
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Trigger $triggerWithStart -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<StartBoundary>*'
+                }
+            }
         }
 
         Context 'Settings Modification' {
             It 'Should modify Settings in task XML when Settings parameter is specified' {
                 Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Settings $mockSettings -Confirm:$false @commonParameters
 
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1
+            }
+
+            It 'Should handle Priority setting' {
+                $settingsWithPriority = New-ScheduledTaskSettingsSet -Priority 5
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Settings $settingsWithPriority -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<Priority>5</Priority>*'
+                }
+            }
+
+            It 'Should handle ExecutionTimeLimit setting' {
+                $settingsWithLimit = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Settings $settingsWithLimit -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<ExecutionTimeLimit>*'
+                }
+            }
+
+            It 'Should handle boolean settings properties' {
+                $settingsWithBools = New-ScheduledTaskSettingsSet -Hidden -WakeToRun -RunOnlyIfNetworkAvailable
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Settings $settingsWithBools -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1
+            }
+        }
+
+        Context 'Principal Modification' {
+            It 'Should modify Principal UserId in task XML' {
+                $principal = New-ScheduledTaskPrincipal -UserId 'DOMAIN\AdminUser' -LogonType Password
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Principal $principal -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<UserId>DOMAIN\AdminUser</UserId>*'
+                }
+            }
+
+            It 'Should handle S4U LogonType' {
+                $principal = New-ScheduledTaskPrincipal -UserId 'DOMAIN\User' -LogonType S4U
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Principal $principal -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<LogonType>S4U</LogonType>*'
+                }
+            }
+
+            It 'Should handle Interactive LogonType' {
+                $principal = New-ScheduledTaskPrincipal -UserId 'DOMAIN\User' -LogonType Interactive
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Principal $principal -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<LogonType>InteractiveToken</LogonType>*'
+                }
+            }
+
+            It 'Should handle InteractiveOrPassword LogonType' {
+                $principal = New-ScheduledTaskPrincipal -UserId 'DOMAIN\User' -LogonType InteractiveOrPassword
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Principal $principal -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<LogonType>InteractiveTokenOrPassword</LogonType>*'
+                }
+            }
+
+            It 'Should handle ServiceAccount LogonType' {
+                $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Principal $principal -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<LogonType>ServiceAccount</LogonType>*'
+                }
+            }
+
+            It 'Should handle Highest RunLevel' {
+                $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Principal $principal -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<RunLevel>HighestAvailable</RunLevel>*'
+                }
+            }
+
+            It 'Should handle Limited RunLevel' {
+                $principal = New-ScheduledTaskPrincipal -UserId 'DOMAIN\User' -LogonType Password -RunLevel Limited
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Principal $principal -Confirm:$false @commonParameters
+
+                # Verify registration was called (RunLevel is handled internally)
                 Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1
             }
         }
@@ -209,6 +405,41 @@ InModuleScope 'ScheduledTasksManager' {
                 # Password sets LogonType to Password in XML
                 Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
                     $Xml -like '*<UserId>DOMAIN\TestUser</UserId>*' -and $Xml -like '*<LogonType>Password</LogonType>*'
+                }
+            }
+
+            It 'Should create new UserId node when not present in XML' {
+                # Use mock XML without UserId node
+                Mock -CommandName 'Export-StmClusteredScheduledTask' -MockWith {
+                    return @'
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+    <Actions>
+        <Exec>
+            <Command>cmd.exe</Command>
+        </Exec>
+    </Actions>
+    <Triggers>
+        <TimeTrigger>
+            <StartBoundary>2024-01-01T00:00:00</StartBoundary>
+            <Enabled>true</Enabled>
+        </TimeTrigger>
+    </Triggers>
+    <Principals>
+        <Principal>
+            <LogonType>ServiceAccount</LogonType>
+        </Principal>
+    </Principals>
+    <Settings>
+        <Enabled>true</Enabled>
+    </Settings>
+</Task>
+'@
+                }
+
+                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -User 'NewUser' -Confirm:$false @commonParameters
+
+                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $Xml -like '*<UserId>NewUser</UserId>*'
                 }
             }
         }

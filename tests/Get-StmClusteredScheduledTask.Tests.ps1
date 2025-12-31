@@ -123,5 +123,97 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 $result.Count | Should -Be 1
             }
         }
+
+        Context 'CimSession parameter' {
+            It 'Should use provided CimSession instead of creating new one' -Skip {
+                # This test is skipped because CimSession cannot be easily mocked
+                # The CimSession parameter requires a real Microsoft.Management.Infrastructure.CimSession object
+                # which cannot be constructed in tests without actual connectivity
+            }
+        }
+
+        Context 'TaskType parameter' {
+            It 'Should pass TaskType to Get-ClusteredScheduledTask' {
+                Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith {
+                    return [PSCustomObject]@{
+                        TaskName     = 'TestTask1'
+                        CurrentOwner = 'OwnerNode1'
+                        TaskType     = 'ClusterWide'
+                    }
+                }
+
+                Get-StmClusteredScheduledTask -Cluster 'TestCluster' -TaskType ClusterWide
+
+                Should -Invoke 'Get-ClusteredScheduledTask' -Times 1 -ParameterFilter {
+                    $TaskType -eq 'ClusterWide'
+                }
+            }
+        }
+
+        Context 'Error handling' {
+            It 'Should warn when no matching clustered task found for scheduled task' {
+                Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith {
+                    return [PSCustomObject]@{
+                        TaskName     = 'ClusteredTask1'
+                        CurrentOwner = 'OwnerNode1'
+                    }
+                }
+                Mock -CommandName 'Get-ScheduledTask' -MockWith {
+                    return [PSCustomObject]@{
+                        TaskName = 'DifferentTask'
+                        State    = 'Ready'
+                    }
+                }
+                Mock -CommandName 'Write-Warning' -MockWith {}
+
+                Get-StmClusteredScheduledTask -Cluster 'TestCluster'
+
+                Should -Invoke 'Write-Warning' -Times 1 -ParameterFilter {
+                    $Message -like '*No matching clustered task found*'
+                }
+            }
+
+            It 'Should write error when retrieving tasks from owner fails' {
+                Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith {
+                    return [PSCustomObject]@{
+                        TaskName     = 'TestTask1'
+                        CurrentOwner = 'OwnerNode1'
+                    }
+                }
+                Mock -CommandName 'New-StmCimSession' -MockWith {
+                    param($ComputerName)
+                    if ($ComputerName -eq 'OwnerNode1') {
+                        throw 'Connection failed'
+                    }
+                    return 'mock-session'
+                }
+                Mock -CommandName 'Write-Error' -MockWith {}
+
+                Get-StmClusteredScheduledTask -Cluster 'TestCluster'
+
+                Should -Invoke 'Write-Error' -Times 1 -ParameterFilter {
+                    $Message -like "*Failed to retrieve tasks from owner*"
+                }
+            }
+
+            It 'Should warn when Merge-Object fails' {
+                Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith {
+                    return [PSCustomObject]@{
+                        TaskName     = 'TestTask1'
+                        CurrentOwner = 'OwnerNode1'
+                    }
+                }
+                Mock -CommandName 'Merge-Object' -MockWith {
+                    throw 'Merge failed'
+                }
+                Mock -CommandName 'Write-Warning' -MockWith {}
+
+                Get-StmClusteredScheduledTask -Cluster 'TestCluster' -TaskName 'TestTask1'
+
+                Should -Invoke 'Write-Warning' -Times 1 -ParameterFilter {
+                    $Message -like '*Failed to merge objects*'
+                }
+            }
+        }
     }
 }

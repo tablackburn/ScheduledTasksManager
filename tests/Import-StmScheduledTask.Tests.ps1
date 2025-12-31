@@ -129,6 +129,27 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
 
                 { Import-StmScheduledTask -XmlPath 'C:\Temp\nonexistent.xml' -Confirm:$false @commonParameters } | Should -Throw
             }
+
+            It 'Should throw if Get-Content fails' {
+                Mock -CommandName 'Get-Content' -MockWith {
+                    throw 'Access denied'
+                }
+
+                { Import-StmScheduledTask -XmlPath 'C:\Temp\task.xml' -Confirm:$false @commonParameters } | Should -Throw '*Access denied*'
+            }
+        }
+
+        Context 'Credential Handling' {
+            It 'Should pass credentials to New-StmCimSession' {
+                $securePassword = ConvertTo-SecureString -String 'TestPass' -AsPlainText -Force
+                $credential = New-Object -TypeName PSCredential -ArgumentList 'TestUser', $securePassword
+
+                Import-StmScheduledTask -Xml $script:mockXml -Credential $credential -Confirm:$false @commonParameters
+
+                Should -Invoke 'New-StmCimSession' -Times 1 -ParameterFilter {
+                    $Credential -eq $credential
+                }
+            }
         }
 
         Context 'Force Parameter' {
@@ -202,6 +223,86 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
 
                 Should -Invoke 'Write-Progress' -Times 3  # 2 files + 1 completed
             }
+
+            It 'Should throw if directory does not exist' {
+                Mock -CommandName 'Test-Path' -MockWith { return $false } -ParameterFilter { $PathType -eq 'Container' }
+
+                { Import-StmScheduledTask -DirectoryPath 'C:\NonExistent' -Confirm:$false @commonParameters } | Should -Throw '*was not found*'
+            }
+
+            It 'Should return empty summary when no XML files found' {
+                Mock -CommandName 'Get-ChildItem' -MockWith { return @() }
+                Mock -CommandName 'Write-Warning' -MockWith {}
+
+                $result = Import-StmScheduledTask -DirectoryPath 'C:\Tasks' -Confirm:$false @commonParameters
+
+                $result.TotalFiles | Should -Be 0
+                $result.SuccessCount | Should -Be 0
+                $result.FailureCount | Should -Be 0
+                Should -Invoke 'Write-Warning' -Times 1 -ParameterFilter {
+                    $Message -like '*No XML files found*'
+                }
+            }
+
+            It 'Should handle individual task failure and continue processing' {
+                $callCount = 0
+                Mock -CommandName 'Get-TaskNameFromXml' -MockWith {
+                    $script:callCount++
+                    if ($script:callCount -eq 1) { return 'FailingTask' }
+                    return 'SuccessTask'
+                }
+                Mock -CommandName 'Get-Content' -MockWith {
+                    return @'
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <URI>\TestTask</URI>
+  </RegistrationInfo>
+</Task>
+'@
+                }
+                $regCallCount = 0
+                Mock -CommandName 'Register-ScheduledTask' -MockWith {
+                    $script:regCallCount++
+                    if ($script:regCallCount -eq 1) {
+                        throw 'Task registration failed'
+                    }
+                    $mockTask = New-Object -TypeName 'Microsoft.Management.Infrastructure.CimInstance' -ArgumentList @(
+                        'MSFT_ScheduledTask',
+                        'Root/Microsoft/Windows/TaskScheduler'
+                    )
+                    return $mockTask
+                }
+                Mock -CommandName 'Write-Warning' -MockWith {}
+
+                $result = Import-StmScheduledTask -DirectoryPath 'C:\Tasks' -Confirm:$false @commonParameters
+
+                $result.TotalFiles | Should -Be 2
+                $result.SuccessCount | Should -Be 1
+                $result.FailureCount | Should -Be 1
+                $result.FailedTasks.Count | Should -Be 1
+            }
+
+            It 'Should handle task name extraction failure in directory import' {
+                Mock -CommandName 'Get-TaskNameFromXml' -MockWith { return $null }
+                Mock -CommandName 'Write-Warning' -MockWith {}
+
+                $result = Import-StmScheduledTask -DirectoryPath 'C:\Tasks' -Confirm:$false @commonParameters
+
+                $result.FailureCount | Should -Be 2
+                $result.SuccessCount | Should -Be 0
+            }
+
+            It 'Should warn about failed tasks after directory import' {
+                Mock -CommandName 'Get-TaskNameFromXml' -MockWith { return $null }
+                Mock -CommandName 'Write-Warning' -MockWith {}
+
+                Import-StmScheduledTask -DirectoryPath 'C:\Tasks' -Confirm:$false @commonParameters
+
+                Should -Invoke 'Write-Warning' -Times 1 -ParameterFilter {
+                    $Message -like '*failed to import*'
+                }
+            }
         }
 
         Context 'Error Handling' {
@@ -254,6 +355,41 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 Import-StmScheduledTask -Xml $script:mockXml -WhatIf @commonParameters
 
                 Should -Invoke 'Register-ScheduledTask' -Times 0
+            }
+
+            It 'Should not unregister existing task when WhatIf and Force are specified' {
+                Mock -CommandName 'Get-ScheduledTask' -MockWith {
+                    $mockTask = New-Object -TypeName 'Microsoft.Management.Infrastructure.CimInstance' -ArgumentList @(
+                        'MSFT_ScheduledTask',
+                        'Root/Microsoft/Windows/TaskScheduler'
+                    )
+                    return $mockTask
+                }
+
+                Import-StmScheduledTask -Xml $script:mockXml -Force -WhatIf @commonParameters
+
+                Should -Invoke 'Unregister-ScheduledTask' -Times 0
+                Should -Invoke 'Register-ScheduledTask' -Times 0
+            }
+        }
+
+        Context 'Task Name Extraction' {
+            It 'Should throw when task name cannot be extracted and TaskName not provided' {
+                Mock -CommandName 'Get-TaskNameFromXml' -MockWith { return $null }
+
+                { Import-StmScheduledTask -Xml '<Task></Task>' -Confirm:$false @commonParameters } | Should -Throw '*Could not determine task name*'
+            }
+
+            It 'Should throw when task name is empty string' {
+                Mock -CommandName 'Get-TaskNameFromXml' -MockWith { return '' }
+
+                { Import-StmScheduledTask -Xml '<Task></Task>' -Confirm:$false @commonParameters } | Should -Throw '*Could not determine task name*'
+            }
+
+            It 'Should throw when task name is whitespace only' {
+                Mock -CommandName 'Get-TaskNameFromXml' -MockWith { return '   ' }
+
+                { Import-StmScheduledTask -Xml '<Task></Task>' -Confirm:$false @commonParameters } | Should -Throw '*Could not determine task name*'
             }
         }
     }

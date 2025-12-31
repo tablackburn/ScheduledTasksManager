@@ -254,6 +254,25 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 }
             }
 
+            It 'Should default to localhost when InputObject has no PSComputerName' {
+                # The mockTask in BeforeEach has no PSComputerName, so it defaults to localhost
+                $mockTask | Set-StmScheduledTask -Action $mockAction -Confirm:$false @commonParameters
+
+                Should -Invoke 'New-StmCimSession' -Times 1 -ParameterFilter {
+                    $ComputerName -eq 'localhost'
+                }
+            }
+
+            It 'Should pass Credential when using InputObject' {
+                $credential = [PSCredential]::new('TestUser', ('TestPass' | ConvertTo-SecureString -AsPlainText -Force))
+
+                $mockTask | Set-StmScheduledTask -Action $mockAction -Credential $credential -Confirm:$false @commonParameters
+
+                Should -Invoke 'New-StmCimSession' -Times 1 -ParameterFilter {
+                    $Credential -eq $credential
+                }
+            }
+
             It 'Should process multiple tasks from pipeline' {
                 $mockTask2 = New-Object -TypeName 'Microsoft.Management.Infrastructure.CimInstance' -ArgumentList @(
                     'MSFT_ScheduledTask',
