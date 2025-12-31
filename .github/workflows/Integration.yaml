@@ -25,14 +25,30 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Connect to Tailscale
+      id: tailscale
       uses: tailscale/github-action@v4
+      continue-on-error: true
       with:
         oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
         oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
         tags: tag:ci
 
+    - name: Tailscale Connection Failed
+      if: steps.tailscale.outcome == 'failure'
+      run: |
+        Write-Host "::warning::Tailscale connection failed - integration tests will be skipped"
+        Write-Host ""
+        Write-Host "Common causes:"
+        Write-Host "  - OAuth client missing 'Auth Keys' scope (read+write required)"
+        Write-Host "  - OAuth client missing 'Devices' scope (read+write required)"
+        Write-Host "  - tag:ci not properly configured in ACL tagOwners"
+        Write-Host "  - OAuth credentials expired or invalid"
+        Write-Host ""
+        Write-Host "See: https://tailscale.com/kb/1276/tailscale-github-action"
+
     - name: Check Lab Availability
       id: lab-check
+      if: steps.tailscale.outcome == 'success'
       env:
         HYPERV_HOST: ${{ secrets.TS_HYPER_V_HOST }}
       run: |
@@ -76,7 +92,7 @@ jobs:
         }
 
     - name: Run Integration Tests
-      if: steps.lab-check.outputs.lab-available == 'True'
+      if: steps.tailscale.outcome == 'success' && steps.lab-check.outputs.lab-available == 'True'
       env:
         HYPERV_HOST: ${{ secrets.TS_HYPER_V_HOST }}
         HYPERV_USER: ${{ secrets.HYPERV_USERNAME }}
@@ -90,7 +106,7 @@ jobs:
         ./tests/Integration/Invoke-CIIntegrationTest.ps1 @params
 
     - name: Upload Test Results
-      if: steps.lab-check.outputs.lab-available == 'True' && (success() || failure())
+      if: steps.tailscale.outcome == 'success' && steps.lab-check.outputs.lab-available == 'True' && (success() || failure())
       uses: actions/upload-artifact@v4
       with:
         name: integration-test-results
@@ -98,11 +114,12 @@ jobs:
         if-no-files-found: ignore
 
     - name: Integration Tests Skipped
-      if: steps.lab-check.outputs.lab-available != 'True'
+      if: steps.tailscale.outcome == 'failure' || steps.lab-check.outputs.lab-available != 'True'
       run: |
         Write-Host "Integration tests were skipped because the lab environment is not available."
         Write-Host ""
         Write-Host "This is expected if:"
+        Write-Host "  - Tailscale connection failed (check OAuth client scopes)"
         Write-Host "  - The Hyper-V host is offline or not connected to Tailscale"
         Write-Host "  - GitHub secrets are not configured (TS_OAUTH_CLIENT_ID, TS_OAUTH_SECRET, TS_HYPER_V_HOST)"
         Write-Host "  - Tailscale ACLs don't allow the CI tag to reach the host"
