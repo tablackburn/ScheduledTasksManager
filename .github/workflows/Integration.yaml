@@ -14,6 +14,10 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: integration-tests
+  cancel-in-progress: false
+
 jobs:
   integration-test:
     name: Run Integration Tests
@@ -53,30 +57,40 @@ jobs:
         HYPERV_HOST: ${{ secrets.TS_HYPER_V_HOST }}
       run: |
         $available = $false
+        $maxRetries = 3
+        $retryDelay = 10
 
         if ([string]::IsNullOrEmpty($env:HYPERV_HOST)) {
           Write-Warning "TS_HYPER_V_HOST secret not configured - skipping integration tests"
         }
         else {
-          Write-Host "Checking connectivity to $env:HYPERV_HOST..."
+          for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
+            Write-Host "Checking connectivity to $env:HYPERV_HOST (attempt $attempt/$maxRetries)..."
 
-          # Check if host is reachable via ICMP
-          $pingResult = Test-Connection -ComputerName $env:HYPERV_HOST -Count 2 -Quiet -ErrorAction SilentlyContinue
-          if ($pingResult) {
-            Write-Host "  Host is reachable via ping"
+            # Check if host is reachable via ICMP
+            $pingResult = Test-Connection -ComputerName $env:HYPERV_HOST -Count 2 -Quiet -ErrorAction SilentlyContinue
+            if ($pingResult) {
+              Write-Host "  Host is reachable via ping"
 
-            # Check if WinRM port is open
-            $winrmResult = Test-NetConnection -ComputerName $env:HYPERV_HOST -Port 5985 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
-            if ($winrmResult.TcpTestSucceeded) {
-              Write-Host "  WinRM port 5985 is open"
-              $available = $true
+              # Check if WinRM port is open
+              $winrmResult = Test-NetConnection -ComputerName $env:HYPERV_HOST -Port 5985 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+              if ($winrmResult.TcpTestSucceeded) {
+                Write-Host "  WinRM port 5985 is open"
+                $available = $true
+                break
+              }
+              else {
+                Write-Warning "  WinRM port 5985 is not accessible"
+              }
             }
             else {
-              Write-Warning "  WinRM port 5985 is not accessible"
+              Write-Warning "  Host is not reachable via ping"
             }
-          }
-          else {
-            Write-Warning "  Host is not reachable via ping"
+
+            if ($attempt -lt $maxRetries) {
+              Write-Host "  Retrying in $retryDelay seconds..."
+              Start-Sleep -Seconds $retryDelay
+            }
           }
         }
 
@@ -109,7 +123,31 @@ jobs:
         if ($env:RESTORE_SNAPSHOT -eq 'true') {
           $params['RestoreSnapshot'] = $true
         }
-        ./tests/Integration/Invoke-CIIntegrationTest.ps1 @params
+
+        # Retry logic for transient failures
+        $maxRetries = 2
+        $lastError = $null
+
+        for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
+          try {
+            Write-Host "Running integration tests (attempt $attempt/$maxRetries)..."
+            ./tests/Integration/Invoke-CIIntegrationTest.ps1 @params
+            $lastError = $null
+            break
+          }
+          catch {
+            $lastError = $_
+            Write-Warning "Attempt $attempt failed: $($_.Exception.Message)"
+            if ($attempt -lt $maxRetries) {
+              Write-Host "Retrying in 30 seconds..."
+              Start-Sleep -Seconds 30
+            }
+          }
+        }
+
+        if ($lastError) {
+          throw $lastError
+        }
 
     - name: Upload Test Results
       if: steps.tailscale.outcome == 'success' && steps.lab-check.outputs.lab-available == 'True' && (success() || failure())
