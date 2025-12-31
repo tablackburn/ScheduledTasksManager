@@ -3,6 +3,7 @@
 [![PowerShell Gallery Downloads](https://img.shields.io/powershellgallery/dt/ScheduledTasksManager)](https://www.powershellgallery.com/packages/ScheduledTasksManager/)
 [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/ScheduledTasksManager)](https://www.powershellgallery.com/packages/ScheduledTasksManager/)
 [![CI](https://img.shields.io/github/actions/workflow/status/tablackburn/ScheduledTasksManager/CI.yaml?branch=main)](https://github.com/tablackburn/ScheduledTasksManager/actions/workflows/CI.yaml)
+[![codecov](https://codecov.io/gh/tablackburn/ScheduledTasksManager/branch/main/graph/badge.svg)](https://codecov.io/gh/tablackburn/ScheduledTasksManager)
 ![Platform](https://img.shields.io/powershellgallery/p/ScheduledTasksManager)
 [![AI Assisted](https://img.shields.io/badge/AI-Assisted-blue)](https://claude.ai)
 [![License](https://img.shields.io/github/license/tablackburn/ScheduledTasksManager)](LICENSE)
