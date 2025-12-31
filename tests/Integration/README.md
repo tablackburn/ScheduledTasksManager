@@ -187,12 +187,21 @@ Integration tests are "best effort" - they run when the lab is available but don
 
 The workflow can also be triggered manually from the Actions tab with an option to restore the baseline snapshot.
 
+### Running Integration Tests
+
+GitHub Actions runs integration tests via the unified build system:
+
+```powershell
+# CI sets HYPERV_HOST, HYPERV_USER, HYPERV_PASS environment variables
+# The Integration task auto-detects CI mode
+./build.ps1 -Task 'Integration' -Bootstrap
+```
+
 ### Scripts
 
 | Script | Purpose |
 |--------|---------|
-| `Invoke-CIIntegrationTest.ps1` | CI runner (called by GitHub Actions) |
-| `Invoke-RemoteIntegrationTest.ps1` | Manual remote testing |
+| `Invoke-RemoteIntegrationTest.ps1` | Manual remote testing (Diagnose, Deploy, Test, Cleanup) |
 
 ## AutomatedLab Resources
 

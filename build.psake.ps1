@@ -158,75 +158,287 @@ $PSBTestDependency = @('Init_Integration', 'UnitTest', 'ScriptAnalysis')
 Task -Name 'Test' -FromModule 'PowerShellBuild' -MinimumVersion '0.7.3'
 
 # Integration tests require AutomatedLab and a Hyper-V host
-# Supports two modes:
+# Supports three modes:
+#   - ci: GitHub Actions via Tailscale (auto-detected when HYPERV_* env vars are set)
 #   - local: AutomatedLab on this machine (default)
 #   - remote: AutomatedLab on a remote server (set lab.mode = "remote" in config)
 Task -Name 'Integration' -Description 'Run integration tests against a real failover cluster' {
     $integrationTestPath = Join-Path $PSScriptRoot 'tests/Integration'
 
-    # Load configuration to determine mode
-    Import-Module "$integrationTestPath\IntegrationTestConfig.psm1" -Force
-    if (-not (Test-IntegrationTestConfig)) {
-        Write-Warning "Integration test configuration not found."
-        Write-Warning "Copy integration-test-config.example.json to integration-test-config.json and update values."
-        return
-    }
+    # Check for CI environment (GitHub Actions with Tailscale)
+    # CI mode is auto-detected when all HYPERV_* environment variables are set
+    $isCIMode = $env:HYPERV_HOST -and $env:HYPERV_USER -and $env:HYPERV_PASS
 
-    $config = Get-IntegrationTestConfig
-    $labMode = if ($config.lab.mode) { $config.lab.mode } else { 'local' }
+    if ($isCIMode) {
+        # CI mode: Connect to remote Hyper-V host using environment variable credentials
+        Write-Host "=============================================" -ForegroundColor Cyan
+        Write-Host " CI Integration Tests" -ForegroundColor Cyan
+        Write-Host "=============================================" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host "Target Server: $env:HYPERV_HOST"
+        Write-Host "Username: $env:HYPERV_USER"
+        Write-Host "Restore Snapshot: $($Properties -and $Properties.RestoreSnapshot -eq $true)"
+        Write-Host ""
 
-    Write-Host "Integration test mode: $labMode" -ForegroundColor Cyan
+        # Remote paths on Hyper-V host
+        $LabSetupPath = 'C:\LabSetup'
+        $LabModulePath = 'C:\ScheduledTasksManager'
+        $ConfigPath = 'C:\integration-test-config.json'
 
-    if ($labMode -eq 'remote') {
-        # Remote mode: Run tests on the remote server that has AutomatedLab
-        $remoteHost = $config.remote.hostname
-        Write-Host "Running integration tests on remote server: $remoteHost" -ForegroundColor Yellow
+        # Local paths
+        $LocalModulePath = Join-Path $PSScriptRoot 'ScheduledTasksManager'
+        $LocalConfigPath = Join-Path $PSScriptRoot 'integration-test-config.json'
+        $OutputDir = Join-Path $integrationTestPath 'out'
 
-        & "$integrationTestPath\Invoke-RemoteIntegrationTest.ps1" -Action Test
+        # Create credential and connect
+        Write-Host "Connecting to remote host..." -ForegroundColor Yellow
+        $securePassword = ConvertTo-SecureString -String $env:HYPERV_PASS -AsPlainText -Force -ErrorAction Stop
+        $credential = [PSCredential]::new($env:HYPERV_USER, $securePassword)
 
-        Write-Host "Remote integration tests completed." -ForegroundColor Green
+        $session = $null
+        try {
+            $session = New-PSSession -ComputerName $env:HYPERV_HOST -Credential $credential -ErrorAction Stop
+            Write-Host "  Connected to $env:HYPERV_HOST" -ForegroundColor Green
+
+            # Prepare remote environment
+            Write-Host ""
+            Write-Host "Preparing remote environment..." -ForegroundColor Yellow
+
+            Invoke-Command -Session $session -ScriptBlock {
+                param($LabSetupPath, $LabModulePath)
+
+                # Clean up any previous test artifacts
+                if (Test-Path $LabModulePath) {
+                    Remove-Item $LabModulePath -Recurse -Force
+                }
+                if (Test-Path $LabSetupPath) {
+                    Remove-Item $LabSetupPath -Recurse -Force
+                }
+
+                # Create directories
+                New-Item -Path $LabSetupPath -ItemType Directory -Force | Out-Null
+            } -ArgumentList $LabSetupPath, $LabModulePath
+
+            Write-Host "  Cleaned up previous artifacts" -ForegroundColor Gray
+
+            # Copy files to remote host
+            Write-Host ""
+            Write-Host "Copying files to remote host..." -ForegroundColor Yellow
+
+            # Copy module
+            Write-Host "  Copying module..." -ForegroundColor Gray
+            Copy-Item -Path $LocalModulePath -Destination 'C:\' -ToSession $session -Recurse -Force
+            Write-Host "    -> $LabModulePath" -ForegroundColor Gray
+
+            # Copy config file
+            Write-Host "  Copying config..." -ForegroundColor Gray
+            Copy-Item -Path $LocalConfigPath -Destination 'C:\' -ToSession $session -Force
+            Write-Host "    -> $ConfigPath" -ForegroundColor Gray
+
+            # Copy test infrastructure files
+            Write-Host "  Copying test infrastructure..." -ForegroundColor Gray
+            $testFiles = @(
+                'ClusteredScheduledTask.Integration.Tests.ps1',
+                'Start-IntegrationLab.ps1',
+                'Stop-IntegrationLab.ps1',
+                'IntegrationTestConfig.psm1'
+            )
+            foreach ($file in $testFiles) {
+                $sourcePath = Join-Path $integrationTestPath $file
+                if (Test-Path $sourcePath) {
+                    Copy-Item -Path $sourcePath -Destination "$LabSetupPath\" -ToSession $session -Force
+                    Write-Host "    -> $file" -ForegroundColor Gray
+                }
+            }
+
+            Write-Host "  Files copied successfully" -ForegroundColor Green
+
+            # Run tests on remote host
+            Write-Host ""
+            Write-Host "Running integration tests on remote host..." -ForegroundColor Yellow
+            Write-Host ""
+
+            $restoreSnapshot = $Properties -and $Properties.RestoreSnapshot -eq $true
+            $testResult = Invoke-Command -Session $session -ScriptBlock {
+                param($LabSetupPath, $RestoreSnapshot)
+
+                Set-Location $LabSetupPath
+
+                # Import AutomatedLab and start the lab
+                Import-Module AutomatedLab -Force
+                Import-Module "$LabSetupPath\IntegrationTestConfig.psm1" -Force
+
+                $config = Get-IntegrationTestConfig
+                $labName = $config.lab.name
+
+                Write-Host "  Lab: $labName" -ForegroundColor Gray
+
+                # Import lab
+                Import-Lab -Name $labName -NoValidation
+
+                # Optionally restore snapshot
+                if ($RestoreSnapshot) {
+                    Write-Host "  Restoring baseline snapshot..." -ForegroundColor Yellow
+                    Restore-LabVMSnapshot -All -SnapshotName $config.test.snapshotName
+                    Start-Sleep -Seconds 5
+                }
+
+                # Ensure VMs are running
+                Write-Host "  Ensuring VMs are running..." -ForegroundColor Gray
+                $vms = Get-LabVM
+                foreach ($vm in $vms) {
+                    if ($vm.State -ne 'Running') {
+                        Start-LabVM -ComputerName $vm.Name -Wait
+                    }
+                }
+
+                # Wait for VMs to be accessible
+                Write-Host "  Waiting for VMs to be accessible..." -ForegroundColor Gray
+                Wait-LabVM -ComputerName $config.virtualMachines.clusterNodes -TimeoutInMinutes 5
+
+                # Copy module to cluster node
+                Write-Host "  Copying module to cluster node..." -ForegroundColor Gray
+                $testNode = $config.virtualMachines.clusterNodes[0]
+                Copy-LabFileItem -Path 'C:\ScheduledTasksManager' -DestinationFolderPath 'C:\' -ComputerName $testNode
+
+                # Run Pester tests
+                Write-Host ""
+                Write-Host "  Executing Pester tests..." -ForegroundColor Yellow
+                Write-Host ""
+
+                $pesterConfig = New-PesterConfiguration
+                $pesterConfig.Run.Path = "$LabSetupPath\ClusteredScheduledTask.Integration.Tests.ps1"
+                $pesterConfig.Run.PassThru = $true
+                $pesterConfig.Output.Verbosity = 'Detailed'
+                $pesterConfig.TestResult.Enabled = $true
+                $pesterConfig.TestResult.OutputPath = "$LabSetupPath\testResults.xml"
+                $pesterConfig.TestResult.OutputFormat = 'NUnitXml'
+
+                $result = Invoke-Pester -Configuration $pesterConfig
+
+                # Return serializable summary
+                [PSCustomObject]@{
+                    TotalCount      = $result.TotalCount
+                    PassedCount     = $result.PassedCount
+                    FailedCount     = $result.FailedCount
+                    SkippedCount    = $result.SkippedCount
+                    Duration        = $result.Duration.ToString()
+                    TestResultsPath = "$LabSetupPath\testResults.xml"
+                }
+            } -ArgumentList $LabSetupPath, $restoreSnapshot
+
+            # Retrieve test results
+            Write-Host ""
+            Write-Host "Retrieving test results..." -ForegroundColor Yellow
+
+            # Ensure local output directory exists
+            if (-not (Test-Path $OutputDir)) {
+                New-Item -Path $OutputDir -ItemType Directory -Force | Out-Null
+            }
+
+            # Copy test results file
+            $remoteResultsPath = $testResult.TestResultsPath
+            $localResultsPath = Join-Path $OutputDir 'integrationTestResults.xml'
+
+            try {
+                Copy-Item -Path $remoteResultsPath -Destination $localResultsPath -FromSession $session -Force
+                Write-Host "  Test results saved to: $localResultsPath" -ForegroundColor Gray
+            }
+            catch {
+                Write-Host "  Could not retrieve test results file: $($_.Exception.Message)" -ForegroundColor Yellow
+            }
+
+            # Summary
+            Write-Host ""
+            Write-Host "=============================================" -ForegroundColor Cyan
+            Write-Host " Test Results Summary" -ForegroundColor Cyan
+            Write-Host "=============================================" -ForegroundColor Cyan
+            Write-Host ""
+            Write-Host "  Total:   $($testResult.TotalCount)"
+            Write-Host "  Passed:  $($testResult.PassedCount)" -ForegroundColor Green
+            if ($testResult.FailedCount -gt 0) {
+                Write-Host "  Failed:  $($testResult.FailedCount)" -ForegroundColor Red
+            } else {
+                Write-Host "  Failed:  $($testResult.FailedCount)"
+            }
+            Write-Host "  Skipped: $($testResult.SkippedCount)" -ForegroundColor Yellow
+            Write-Host "  Duration: $($testResult.Duration)"
+            Write-Host ""
+
+            # Fail build if tests failed
+            if ($testResult.FailedCount -gt 0) {
+                throw "$($testResult.FailedCount) integration test(s) failed."
+            }
+        }
+        finally {
+            Remove-PSSession $session -ErrorAction SilentlyContinue
+        }
     }
     else {
-        # Local mode: AutomatedLab is on this machine
-        $alModule = Get-Module -Name AutomatedLab -ListAvailable
-        if (-not $alModule) {
-            Write-Warning "AutomatedLab module not installed. Install it and run Initialize-IntegrationLab.ps1 first."
-            Write-Warning "Install-Module -Name AutomatedLab -Scope CurrentUser"
-            Write-Warning "Or set lab.mode to 'remote' in config to run tests on a remote server."
+        # Local or Remote mode: Use configuration file
+        Import-Module "$integrationTestPath\IntegrationTestConfig.psm1" -Force
+        if (-not (Test-IntegrationTestConfig)) {
+            Write-Warning "Integration test configuration not found."
+            Write-Warning "Copy integration-test-config.example.json to integration-test-config.json and update values."
             return
         }
 
-        Import-Module AutomatedLab -Force
-        $labName = $config.lab.name
-        $labs = Get-Lab -List -ErrorAction SilentlyContinue
-        if ($labName -notin $labs) {
-            Write-Warning "Integration lab '$labName' not deployed."
-            Write-Warning "Run: $integrationTestPath\Initialize-IntegrationLab.ps1"
-            return
+        $config = Get-IntegrationTestConfig
+        $labMode = if ($config.lab.mode) { $config.lab.mode } else { 'local' }
+
+        Write-Host "Integration test mode: $labMode" -ForegroundColor Cyan
+
+        if ($labMode -eq 'remote') {
+            # Remote mode: Run tests on the remote server that has AutomatedLab
+            $remoteHost = $config.remote.hostname
+            Write-Host "Running integration tests on remote server: $remoteHost" -ForegroundColor Yellow
+
+            & "$integrationTestPath\Invoke-RemoteIntegrationTest.ps1" -Action Test
+
+            Write-Host "Remote integration tests completed." -ForegroundColor Green
         }
+        else {
+            # Local mode: AutomatedLab is on this machine
+            $alModule = Get-Module -Name AutomatedLab -ListAvailable
+            if (-not $alModule) {
+                Write-Warning "AutomatedLab module not installed. Install it and run Initialize-IntegrationLab.ps1 first."
+                Write-Warning "Install-Module -Name AutomatedLab -Scope CurrentUser"
+                Write-Warning "Or set lab.mode to 'remote' in config to run tests on a remote server."
+                return
+            }
 
-        # Start the lab
-        Write-Host "Starting integration lab..." -ForegroundColor Cyan
-        $labInfo = & "$integrationTestPath\Start-IntegrationLab.ps1"
+            Import-Module AutomatedLab -Force
+            $labName = $config.lab.name
+            $labs = Get-Lab -List -ErrorAction SilentlyContinue
+            if ($labName -notin $labs) {
+                Write-Warning "Integration lab '$labName' not deployed."
+                Write-Warning "Run: $integrationTestPath\Initialize-IntegrationLab.ps1"
+                return
+            }
 
-        # Run integration tests
-        Write-Host "Running integration tests..." -ForegroundColor Cyan
-        $pesterConfig = New-PesterConfiguration
-        $pesterConfig.Run.Path = "$integrationTestPath\*.Integration.Tests.ps1"
-        $pesterConfig.Output.Verbosity = 'Detailed'
-        $pesterConfig.TestResult.Enabled = $true
-        $pesterConfig.TestResult.OutputPath = 'tests/Integration/out/integrationTestResults.xml'
-        $pesterConfig.TestResult.OutputFormat = 'NUnitXml'
+            # Start the lab
+            Write-Host "Starting integration lab..." -ForegroundColor Cyan
+            $labInfo = & "$integrationTestPath\Start-IntegrationLab.ps1"
 
-        $result = Invoke-Pester -Configuration $pesterConfig
+            # Run integration tests
+            Write-Host "Running integration tests..." -ForegroundColor Cyan
+            $pesterConfig = New-PesterConfiguration
+            $pesterConfig.Run.Path = "$integrationTestPath\*.Integration.Tests.ps1"
+            $pesterConfig.Output.Verbosity = 'Detailed'
+            $pesterConfig.TestResult.Enabled = $true
+            $pesterConfig.TestResult.OutputPath = 'tests/Integration/out/integrationTestResults.xml'
+            $pesterConfig.TestResult.OutputFormat = 'NUnitXml'
 
-        # Stop the lab
-        Write-Host "Stopping integration lab..." -ForegroundColor Cyan
-        & "$integrationTestPath\Stop-IntegrationLab.ps1"
+            $result = Invoke-Pester -Configuration $pesterConfig
 
-        # Fail build if tests failed
-        if ($result.FailedCount -gt 0) {
-            throw "$($result.FailedCount) integration test(s) failed."
+            # Stop the lab
+            Write-Host "Stopping integration lab..." -ForegroundColor Cyan
+            & "$integrationTestPath\Stop-IntegrationLab.ps1"
+
+            # Fail build if tests failed
+            if ($result.FailedCount -gt 0) {
+                throw "$($result.FailedCount) integration test(s) failed."
+            }
         }
     }
 }

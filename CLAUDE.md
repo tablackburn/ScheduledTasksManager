@@ -28,7 +28,7 @@ All build and test operations use `build.ps1` with psake tasks:
 | `Test` | Runs unit tests + script analysis |
 | `UnitTest` | Runs Pester unit tests (excludes Integration) |
 | `ScriptAnalysis` | Runs PSScriptAnalyzer |
-| `Integration` | Runs integration tests against live cluster |
+| `Integration` | Runs integration tests (auto-detects local/remote/CI mode) |
 
 ## Testing
 
@@ -46,12 +46,20 @@ Unit tests mock all external dependencies (cluster cmdlets, CIM sessions, etc.).
 
 Located in `tests/Integration/`. Require a live Windows Failover Cluster via AutomatedLab.
 
+The `Integration` task supports three modes (auto-detected):
+
+| Mode | Detection | Description |
+|------|-----------|-------------|
+| **CI** | `HYPERV_HOST`, `HYPERV_USER`, `HYPERV_PASS` env vars set | Connects to remote Hyper-V host via WinRM |
+| **Remote** | `lab.mode = "remote"` in config | Uses `Invoke-RemoteIntegrationTest.ps1` |
+| **Local** | Default (no env vars, config mode = "local") | AutomatedLab on local machine |
+
 **Local execution:**
 ```powershell
 ./build.ps1 Integration
 ```
 
-**CI execution:** Runs automatically on PRs via GitHub Actions using Tailscale to connect to a remote Hyper-V host. See `.github/workflows/Integration.yaml`.
+**CI execution:** Runs automatically on PRs via GitHub Actions using Tailscale to connect to a remote Hyper-V host. The CI mode is auto-detected when `HYPERV_HOST`, `HYPERV_USER`, and `HYPERV_PASS` environment variables are set. See `.github/workflows/Integration.yaml`.
 
 Integration tests are "best effort" - they run when the lab is available but don't block PRs if unavailable.
 

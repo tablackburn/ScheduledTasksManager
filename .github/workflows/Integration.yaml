@@ -119,9 +119,10 @@ jobs:
         # Add Hyper-V host to TrustedHosts for WinRM (runner is not domain-joined)
         Set-Item WSMan:\localhost\Client\TrustedHosts -Value $env:HYPERV_HOST -Force
 
-        $params = @{}
+        # Build properties for psake
+        $props = @{}
         if ($env:RESTORE_SNAPSHOT -eq 'true') {
-          $params['RestoreSnapshot'] = $true
+          $props['RestoreSnapshot'] = $true
         }
 
         # Retry logic for transient failures
@@ -131,7 +132,7 @@ jobs:
         for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
           try {
             Write-Host "Running integration tests (attempt $attempt/$maxRetries)..."
-            ./tests/Integration/Invoke-CIIntegrationTest.ps1 @params
+            ./build.ps1 -Task 'Integration' -Bootstrap -Properties $props
             $lastError = $null
             break
           }
