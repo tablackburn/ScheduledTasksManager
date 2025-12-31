@@ -143,8 +143,11 @@ GitHub Runner ──[Tailscale]──> Hyper-V Host ──[AutomatedLab]──> 
 
 1. **Create Tailscale OAuth Client**
    - Go to https://login.tailscale.com/admin/settings/oauth
-   - Create OAuth client with **Devices - Write** scope
+   - Create OAuth client with these scopes:
+     - **Devices** - Read and Write
+     - **Auth Keys** - Read and Write
    - Assign tag: `tag:ci`
+   - See [Tailscale GitHub Action docs](https://tailscale.com/kb/1276/tailscale-github-action) for details
 
 2. **Configure GitHub Secrets**
 
@@ -156,18 +159,27 @@ GitHub Runner ──[Tailscale]──> Hyper-V Host ──[AutomatedLab]──> 
    | `HYPERV_USERNAME` | Windows username for remoting |
    | `HYPERV_PASSWORD` | Windows password |
 
-3. **Ensure Prerequisites**
+3. **Configure Tailscale ACLs**
+   - Ensure `tag:ci` is defined in your ACL's `tagOwners`:
+     ```json
+     "tagOwners": {
+       "tag:ci": ["autogroup:admin"]
+     }
+     ```
+   - Allow `tag:ci` to reach your Hyper-V host
+
+4. **Ensure Prerequisites**
    - Hyper-V host has Tailscale installed and connected
    - PowerShell Remoting (WinRM) enabled on host
    - Lab deployed and running (or set to auto-start)
-   - Tailscale ACLs allow `tag:ci` to reach the host
 
 ### Behavior
 
-| Lab Status | PR Result |
-|------------|-----------|
+| Status | PR Result |
+|--------|-----------|
 | Lab available | Integration tests run, results reported |
 | Lab unavailable | Warning shown, **PR not blocked** |
+| Tailscale failed | Warning shown, **PR not blocked** |
 
 Integration tests are "best effort" - they run when the lab is available but don't block PRs if the lab is down.
 
