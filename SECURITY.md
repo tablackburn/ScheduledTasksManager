@@ -1,11 +1,16 @@
 # Security Policy
 
-## Reporting Security Issues
+## Reporting a Vulnerability
 
-Found a security issue? Please **don't** create a public GitHub issue.
+If you discover a security vulnerability in this project, please report it responsibly:
 
-Instead, use GitHub's [private security advisory feature](https://github.com/tablackburn/ScheduledTasksManager/security/advisories/new) to report it privately.
+1. **Do NOT open a public issue** for security vulnerabilities
+2. Instead, use GitHub's private security advisory feature:
+   - Navigate to the "Security" tab of this repository
+   - Click "Report a vulnerability"
 
-## Disclaimer
+This allows us to assess and address the vulnerability before it becomes public knowledge.
 
-This is a free, hobby project. No security guarantees or SLAs are provided. Use at your own risk.
+## Supported Versions
+
+Security updates are provided for the latest release only.
