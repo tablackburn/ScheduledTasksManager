@@ -80,7 +80,7 @@ jobs:
         run: ./build.ps1 -Task 'Test' -Bootstrap
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: ${{ (success() || failure()) && !env.ACT }}
         with:
           name: test-results
