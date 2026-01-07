@@ -1,11 +1,12 @@
 name: CI
+
 on:
   push:
     branches:
       - main
     paths:
       - '.actrc'
-      - '.github/workflows/CI.yaml' # We want to run this workflow on any changes to this file
+      - '.github/workflows/CI.yaml'
       - 'ScheduledTasksManager/**'
       - 'build.ps1'
       - 'build.psake.ps1'
@@ -14,7 +15,50 @@ on:
   pull_request:
     branches:
       - main
+
+permissions:
+  contents: read
+
 jobs:
+  lint:
+    name: PSScriptAnalyzer Lint
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache PowerShell modules
+        uses: actions/cache@v4
+        with:
+          path: ~/Documents/PowerShell/Modules
+          key: ${{ runner.os }}-psmodules-lint-${{ hashFiles('build.depend.psd1') }}
+          restore-keys: |
+            ${{ runner.os }}-psmodules-lint-
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $results = Invoke-ScriptAnalyzer -Path ./ScheduledTasksManager -Recurse -Settings PSGallery -ReportSummary
+          $errors = $results | Where-Object { $_.Severity -eq 'Error' }
+
+          if ($results) {
+            Write-Host "::group::PSScriptAnalyzer Results"
+            $results | Format-Table -AutoSize
+            Write-Host "::endgroup::"
+          }
+
+          if ($errors) {
+            Write-Host "::error::PSScriptAnalyzer found $($errors.Count) error(s)"
+            exit 1
+          }
+
+          Write-Host "PSScriptAnalyzer passed with no errors"
+
   test:
     name: Run Tests
     runs-on: windows-latest
@@ -22,17 +66,31 @@ jobs:
       run:
         shell: pwsh
     steps:
-    - uses: actions/checkout@v4
-    - name: Build Task - Test
-      run: | # powershell
-        ./build.ps1 -Task 'Test' -Bootstrap
-    - uses: actions/upload-artifact@v4                # upload test results
-      if: ${{ (success() || failure()) && !env.ACT }} # run this step even if previous step failed but do not run if it is running locally
-      with:
-        name: test-results
-        path: ./tests/out/testResults.xml
-    - uses: codecov/codecov-action@v5
-      if: ${{ !env.ACT }}
-      with:
-        files: ./coverage.xml
-        token: ${{ secrets.CODECOV_TOKEN }}
+      - uses: actions/checkout@v4
+
+      - name: Cache PowerShell modules
+        uses: actions/cache@v4
+        with:
+          path: ~/Documents/PowerShell/Modules
+          key: ${{ runner.os }}-psmodules-${{ hashFiles('build.depend.psd1') }}
+          restore-keys: |
+            ${{ runner.os }}-psmodules-
+
+      - name: Build Task - Test
+        run: ./build.ps1 -Task 'Test' -Bootstrap
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: ${{ (success() || failure()) && !env.ACT }}
+        with:
+          name: test-results
+          path: ./tests/out/testResults.xml
+          retention-days: 30
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        if: ${{ !env.ACT }}
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          fail_ci_if_error: false
