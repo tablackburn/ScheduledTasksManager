@@ -24,7 +24,7 @@ jobs:
     name: PSScriptAnalyzer Lint
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Cache PowerShell modules
         uses: actions/cache@v4
@@ -66,7 +66,7 @@ jobs:
       run:
         shell: pwsh
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Cache PowerShell modules
         uses: actions/cache@v4
