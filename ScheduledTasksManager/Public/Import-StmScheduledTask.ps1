@@ -295,7 +295,7 @@ function Import-StmScheduledTask {
                     $extractedName = $null
                     try {
                         $xmlContent = Get-Content -Path $xmlFile.FullName -Raw -ErrorAction 'Stop'
-                        $extractedName = Get-TaskNameFromXml -Xml $xmlContent
+                        $extractedName = Get-TaskNameFromXml -XmlContent $xmlContent
 
                         if ([string]::IsNullOrWhiteSpace($extractedName)) {
                             throw (
@@ -395,7 +395,7 @@ function Import-SingleLocalTask {
         Write-Verbose "Using provided task name override: '$effectiveTaskName'"
     }
     else {
-        $effectiveTaskName = Get-TaskNameFromXml -Xml $XmlContent
+        $effectiveTaskName = Get-TaskNameFromXml -XmlContent $XmlContent
         if ([string]::IsNullOrWhiteSpace($effectiveTaskName)) {
             $errorRecordParameters = @{
                 Exception         = [System.InvalidOperationException]::new('Could not determine task name from XML.')

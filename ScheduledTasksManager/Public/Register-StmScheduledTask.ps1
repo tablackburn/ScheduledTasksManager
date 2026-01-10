@@ -156,7 +156,7 @@ function Register-StmScheduledTask {
             # Extract task name from XML if not provided
             if (-not $PSBoundParameters.ContainsKey('TaskName')) {
                 Write-Verbose 'TaskName not provided, extracting from XML...'
-                $TaskName = Get-TaskNameFromXml -Xml $Xml
+                $TaskName = Get-TaskNameFromXml -XmlContent $Xml
                 Write-Verbose "Extracted task name: '$TaskName'"
             }
 
