@@ -200,6 +200,7 @@
     }
 
     process {
+        $cimSession = $null
         $target = "cluster '$Cluster'"
         $operation = "Register clustered scheduled task '$TaskName'"
         if ($PSCmdlet.ShouldProcess($target, $operation)) {

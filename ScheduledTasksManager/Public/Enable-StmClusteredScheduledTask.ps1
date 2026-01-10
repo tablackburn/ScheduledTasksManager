@@ -106,6 +106,7 @@
 
     begin {
         Write-Verbose "Starting Enable-StmClusteredScheduledTask for task '$TaskName' on cluster '$Cluster'"
+        $cimSession = $null
     }
 
     process {

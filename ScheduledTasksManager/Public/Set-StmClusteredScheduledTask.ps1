@@ -261,6 +261,7 @@ function Set-StmClusteredScheduledTask {
     }
 
     process {
+        $cimSession = $null
         try {
             # Determine task name based on parameter set
             if ($PSCmdlet.ParameterSetName -eq 'ByInputObject') {
