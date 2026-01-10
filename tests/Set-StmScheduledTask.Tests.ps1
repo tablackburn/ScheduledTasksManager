@@ -266,10 +266,59 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             It 'Should pass Credential when using InputObject' {
                 $credential = [PSCredential]::new('TestUser', ('TestPass' | ConvertTo-SecureString -AsPlainText -Force))
 
-                $mockTask | Set-StmScheduledTask -Action $mockAction -Credential $credential -Confirm:$false @commonParameters
+                # Use -InputObject explicitly to ensure ByInputObject parameter set is used
+                Set-StmScheduledTask -InputObject $mockTask -Action $mockAction -Credential $credential -Confirm:$false @commonParameters
 
                 Should -Invoke 'New-StmCimSession' -Times 1 -ParameterFilter {
                     $Credential -eq $credential
+                }
+            }
+
+            It 'Should use PSComputerName from InputObject when present' {
+                # Create a task with PSComputerName property (as NoteProperty, like PowerShell adds for remote objects)
+                $remoteTask = New-Object -TypeName 'Microsoft.Management.Infrastructure.CimInstance' -ArgumentList @(
+                    'MSFT_ScheduledTask',
+                    'Root/Microsoft/Windows/TaskScheduler'
+                )
+                $remoteTask.CimInstanceProperties.Add(
+                    [Microsoft.Management.Infrastructure.CimProperty]::Create(
+                        'TaskName', 'RemoteTask', [Microsoft.Management.Infrastructure.CimType]::String,
+                        [Microsoft.Management.Infrastructure.CimFlags]::Property -bor
+                            [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
+                    )
+                )
+                $remoteTask.CimInstanceProperties.Add(
+                    [Microsoft.Management.Infrastructure.CimProperty]::Create(
+                        'TaskPath', '\', [Microsoft.Management.Infrastructure.CimType]::String,
+                        [Microsoft.Management.Infrastructure.CimFlags]::Property -bor
+                            [Microsoft.Management.Infrastructure.CimFlags]::ReadOnly
+                    )
+                )
+                # PSComputerName is added by PowerShell as a NoteProperty when objects come from remote sessions
+                $remoteTask | Add-Member -NotePropertyName 'PSComputerName' -NotePropertyValue 'RemoteServer01' -Force
+
+                # Use -InputObject explicitly to ensure ByInputObject parameter set is used
+                # (Pipeline binding may prefer ByName due to ValueFromPipelineByPropertyName on TaskName)
+                Set-StmScheduledTask -InputObject $remoteTask -Action $mockAction -Confirm:$false @commonParameters
+
+                Should -Invoke 'New-StmCimSession' -Times 1 -ParameterFilter {
+                    $ComputerName -eq 'RemoteServer01'
+                }
+            }
+
+            It 'Should accept InputObject parameter directly (not via pipeline)' {
+                Set-StmScheduledTask -InputObject $mockTask -Action $mockAction -Confirm:$false @commonParameters
+
+                Should -Invoke 'Set-ScheduledTask' -Times 1 -ParameterFilter {
+                    $TaskName -eq 'TestTask1' -and $TaskPath -eq '\'
+                }
+            }
+
+            It 'Should create CIM session in ByInputObject parameter set' {
+                Set-StmScheduledTask -InputObject $mockTask -Action $mockAction -Confirm:$false @commonParameters
+
+                Should -Invoke 'New-StmCimSession' -Times 1 -ParameterFilter {
+                    $ComputerName -eq 'localhost' -and $ErrorAction -eq 'Stop'
                 }
             }
 

@@ -249,6 +249,33 @@ Describe 'Get-TaskNameFromXml' {
             $result = Get-TaskNameFromXml -XmlContent $whitespaceXml
             $result | Should -BeNullOrEmpty
         }
+
+        It 'Should handle URI with double backslash' {
+            # URI '\\' passes the root check (not exactly '\') but Split-Path -Leaf returns empty
+            $doubleSlashXml = @'
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <URI>\\</URI>
+  </RegistrationInfo>
+</Task>
+'@
+            $result = Get-TaskNameFromXml -XmlContent $doubleSlashXml
+            $result | Should -BeNullOrEmpty
+        }
+
+        It 'Should write verbose message when Split-Path returns empty' {
+            $doubleSlashXml = @'
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <URI>\\</URI>
+  </RegistrationInfo>
+</Task>
+'@
+            $verboseOutput = Get-TaskNameFromXml -XmlContent $doubleSlashXml -Verbose 4>&1
+            $verboseOutput | Where-Object { $_ -match 'Could not extract task name from URI' } | Should -Not -BeNullOrEmpty
+        }
     }
 
     Context 'Verbose Logging' {

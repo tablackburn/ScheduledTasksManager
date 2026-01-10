@@ -394,6 +394,29 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 $errorOutput = Get-StmScheduledTaskRun -TaskName 'TestTask1' -ErrorAction SilentlyContinue 2>&1
                 $errorOutput | Should -Not -BeNullOrEmpty
             }
+
+            It 'Should use New-StmError with correct ErrorId when task run retrieval fails' {
+                # Need to override BeforeEach mock with a more specific one
+                Mock -CommandName 'Get-WinEvent' -MockWith {
+                    throw 'Simulated failure in process block'
+                } -ParameterFilter {
+                    $FilterXPath -like "*TestTask1*"
+                }
+                Mock -CommandName 'New-StmError' -MockWith {
+                    return [System.Management.Automation.ErrorRecord]::new(
+                        [System.Exception]::new('Test'),
+                        'ScheduledTaskRunRetrievalFailed',
+                        [System.Management.Automation.ErrorCategory]::NotSpecified,
+                        'TestTask1'
+                    )
+                }
+
+                Get-StmScheduledTaskRun -TaskName 'TestTask1' -ErrorAction SilentlyContinue
+
+                Should -Invoke 'New-StmError' -Times 1 -ParameterFilter {
+                    $ErrorId -eq 'ScheduledTaskRunRetrievalFailed'
+                }
+            }
         }
 
         Context 'No Tasks Found' {
@@ -434,6 +457,36 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
         }
 
+        Context 'No Events For Activity ID' {
+            It 'Should skip activity ID when no events match' {
+                # Create a mock event with a dynamic ActivityId that changes on each access
+                # This simulates an edge case where the ActivityId is inconsistent
+                $callCount = 0
+                $mockEventWithDynamicActivityId = New-MockObject -Type 'System.Diagnostics.Eventing.Reader.EventLogRecord' -Methods @{
+                    ToXml = { return '<Event><EventData></EventData></Event>' }
+                } -Properties @{
+                    RecordId    = 1
+                    TimeCreated = [datetime]::Now
+                }
+                # Add a script property that returns different values
+                $mockEventWithDynamicActivityId | Add-Member -MemberType ScriptProperty -Name 'ActivityId' -Value {
+                    $script:callCount++
+                    if ($script:callCount -le 1) { return 'activity-first-call' }
+                    else { return 'activity-second-call' }
+                } -Force
+
+                Mock -CommandName 'Get-WinEvent' -MockWith {
+                    return @($mockEventWithDynamicActivityId)
+                } -ParameterFilter {
+                    $FilterXPath -eq "*[EventData[Data[@Name='TaskName'] = '\TestTask1']]"
+                }
+
+                $verboseOutput = Get-StmScheduledTaskRun -TaskName 'TestTask1' -Verbose 4>&1
+                # The function should handle this gracefully
+                $verboseOutput -join ' ' | Should -Match "No events found for activity ID"
+            }
+        }
+
         Context 'CIM Session Cleanup' {
             It 'Should close CIM session in end block' {
                 Get-StmScheduledTaskRun -TaskName 'TestTask1'
@@ -445,9 +498,13 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 $verboseOutput -join ' ' | Should -Match 'Closing CIM session'
             }
 
-            It 'Should write verbose message when no CIM session to close' -Skip:$true {
-                # This path is unreachable in normal operation - if CimSession is null,
-                # Get-ScheduledTask fails before reaching the end block
+            It 'Should write verbose message when no CIM session to close' -Skip {
+                # This path is unreachable in normal operation because Get-ScheduledTask
+                # has a ValidateNotNullOrEmpty constraint on CimSession parameter.
+                # If New-StmCimSession returns null, Get-ScheduledTask throws a parameter
+                # binding error before execution reaches the end block.
+                # This is defensive code that cannot be triggered without modifying
+                # the parameter validation on Get-ScheduledTask.
             }
         }
 

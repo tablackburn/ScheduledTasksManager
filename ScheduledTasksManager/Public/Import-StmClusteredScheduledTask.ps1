@@ -192,27 +192,6 @@ function Import-StmClusteredScheduledTask {
     begin {
         Write-Verbose "Starting Import-StmClusteredScheduledTask on cluster '$Cluster'"
 
-        # Validate that TaskName is not used with Directory parameter set
-        if ($PSCmdlet.ParameterSetName -eq 'Directory' -and $PSBoundParameters.ContainsKey('TaskName')) {
-            $errorMsg = (
-                'The -TaskName parameter cannot be used with -DirectoryPath. ' +
-                'Task names are extracted from each XML file.'
-            )
-            $errorRecordParameters = @{
-                Exception         = [System.ArgumentException]::new($errorMsg)
-                ErrorId           = 'InvalidParameterCombination'
-                ErrorCategory     = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                TargetObject      = $DirectoryPath
-                Message           = $errorMsg
-                RecommendedAction = (
-                    'Remove the -TaskName parameter when using -DirectoryPath, ' +
-                    'or use -Path for single file import with a custom task name.'
-                )
-            }
-            $errorRecord = New-StmError @errorRecordParameters
-            $PSCmdlet.ThrowTerminatingError($errorRecord)
-        }
-
         # Validate file/directory exists based on parameter set
         if ($PSCmdlet.ParameterSetName -eq 'XmlFile') {
             if (-not (Test-Path -Path $Path -PathType Leaf)) {
