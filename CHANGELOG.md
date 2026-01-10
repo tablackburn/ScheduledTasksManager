@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.10.2] - 2026-01-10
+
+### Fixed
+
+- Corrected `Get-TaskNameFromXml` parameter name from `-Xml` to `-XmlContent` in three call sites:
+  - `Import-StmScheduledTask.ps1` (lines 298 and 398)
+  - `Register-StmScheduledTask.ps1` (line 159)
+- While PowerShell's parameter abbreviation allowed the old code to work, using the correct parameter name is best practice and prevents issues if the function signature changes
+
 ## [0.10.1] - 2025-12-30
 
 ### Fixed
