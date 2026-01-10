@@ -199,8 +199,9 @@
             $taskNames = $clusteredScheduledTasksOwnedByCurrentOwner.TaskName
 
             try {
+                # Note: Task owner CIM sessions are NOT cleaned up because the returned
+                # ScheduledTaskObject contains CIM instance references that depend on them
                 $taskOwnerCimSession = New-StmCimSession -ComputerName $taskOwner -Credential $Credential
-                $script:cimSessionsToCleanup.Add($taskOwnerCimSession)
                 Write-Verbose "Retrieving scheduled tasks from owner '$taskOwner' using CIM session"
                 $getScheduledTaskParameters = @{
                     TaskName   = $taskNames
