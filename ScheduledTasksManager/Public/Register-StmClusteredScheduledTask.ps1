@@ -217,6 +217,9 @@
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Register-StmClusteredScheduledTask for task '$TaskName'"
     }
 }

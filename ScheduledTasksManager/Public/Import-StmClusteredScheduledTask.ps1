@@ -480,6 +480,7 @@ function Import-SingleTask {
     $target = "cluster '$Cluster'"
     $operation = "Import clustered scheduled task '$effectiveTaskName'"
     if ($PSCmdlet.ShouldProcess($target, $operation)) {
+        $cimSession = $null
         try {
             $cimSession = New-StmCimSession -ComputerName $Cluster -Credential $Credential -ErrorAction 'Stop'
             Write-Verbose "CIM session established to cluster '$Cluster'"
@@ -513,6 +514,11 @@ function Import-SingleTask {
             }
             $errorRecord = New-StmError @errorRecordParameters
             $PSCmdlet.ThrowTerminatingError($errorRecord)
+        }
+        finally {
+            if ($cimSession) {
+                Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+            }
         }
     }
 }

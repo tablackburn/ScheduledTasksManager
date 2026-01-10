@@ -387,6 +387,12 @@ function Set-StmScheduledTask {
     }
 
     end {
+        if ($script:cimSession) {
+            Remove-CimSession -CimSession $script:cimSession -ErrorAction SilentlyContinue
+        }
+        if ($cimSession -and $cimSession -ne $script:cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Set-StmScheduledTask"
     }
 }

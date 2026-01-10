@@ -190,6 +190,9 @@
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose 'Finished Get-StmScheduledTask'
     }
 }

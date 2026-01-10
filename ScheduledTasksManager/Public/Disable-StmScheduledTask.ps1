@@ -203,6 +203,9 @@
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Disable-StmScheduledTask for task '$TaskName'"
     }
 }

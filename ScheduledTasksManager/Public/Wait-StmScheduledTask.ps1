@@ -198,6 +198,9 @@ function Wait-StmScheduledTask {
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Wait-StmScheduledTask for task '$TaskName'"
     }
 }

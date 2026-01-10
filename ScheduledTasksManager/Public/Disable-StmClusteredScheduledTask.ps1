@@ -220,6 +220,9 @@
     }
 
     end {
+        if ($clusterCimSession) {
+            Remove-CimSession -CimSession $clusterCimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Disable-StmClusteredScheduledTask for task '$TaskName'"
     }
 }

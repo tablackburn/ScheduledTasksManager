@@ -139,6 +139,9 @@
             $clusteredScheduledTasksParameters['TaskType'] = $TaskType
         }
 
+        # Track CIM sessions for cleanup
+        $script:cimSessionsToCleanup = [System.Collections.Generic.List[Microsoft.Management.Infrastructure.CimSession]]::new()
+
         if ($PSBoundParameters.ContainsKey('CimSession')) {
             Write-Verbose "Using provided CIM session for cluster '$Cluster'"
             $clusteredScheduledTasksParameters['CimSession'] = $CimSession
@@ -150,7 +153,9 @@
                 Credential   = $Credential
                 ErrorAction  = 'Stop'
             }
-            $clusteredScheduledTasksParameters['CimSession'] = New-StmCimSession @cimSessionParameters
+            $clusterCimSession = New-StmCimSession @cimSessionParameters
+            $clusteredScheduledTasksParameters['CimSession'] = $clusterCimSession
+            $script:cimSessionsToCleanup.Add($clusterCimSession)
         }
     }
 
@@ -195,6 +200,7 @@
 
             try {
                 $taskOwnerCimSession = New-StmCimSession -ComputerName $taskOwner -Credential $Credential
+                $script:cimSessionsToCleanup.Add($taskOwnerCimSession)
                 Write-Verbose "Retrieving scheduled tasks from owner '$taskOwner' using CIM session"
                 $getScheduledTaskParameters = @{
                     TaskName   = $taskNames
@@ -264,6 +270,11 @@
     }
 
     end {
+        foreach ($session in $script:cimSessionsToCleanup) {
+            if ($session) {
+                Remove-CimSession -CimSession $session -ErrorAction SilentlyContinue
+            }
+        }
         Write-Verbose "Finished Get-StmClusteredScheduledTask for cluster '$Cluster'"
     }
 }

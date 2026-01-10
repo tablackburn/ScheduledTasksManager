@@ -353,6 +353,9 @@ function Import-StmScheduledTask {
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose 'Completed Import-StmScheduledTask'
     }
 }

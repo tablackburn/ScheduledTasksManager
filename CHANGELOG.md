@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.10.3] - 2026-01-10
+
+### Fixed
+
+- Fixed CIM session resource leaks across 18 cmdlets that were creating sessions without cleanup:
+  - Standalone cmdlets: `Get-StmScheduledTask`, `Enable-StmScheduledTask`, `Disable-StmScheduledTask`, `Wait-StmScheduledTask`, `Unregister-StmScheduledTask`, `Start-StmScheduledTask`, `Stop-StmScheduledTask`, `Export-StmScheduledTask`, `Register-StmScheduledTask`, `Import-StmScheduledTask`
+  - Clustered cmdlets: `Get-StmClusteredScheduledTask`, `Enable-StmClusteredScheduledTask`, `Disable-StmClusteredScheduledTask`, `Register-StmClusteredScheduledTask`, `Unregister-StmClusteredScheduledTask`, `Set-StmClusteredScheduledTask`, `Set-StmScheduledTask`, `Import-StmClusteredScheduledTask`
+- Sessions are now properly cleaned up in `end` or `finally` blocks using `Remove-CimSession`
+
 ## [0.10.2] - 2026-01-10
 
 ### Fixed

@@ -154,9 +154,10 @@
                     ComputerName = $Cluster
                     Credential   = $Credential
                 }
+                $cimSession = New-StmCimSession @newStmCimSessionParameters
                 $unregisterClusteredScheduledTaskParameters = @{
                     TaskName    = $TaskName
-                    CimSession  = (New-StmCimSession @newStmCimSessionParameters)
+                    CimSession  = $cimSession
                     ErrorAction = 'Stop'
                 }
                 Unregister-ClusteredScheduledTask @unregisterClusteredScheduledTaskParameters
@@ -179,6 +180,9 @@
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Enable-StmClusteredScheduledTask for task '$TaskName'"
     }
 }

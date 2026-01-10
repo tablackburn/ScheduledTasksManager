@@ -166,6 +166,9 @@ function Stop-StmScheduledTask {
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Stop-StmScheduledTask for task '$TaskName'"
     }
 }

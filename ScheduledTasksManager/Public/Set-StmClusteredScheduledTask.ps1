@@ -656,6 +656,9 @@ function Set-StmClusteredScheduledTask {
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Set-StmClusteredScheduledTask"
     }
 }
