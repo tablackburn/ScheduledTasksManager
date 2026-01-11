@@ -275,6 +275,8 @@ function Set-StmScheduledTask {
     }
 
     process {
+        # Track session created in this process iteration for cleanup
+        $processSession = $null
         try {
             # Determine task name, path, and computer based on parameter set
             if ($PSCmdlet.ParameterSetName -eq 'ByInputObject') {
@@ -289,7 +291,7 @@ function Set-StmScheduledTask {
 
                 Write-Verbose "Processing task from pipeline: '$effectiveTaskName' at '$effectiveTaskPath'"
 
-                # Create CIM session for InputObject
+                # Create CIM session for InputObject - cleaned up in finally block
                 $cimSessionParameters = @{
                     ComputerName = $effectiveComputerName
                     ErrorAction  = 'Stop'
@@ -298,7 +300,8 @@ function Set-StmScheduledTask {
                     Write-Verbose 'Using provided credential'
                     $cimSessionParameters['Credential'] = $Credential
                 }
-                $cimSession = New-StmCimSession @cimSessionParameters
+                $processSession = New-StmCimSession @cimSessionParameters
+                $cimSession = $processSession
             }
             else {
                 $effectiveTaskName = $TaskName
@@ -384,14 +387,18 @@ function Set-StmScheduledTask {
             $errorRecord = New-StmError @errorRecordParameters
             $PSCmdlet.ThrowTerminatingError($errorRecord)
         }
+        finally {
+            # Clean up session created in this process iteration (ByInputObject only)
+            if ($processSession) {
+                Remove-CimSession -CimSession $processSession -ErrorAction SilentlyContinue
+            }
+        }
     }
 
     end {
+        # Clean up session created in begin block (ByName only)
         if ($script:cimSession) {
             Remove-CimSession -CimSession $script:cimSession -ErrorAction SilentlyContinue
-        }
-        if ($cimSession -and $cimSession -ne $script:cimSession) {
-            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
         }
         Write-Verbose "Completed Set-StmScheduledTask"
     }
