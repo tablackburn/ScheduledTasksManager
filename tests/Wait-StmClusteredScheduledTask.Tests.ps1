@@ -162,5 +162,30 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             # Should have been called exactly 3 times (max consecutive errors)
             Should -Invoke -CommandName 'Get-StmClusteredScheduledTask' -Times 3 -Exactly
         }
+
+        It 'Should timeout during transient error retries' {
+            Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith {
+                throw "Transient error"
+            }
+
+            $parameters = @{
+                TaskName               = 'TestTask'
+                Cluster                = 'TestCluster'
+                PollingIntervalSeconds = 1
+                TimeoutSeconds         = 1
+            }
+
+            $errorThrown = $null
+            try {
+                Wait-StmClusteredScheduledTask @parameters -WarningAction SilentlyContinue
+            }
+            catch {
+                $errorThrown = $_
+            }
+
+            # Verify timeout error was thrown (not max consecutive errors)
+            $errorThrown | Should -Not -BeNullOrEmpty
+            $errorThrown.FullyQualifiedErrorId | Should -BeLike "TimeoutReached*"
+        }
     }
 }
