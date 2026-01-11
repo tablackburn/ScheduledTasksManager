@@ -26,7 +26,7 @@ function Set-StmClusteredScheduledTask {
         4. Unregisters the current task
         5. Re-registers the task with the modified configuration
 
-        At least one modification parameter (Action, Trigger, Settings, Principal, User, Password, or
+        At least one modification parameter (Action, Trigger, Settings, Principal, User, or
         TaskType) must be specified.
 
         This function requires appropriate permissions to manage clustered scheduled tasks.
@@ -58,15 +58,20 @@ function Set-StmClusteredScheduledTask {
     .PARAMETER Principal
         Specifies a principal object that defines the security context for the task. Use
         New-ScheduledTaskPrincipal to create a principal object. This parameter cannot be used together
-        with User or Password parameters.
+        with the User parameter.
 
     .PARAMETER User
         Specifies the user account under which the task runs. This is an alternative to using the
-        Principal parameter. Cannot be used together with the Principal parameter.
+        Principal parameter. Cannot be used together with the Principal parameter. Note that this
+        only sets the UserId in the task XML; for tasks requiring stored credentials, consider using
+        a Group Managed Service Account (gMSA).
 
     .PARAMETER Password
-        Specifies the password for the user account specified by the User parameter. This is an
-        alternative to using the Principal parameter. Cannot be used together with the Principal parameter.
+        This parameter is not supported for clustered scheduled tasks. The native
+        Register-ClusteredScheduledTask cmdlet does not accept a Password parameter. If you need to run
+        a clustered task with stored credentials, configure the task on each cluster node individually
+        using Set-ScheduledTask, or use a Group Managed Service Account (gMSA) which does not require
+        a stored password.
 
     .PARAMETER TaskType
         Specifies the cluster task type. Valid values are:
@@ -111,9 +116,11 @@ function Set-StmClusteredScheduledTask {
 
     .EXAMPLE
         Get-StmClusteredScheduledTask -TaskName 'ReportTask' -Cluster 'MyCluster' |
-            Set-StmClusteredScheduledTask -Cluster 'MyCluster' -User 'DOMAIN\ServiceAccount' -Password 'P@ssw0rd'
+            Set-StmClusteredScheduledTask -Cluster 'MyCluster' -User 'DOMAIN\gMSA$'
 
         Uses pipeline input to modify the user account under which the clustered task runs.
+        Note: For clustered tasks, use a Group Managed Service Account (gMSA) instead of
+        username/password credentials.
 
     .EXAMPLE
         Set-StmClusteredScheduledTask -TaskName 'FlexibleTask' -Cluster 'MyCluster' -TaskType 'AnyNode'
@@ -145,8 +152,8 @@ function Set-StmClusteredScheduledTask {
         This operation temporarily removes the task from the cluster during the re-registration
         process. The task will be unavailable for execution during this brief period.
 
-        At least one modification parameter (Action, Trigger, Settings, Principal, User, Password, or
-        TaskType) must be specified. The Principal parameter cannot be combined with User or Password.
+        At least one modification parameter (Action, Trigger, Settings, Principal, User, or
+        TaskType) must be specified. The Principal parameter cannot be combined with User.
 
         The function supports the -WhatIf and -Confirm parameters for safe operation in automated
         environments.
@@ -223,29 +230,49 @@ function Set-StmClusteredScheduledTask {
     begin {
         Write-Verbose 'Starting Set-StmClusteredScheduledTask'
 
-        # Validate mutually exclusive parameters (Principal vs User/Password)
-        if ($PSBoundParameters.ContainsKey('Principal') -and
-            ($PSBoundParameters.ContainsKey('User') -or $PSBoundParameters.ContainsKey('Password'))) {
-            $errorMsg = 'The Principal parameter cannot be used with User or Password parameters.'
+        # Validate that Password parameter is not supported for clustered tasks
+        # The native Register-ClusteredScheduledTask cmdlet does not support a Password parameter
+        if ($PSBoundParameters.ContainsKey('Password')) {
+            $errorMsg = @(
+                'The Password parameter is not supported for clustered scheduled tasks.'
+                'The native Register-ClusteredScheduledTask cmdlet does not accept a Password parameter.'
+                'To run a clustered task with stored credentials, configure the task on each cluster node'
+                'individually using Set-ScheduledTask, or use a Group Managed Service Account (gMSA).'
+            ) -join ' '
+            $errorRecordParameters = @{
+                Exception         = [System.NotSupportedException]::new($errorMsg)
+                ErrorId           = 'PasswordNotSupportedForClusteredTask'
+                ErrorCategory     = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                TargetObject      = $null
+                Message           = $errorMsg
+                RecommendedAction = 'Remove the Password parameter or use a gMSA account.'
+            }
+            $errorRecord = New-StmError @errorRecordParameters
+            $PSCmdlet.ThrowTerminatingError($errorRecord)
+        }
+
+        # Validate mutually exclusive parameters (Principal vs User)
+        if ($PSBoundParameters.ContainsKey('Principal') -and $PSBoundParameters.ContainsKey('User')) {
+            $errorMsg = 'The Principal parameter cannot be used with the User parameter.'
             $errorRecordParameters = @{
                 Exception         = [System.ArgumentException]::new($errorMsg)
                 ErrorId           = 'InvalidParameterCombination'
                 ErrorCategory     = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 TargetObject      = $null
                 Message           = $errorMsg
-                RecommendedAction = 'Use either Principal or User/Password, not both.'
+                RecommendedAction = 'Use either Principal or User, not both.'
             }
             $errorRecord = New-StmError @errorRecordParameters
             $PSCmdlet.ThrowTerminatingError($errorRecord)
         }
 
         # Validate that at least one modification parameter is specified
-        $modificationParams = @('Action', 'Trigger', 'Settings', 'Principal', 'User', 'Password', 'TaskType')
+        $modificationParams = @('Action', 'Trigger', 'Settings', 'Principal', 'User', 'TaskType')
         $hasModification = $modificationParams | Where-Object { $PSBoundParameters.ContainsKey($_) }
         if (-not $hasModification) {
             $errorMsg = @(
                 'At least one task property (Action, Trigger, Settings, Principal,'
-                'User, Password, or TaskType) must be specified.'
+                'User, or TaskType) must be specified.'
             ) -join ' '
             $errorRecordParameters = @{
                 Exception         = [System.ArgumentException]::new($errorMsg)
@@ -318,276 +345,31 @@ function Set-StmClusteredScheduledTask {
             # Modify Actions if specified
             if ($PSBoundParameters.ContainsKey('Action')) {
                 Write-Verbose 'Modifying Actions in task XML...'
-                $actionsNode = $taskXmlDocument.Task.Actions
-                # Clear existing Exec actions using simple child node enumeration
-                $execActions = @($actionsNode.ChildNodes | Where-Object { $_.LocalName -eq 'Exec' })
-                foreach ($exec in $execActions) {
-                    $actionsNode.RemoveChild($exec) | Out-Null
-                }
-
-                # Add new actions
-                foreach ($act in $Action) {
-                    $ns = $taskXmlDocument.DocumentElement.NamespaceURI
-                    $execElement = $taskXmlDocument.CreateElement('Exec', $ns)
-
-                    $cmdElement = $taskXmlDocument.CreateElement('Command', $ns)
-                    $cmdElement.InnerText = $act.Execute
-                    $execElement.AppendChild($cmdElement) | Out-Null
-
-                    if ($act.Arguments) {
-                        $argsElement = $taskXmlDocument.CreateElement('Arguments', $ns)
-                        $argsElement.InnerText = $act.Arguments
-                        $execElement.AppendChild($argsElement) | Out-Null
-                    }
-
-                    if ($act.WorkingDirectory) {
-                        $wdElement = $taskXmlDocument.CreateElement('WorkingDirectory', $ns)
-                        $wdElement.InnerText = $act.WorkingDirectory
-                        $execElement.AppendChild($wdElement) | Out-Null
-                    }
-
-                    $actionsNode.AppendChild($execElement) | Out-Null
-                }
+                Update-StmTaskActionXml -TaskXml $taskXmlDocument -Action $Action
             }
 
             # Modify Triggers if specified
             if ($PSBoundParameters.ContainsKey('Trigger')) {
                 Write-Verbose 'Modifying Triggers in task XML...'
-                $triggersNode = $taskXmlDocument.Task.Triggers
-                # Clear existing triggers
-                $triggersNode.RemoveAll()
-
-                # Add new triggers based on type
-                foreach ($trig in $Trigger) {
-                    $triggerElement = $null
-                    $triggerType = $trig.CimClass.CimClassName
-                    $ns = $taskXmlDocument.DocumentElement.NamespaceURI
-
-                    switch -Wildcard ($triggerType) {
-                        '*Daily*' {
-                            $triggerElement = $taskXmlDocument.CreateElement('CalendarTrigger', $ns)
-                            $schedByDay = $taskXmlDocument.CreateElement('ScheduleByDay', $ns)
-                            $daysInterval = $taskXmlDocument.CreateElement('DaysInterval', $ns)
-                            $daysInterval.InnerText = if ($trig.DaysInterval) {
-                                $trig.DaysInterval
-                            }
-                            else {
-                                '1'
-                            }
-                            $schedByDay.AppendChild($daysInterval) | Out-Null
-                            $triggerElement.AppendChild($schedByDay) | Out-Null
-                        }
-                        '*Weekly*' {
-                            $triggerElement = $taskXmlDocument.CreateElement('CalendarTrigger', $ns)
-                            $schedByWeek = $taskXmlDocument.CreateElement('ScheduleByWeek', $ns)
-                            $triggerElement.AppendChild($schedByWeek) | Out-Null
-                        }
-                        '*Once*' {
-                            $triggerElement = $taskXmlDocument.CreateElement('TimeTrigger', $ns)
-                        }
-                        '*Logon*' {
-                            $triggerElement = $taskXmlDocument.CreateElement('LogonTrigger', $ns)
-                        }
-                        '*Boot*' {
-                            $triggerElement = $taskXmlDocument.CreateElement('BootTrigger', $ns)
-                        }
-                        default {
-                            $triggerElement = $taskXmlDocument.CreateElement('TimeTrigger', $ns)
-                        }
-                    }
-
-                    if ($triggerElement) {
-                        # Add start boundary if available
-                        if ($trig.StartBoundary) {
-                            $startBoundary = $taskXmlDocument.CreateElement('StartBoundary', $ns)
-                            $startBoundary.InnerText = $trig.StartBoundary
-                            $triggerElement.PrependChild($startBoundary) | Out-Null
-                        }
-
-                        # Add enabled status
-                        $enabled = $taskXmlDocument.CreateElement('Enabled', $ns)
-                        $enabled.InnerText = if ($trig.Enabled -eq $false) {
-                            'false'
-                        }
-                        else {
-                            'true'
-                        }
-                        $triggerElement.AppendChild($enabled) | Out-Null
-
-                        $triggersNode.AppendChild($triggerElement) | Out-Null
-                    }
-                }
+                Update-StmTaskTriggerXml -TaskXml $taskXmlDocument -Trigger $Trigger
             }
 
             # Modify Settings if specified
             if ($PSBoundParameters.ContainsKey('Settings')) {
                 Write-Verbose 'Modifying Settings in task XML...'
-                $settingsNode = $taskXmlDocument.Task.Settings
-                $ns = $taskXmlDocument.DocumentElement.NamespaceURI
-
-                # Map common settings properties to XML elements
-                $settingsMap = @{
-                    'AllowDemandStart'                = 'AllowStartOnDemand'
-                    'AllowHardTerminate'              = 'AllowHardTerminate'
-                    'DisallowStartIfOnBatteries'      = 'DisallowStartIfOnBatteries'
-                    'StopIfGoingOnBatteries'          = 'StopIfGoingOnBatteries'
-                    'Hidden'                          = 'Hidden'
-                    'RunOnlyIfNetworkAvailable'       = 'RunOnlyIfNetworkAvailable'
-                    'Enabled'                         = 'Enabled'
-                    'WakeToRun'                       = 'WakeToRun'
-                    'RunOnlyIfIdle'                   = 'RunOnlyIfIdle'
-                    'StartWhenAvailable'              = 'StartWhenAvailable'
-                    'DisallowStartOnRemoteAppSession' = 'DisallowStartOnRemoteAppSession'
-                    'UseUnifiedSchedulingEngine'      = 'UseUnifiedSchedulingEngine'
-                }
-
-                foreach ($prop in $settingsMap.Keys) {
-                    $value = $Settings.$prop
-                    if ($null -ne $value) {
-                        $xmlProp = $settingsMap[$prop]
-                        $existingNode = $settingsNode.SelectSingleNode($xmlProp)
-                        if ($existingNode) {
-                            $existingNode.InnerText = $value.ToString().ToLower()
-                        }
-                        else {
-                            $newNode = $taskXmlDocument.CreateElement($xmlProp, $ns)
-                            $newNode.InnerText = $value.ToString().ToLower()
-                            $settingsNode.AppendChild($newNode) | Out-Null
-                        }
-                    }
-                }
-
-                # Handle Priority
-                if ($null -ne $Settings.Priority) {
-                    $priorityNode = $settingsNode.SelectSingleNode('Priority')
-                    if ($priorityNode) {
-                        $priorityNode.InnerText = $Settings.Priority.ToString()
-                    }
-                    else {
-                        $newNode = $taskXmlDocument.CreateElement('Priority', $ns)
-                        $newNode.InnerText = $Settings.Priority.ToString()
-                        $settingsNode.AppendChild($newNode) | Out-Null
-                    }
-                }
-
-                # Handle ExecutionTimeLimit
-                if ($Settings.ExecutionTimeLimit) {
-                    $limitNode = $settingsNode.SelectSingleNode('ExecutionTimeLimit')
-                    if ($limitNode) {
-                        $limitNode.InnerText = $Settings.ExecutionTimeLimit.ToString()
-                    }
-                    else {
-                        $newNode = $taskXmlDocument.CreateElement('ExecutionTimeLimit', $ns)
-                        $newNode.InnerText = $Settings.ExecutionTimeLimit.ToString()
-                        $settingsNode.AppendChild($newNode) | Out-Null
-                    }
-                }
+                Update-StmTaskSettingsXml -TaskXml $taskXmlDocument -Settings $Settings
             }
 
             # Modify Principal if specified
             if ($PSBoundParameters.ContainsKey('Principal')) {
                 Write-Verbose 'Modifying Principal in task XML...'
-                $principalsNode = $taskXmlDocument.Task.Principals
-                $principalNode = $principalsNode.Principal
-                $ns = $taskXmlDocument.DocumentElement.NamespaceURI
-
-                if ($Principal.UserId) {
-                    $userIdNode = $principalNode.SelectSingleNode('UserId')
-                    if ($userIdNode) {
-                        $userIdNode.InnerText = $Principal.UserId
-                    }
-                    else {
-                        $newNode = $taskXmlDocument.CreateElement('UserId', $ns)
-                        $newNode.InnerText = $Principal.UserId
-                        $principalNode.AppendChild($newNode) | Out-Null
-                    }
-                }
-
-                if ($Principal.LogonType) {
-                    $logonTypeNode = $principalNode.SelectSingleNode('LogonType')
-                    $logonTypeValue = switch ($Principal.LogonType) {
-                        'Password' {
-                            'Password'
-                        }
-                        'S4U' {
-                            'S4U'
-                        }
-                        'Interactive' {
-                            'InteractiveToken'
-                        }
-                        'InteractiveOrPassword' {
-                            'InteractiveTokenOrPassword'
-                        }
-                        'ServiceAccount' {
-                            'ServiceAccount'
-                        }
-                        default {
-                            $Principal.LogonType.ToString()
-                        }
-                    }
-                    if ($logonTypeNode) {
-                        $logonTypeNode.InnerText = $logonTypeValue
-                    }
-                    else {
-                        $newNode = $taskXmlDocument.CreateElement('LogonType', $ns)
-                        $newNode.InnerText = $logonTypeValue
-                        $principalNode.AppendChild($newNode) | Out-Null
-                    }
-                }
-
-                if ($Principal.RunLevel) {
-                    $runLevelNode = $principalNode.SelectSingleNode('RunLevel')
-                    $runLevelValue = switch ($Principal.RunLevel) {
-                        'Highest' {
-                            'HighestAvailable'
-                        }
-                        'Limited' {
-                            'LeastPrivilege'
-                        }
-                        default {
-                            $Principal.RunLevel.ToString()
-                        }
-                    }
-                    if ($runLevelNode) {
-                        $runLevelNode.InnerText = $runLevelValue
-                    }
-                    else {
-                        $newNode = $taskXmlDocument.CreateElement('RunLevel', $ns)
-                        $newNode.InnerText = $runLevelValue
-                        $principalNode.AppendChild($newNode) | Out-Null
-                    }
-                }
+                Update-StmTaskPrincipalXml -TaskXml $taskXmlDocument -Principal $Principal
             }
 
-            # Modify User/Password if specified
+            # Modify User if specified
             if ($PSBoundParameters.ContainsKey('User')) {
                 Write-Verbose 'Modifying User in task XML...'
-                $principalsNode = $taskXmlDocument.Task.Principals
-                $principalNode = $principalsNode.Principal
-                $ns = $taskXmlDocument.DocumentElement.NamespaceURI
-
-                $userIdNode = $principalNode.SelectSingleNode('UserId')
-                if ($userIdNode) {
-                    $userIdNode.InnerText = $User
-                }
-                else {
-                    $newNode = $taskXmlDocument.CreateElement('UserId', $ns)
-                    $newNode.InnerText = $User
-                    $principalNode.AppendChild($newNode) | Out-Null
-                }
-
-                # If password is provided, set LogonType to Password
-                if ($PSBoundParameters.ContainsKey('Password')) {
-                    $logonTypeNode = $principalNode.SelectSingleNode('LogonType')
-                    if ($logonTypeNode) {
-                        $logonTypeNode.InnerText = 'Password'
-                    }
-                    else {
-                        $newNode = $taskXmlDocument.CreateElement('LogonType', $ns)
-                        $newNode.InnerText = 'Password'
-                        $principalNode.AppendChild($newNode) | Out-Null
-                    }
-                }
+                Update-StmTaskUserXml -TaskXml $taskXmlDocument -User $User
             }
 
             $modifiedXml = $taskXmlDocument.OuterXml

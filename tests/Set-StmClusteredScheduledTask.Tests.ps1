@@ -134,13 +134,19 @@ InModuleScope 'ScheduledTasksManager' {
             It 'Should throw when Principal and User are both specified' {
                 {
                     Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Principal $mockPrincipal -User 'TestUser' -Confirm:$false @commonParameters
-                } | Should -Throw '*Principal parameter cannot be used with User or Password*'
+                } | Should -Throw '*Principal parameter cannot be used with the User parameter*'
             }
 
-            It 'Should throw when Principal and Password are both specified' {
+            It 'Should throw when Password parameter is specified with User' {
                 {
-                    Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Principal $mockPrincipal -Password 'TestPass' -Confirm:$false @commonParameters
-                } | Should -Throw '*Principal parameter cannot be used with User or Password*'
+                    Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -User 'TestUser' -Password 'TestPass' -Confirm:$false @commonParameters
+                } | Should -Throw '*Password parameter is not supported for clustered scheduled tasks*'
+            }
+
+            It 'Should throw when Password parameter is specified with Action' {
+                {
+                    Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -Action $mockAction -Password 'TestPass' -Confirm:$false @commonParameters
+                } | Should -Throw '*Password parameter is not supported for clustered scheduled tasks*'
             }
 
             It 'Should throw when no modification parameter is specified' {
@@ -390,21 +396,12 @@ InModuleScope 'ScheduledTasksManager' {
             }
         }
 
-        Context 'User/Password Modification' {
+        Context 'User Modification' {
             It 'Should modify User in task XML when User parameter is specified' {
                 Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -User 'DOMAIN\TestUser' -Confirm:$false @commonParameters
 
                 Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
                     $Xml -like '*<UserId>DOMAIN\TestUser</UserId>*'
-                }
-            }
-
-            It 'Should modify LogonType in task XML when Password is specified' {
-                Set-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -User 'DOMAIN\TestUser' -Password 'TestPass' -Confirm:$false @commonParameters
-
-                # Password sets LogonType to Password in XML
-                Should -Invoke 'Register-StmClusteredScheduledTask' -Times 1 -ParameterFilter {
-                    $Xml -like '*<UserId>DOMAIN\TestUser</UserId>*' -and $Xml -like '*<LogonType>Password</LogonType>*'
                 }
             }
 
