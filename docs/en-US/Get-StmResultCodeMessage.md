@@ -54,7 +54,7 @@ Translates the success code 0.
 
 ### EXAMPLE 2
 ```
-Get-StmResultCodeMessage -ResultCode 267521
+Get-StmResultCodeMessage -ResultCode 267009
 ```
 
 Translates SCHED_S_TASK_RUNNING to show "The task is currently running".
@@ -68,7 +68,7 @@ Translates the hex code for SCHED_E_ALREADY_RUNNING.
 
 ### EXAMPLE 4
 ```
-0, 267521, 2147750687 | Get-StmResultCodeMessage
+0, 267009, 2147750687 | Get-StmResultCodeMessage
 ```
 
 Translates multiple result codes via pipeline input.
@@ -95,8 +95,8 @@ is "The system cannot find the file specified" (Win32 ERROR_FILE_NOT_FOUND).
 ### -ResultCode
 The result code to translate.
 Accepts:
-- Integer values (e.g., 267521, 2147942402)
-- Decimal strings (e.g., '267521')
+- Integer values (e.g., 267009, 2147942402)
+- Decimal strings (e.g., '267009')
 - Hexadecimal strings with 0x prefix (e.g., '0x8004131F', '0x80070002')
 
 Multiple codes can be provided via the pipeline.
@@ -154,8 +154,8 @@ https://learn.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-error-an
 
 Common result codes:
 - 0: Success
-- 267521 (0x00041301): Task is currently running
-- 267523 (0x00041303): Task has not yet run
+- 267009 (0x00041301): Task is currently running
+- 267011 (0x00041303): Task has not yet run
 - 2147750687 (0x8004131F): An instance of this task is already running
 - 2147942402 (0x80070002): File not found
 

@@ -18,8 +18,8 @@ function Get-StmResultCodeMessage {
 
     .PARAMETER ResultCode
         The result code to translate. Accepts:
-        - Integer values (e.g., 267521, 2147942402)
-        - Decimal strings (e.g., '267521')
+        - Integer values (e.g., 267009, 2147942402)
+        - Decimal strings (e.g., '267009')
         - Hexadecimal strings with 0x prefix (e.g., '0x8004131F', '0x80070002')
 
         Multiple codes can be provided via the pipeline.
@@ -40,7 +40,7 @@ function Get-StmResultCodeMessage {
         Translates the success code 0.
 
     .EXAMPLE
-        Get-StmResultCodeMessage -ResultCode 267521
+        Get-StmResultCodeMessage -ResultCode 267009
 
         Translates SCHED_S_TASK_RUNNING to show "The task is currently running".
 
@@ -50,7 +50,7 @@ function Get-StmResultCodeMessage {
         Translates the hex code for SCHED_E_ALREADY_RUNNING.
 
     .EXAMPLE
-        0, 267521, 2147750687 | Get-StmResultCodeMessage
+        0, 267009, 2147750687 | Get-StmResultCodeMessage
 
         Translates multiple result codes via pipeline input.
 
@@ -89,8 +89,8 @@ function Get-StmResultCodeMessage {
 
         Common result codes:
         - 0: Success
-        - 267521 (0x00041301): Task is currently running
-        - 267523 (0x00041303): Task has not yet run
+        - 267009 (0x00041301): Task is currently running
+        - 267011 (0x00041303): Task has not yet run
         - 2147750687 (0x8004131F): An instance of this task is already running
         - 2147942402 (0x80070002): File not found
 

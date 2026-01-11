@@ -24,7 +24,7 @@ function ConvertTo-StmResultMessage {
         Translates the success code 0 to "The operation completed successfully".
 
     .EXAMPLE
-        ConvertTo-StmResultMessage -ResultCode 267521
+        ConvertTo-StmResultMessage -ResultCode 267009
 
         Translates SCHED_S_TASK_RUNNING to "The task is currently running".
 
@@ -568,7 +568,7 @@ function ConvertTo-StmResultMessage {
                 IsSuccess    = $primaryMeaning.IsSuccess
                 Facility     = $facilityName
                 FacilityCode = $facilityCode
-                Meanings     = [array]$meanings.ToArray()
+                Meanings     = $meanings.ToArray()
             }
         }
         else {
@@ -583,7 +583,7 @@ function ConvertTo-StmResultMessage {
                 IsSuccess    = -not $isFailure
                 Facility     = $facilityName
                 FacilityCode = $facilityCode
-                Meanings     = [array]@()
+                Meanings     = @()
             }
         }
 
