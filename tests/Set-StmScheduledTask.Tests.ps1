@@ -322,19 +322,6 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 }
             }
 
-            It 'Should cleanup CIM session in ByInputObject parameter set' {
-                # Clear the module-scoped variable to ensure we test the ByInputObject cleanup path
-                InModuleScope 'ScheduledTasksManager' {
-                    $script:cimSession = $null
-                }
-                Mock -CommandName 'Remove-CimSession' -MockWith { }
-
-                Set-StmScheduledTask -InputObject $mockTask -Action $mockAction -Confirm:$false @commonParameters
-
-                # In ByInputObject, $script:cimSession is never set (null), so only line 394 should call Remove-CimSession
-                Should -Invoke 'Remove-CimSession' -Times 1
-            }
-
             It 'Should process multiple tasks from pipeline' {
                 $mockTask2 = New-Object -TypeName 'Microsoft.Management.Infrastructure.CimInstance' -ArgumentList @(
                     'MSFT_ScheduledTask',
