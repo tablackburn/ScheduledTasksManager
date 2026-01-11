@@ -261,15 +261,10 @@ function Get-WinEventXPathFilter {
     # events that have any of the submitted
     # keywords assigned.
     if ($Keywords) {
-        $keywordFilter = ''
-
+        # Simplify keyword aggregation using -bor with initial value of 0
+        $keywordFilter = 0
         foreach ($item in $Keywords) {
-            if ($keywordFilter) {
-                $keywordFilter = $keywordFilter -bor $item
-            }
-            else {
-                $keywordFilter = $item
-            }
+            $keywordFilter = $keywordFilter -bor $item
         }
 
         $filter = Join-XPathFilter -ExistingFilter $filter -NewFilter "*[System[band(Keywords,$keywordFilter)]]"

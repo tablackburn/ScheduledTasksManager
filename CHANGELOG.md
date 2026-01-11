@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.10.6] - 2026-01-11
+
+### Changed
+
+- `Get-StmScheduledTaskRun`: Replaced Stack with simple foreach loop for task processing (cleaner code)
+- `Get-StmScheduledTaskRun`: Use `List<object>` instead of array concatenation for combining events (better performance)
+- `Get-StmClusteredScheduledTask`: Use hashtable for O(1) task lookups instead of repeated Where-Object filtering
+- `Get-WinEventXPathFilter`: Simplified keyword aggregation loop
+
 ## [0.10.5] - 2026-01-11
 
 ### Fixed
