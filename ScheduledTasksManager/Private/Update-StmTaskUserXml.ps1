@@ -54,7 +54,7 @@ function Update-StmTaskUserXml {
             $principalNode.AppendChild($newNode) | Out-Null
         }
 
-        # If password is provided, set LogonType to Password
+        # If SetPasswordLogonType is specified, set LogonType to Password
         if ($SetPasswordLogonType) {
             $logonTypeNode = $principalNode.SelectSingleNode('*[local-name()="LogonType"]')
             if ($logonTypeNode) {
