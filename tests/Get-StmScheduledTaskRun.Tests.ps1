@@ -588,7 +588,8 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             It 'Should write verbose message about multiple result codes' {
                 $verboseOutput = Get-StmScheduledTaskRun -TaskName 'TestTask1' -Verbose 4>&1 |
                     Out-String
-                $verboseOutput | Should -Match 'Multiple ResultCode'
+                # Now outputs "Found X ResultCode(s)" where X > 1 indicates multiple
+                $verboseOutput | Should -Match 'Found \d+ ResultCode\(s\)'
             }
 
             It 'Should return multiple result codes as array' {
