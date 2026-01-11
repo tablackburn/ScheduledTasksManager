@@ -198,6 +198,12 @@
             }
             $taskNames = $clusteredScheduledTasksOwnedByCurrentOwner.TaskName
 
+            # Create hashtable for O(1) lookup by TaskName (avoids repeated Where-Object)
+            $clusteredTaskLookup = @{}
+            foreach ($cst in $clusteredScheduledTasksOwnedByCurrentOwner) {
+                $clusteredTaskLookup[$cst.TaskName] = $cst
+            }
+
             try {
                 # Note: Task owner CIM sessions are NOT cleaned up because the returned
                 # ScheduledTaskObject contains CIM instance references that depend on them
@@ -225,9 +231,8 @@
                         $scheduledTaskFromOwner.TaskName + "'"
                     )
                     Write-Verbose $findMsg
-                    $clusteredScheduledTask = $clusteredScheduledTasksOwnedByCurrentOwner | Where-Object {
-                        $_.TaskName -eq $scheduledTaskFromOwner.TaskName
-                    }
+                    # Use hashtable lookup for O(1) performance
+                    $clusteredScheduledTask = $clusteredTaskLookup[$scheduledTaskFromOwner.TaskName]
 
                     if ($null -eq $clusteredScheduledTask) {
                         $noMatchMsg = (

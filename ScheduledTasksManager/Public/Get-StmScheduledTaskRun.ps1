@@ -163,16 +163,9 @@
             return # Exit early if no tasks are found
         }
 
-        # Use a stack to process tasks in LIFO order
-        $scheduledTasksToProcess = New-Object -TypeName 'System.Collections.Stack'
-        $scheduledTasks | ForEach-Object {
-            $scheduledTasksToProcess.Push($_)
-        }
-
-        # Iterate through the stack to process each task
-        Write-Verbose "Processing $($scheduledTasksToProcess.Count) scheduled task(s) for last run information"
-        while ($scheduledTasksToProcess.Count -gt 0) {
-            $currentTask = $scheduledTasksToProcess.Pop()
+        # Process each scheduled task
+        Write-Verbose "Processing $($scheduledTasks.Count) scheduled task(s) for last run information"
+        foreach ($currentTask in $scheduledTasks) {
             Write-Verbose "Processing task '$($currentTask.TaskName)'"
             try {
                 Write-Verbose "Getting scheduled task information for task '$($currentTask.TaskName)'"
@@ -296,8 +289,10 @@
                         "'$activityId' of task '$($currentTask.TaskName)'"
                     )
 
-                    # Combine all events and sort once by TimeCreated
-                    $allRunEvents = @($activityEvents) + $eventsWithoutActivityId
+                    # Combine all events using List for better performance (avoids array + operator)
+                    $allRunEvents = [System.Collections.Generic.List[object]]::new()
+                    $activityEvents | ForEach-Object { $allRunEvents.Add($_) }
+                    $eventsWithoutActivityId | ForEach-Object { $allRunEvents.Add($_) }
                     $sortedEvents = $allRunEvents | Sort-Object -Property 'TimeCreated' -Descending
                     Write-Verbose (
                         "Combined and sorted $($sortedEvents.Count) event(s) for activity ID '$activityId' of " +
