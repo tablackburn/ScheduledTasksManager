@@ -8,6 +8,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.0] - 2026-01-11
+
+### Added
+
+- `Get-StmResultCodeMessage` - Translate Windows Task Scheduler result codes to human-readable messages
+  - Supports Task Scheduler codes (SCHED_S_*, SCHED_E_*), HRESULT/Win32 errors, and common COM errors
+  - Returns detailed information including symbolic name, message, success/failure status, and HRESULT facility
+  - Accepts integers, decimal strings, or hex strings (0x prefix) via pipeline or parameter
+- `Get-StmScheduledTaskRun`: Added `ResultMessage` property with automatic translation of result codes
+- `Get-StmClusteredScheduledTaskRun`: Inherits `ResultMessage` property from standalone variant
+
+### Changed
+
+- Extracted Win32 error translation to `Get-StmWin32ErrorMessage` private helper for better testability
+- Improved code coverage from 96.99% to 99.19% for result code translation functions
+
 ## [0.10.7] - 2026-01-11
 
 ### Fixed

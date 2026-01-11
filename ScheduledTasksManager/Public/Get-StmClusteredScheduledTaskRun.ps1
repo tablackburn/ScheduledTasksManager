@@ -62,7 +62,10 @@ function Get-StmClusteredScheduledTaskRun {
         Returns objects containing details about each scheduled task run:
         - TaskName: The name of the scheduled task
         - ActivityId: The unique identifier for the task run
-        - ResultCode: The exit code from the task execution
+        - ResultCode: The numeric exit code(s) from the task execution
+        - ResultMessage: Human-readable translation of the ResultCode(s), including symbolic name
+          and detailed explanation. Each ResultMessage object contains ResultCode, HexCode,
+          ConstantName, Message, Meanings, IsSuccess, Source, Facility, and FacilityCode properties.
         - StartTime: When the task started
         - EndTime: When the task completed
         - Duration: The TimeSpan duration of the run
