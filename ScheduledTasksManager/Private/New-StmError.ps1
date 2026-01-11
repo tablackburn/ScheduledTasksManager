@@ -1,5 +1,5 @@
 function New-StmError {
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [System.Exception]
@@ -33,23 +33,21 @@ function New-StmError {
     }
 
     process {
-        if ($PSCmdlet.ShouldProcess($ErrorId, 'Create error record')) {
-            $errorDetails = New-Object -TypeName 'System.Management.Automation.ErrorDetails' -ArgumentList $Message
-            $errorRecord = New-Object -TypeName 'System.Management.Automation.ErrorRecord' -ArgumentList @(
-                $Exception,        # The original exception
-                $ErrorId,          # The error ID
-                $ErrorCategory,    # The error category
-                $TargetObject      # The target object
-            )
+        $errorDetails = New-Object -TypeName 'System.Management.Automation.ErrorDetails' -ArgumentList $Message
+        $errorRecord = New-Object -TypeName 'System.Management.Automation.ErrorRecord' -ArgumentList @(
+            $Exception,        # The original exception
+            $ErrorId,          # The error ID
+            $ErrorCategory,    # The error category
+            $TargetObject      # The target object
+        )
 
-            $errorRecord.ErrorDetails = $errorDetails
+        $errorRecord.ErrorDetails = $errorDetails
 
-            if ($PSBoundParameters.ContainsKey('RecommendedAction')) {
-                $errorRecord.ErrorDetails.RecommendedAction = $RecommendedAction
-            }
-
-            $errorRecord
+        if ($PSBoundParameters.ContainsKey('RecommendedAction')) {
+            $errorRecord.ErrorDetails.RecommendedAction = $RecommendedAction
         }
+
+        $errorRecord
     }
 
     end {
