@@ -118,10 +118,6 @@ ScheduledTasksManager/
 # Run tests for a specific file
 Invoke-Pester ./tests/Get-StmClusteredScheduledTask.Tests.ps1 -Output Detailed
 
-# Run with code coverage (Pester 5 configuration)
-$config = New-PesterConfiguration
-$config.Run.Path = './tests/'
-$config.CodeCoverage.Enabled = $true
-$config.CodeCoverage.Path = './ScheduledTasksManager/**/*.ps1'
-Invoke-Pester -Configuration $config
+# Run with code coverage
+Invoke-Pester ./tests/ -CodeCoverage ./ScheduledTasksManager/**/*.ps1
 ```
