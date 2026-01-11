@@ -258,5 +258,20 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 }
             }
         }
+
+        Context 'WhatIf Support' {
+            It 'Should not disable task when WhatIf is specified' {
+                Disable-StmScheduledTask -TaskName 'TestTask1' -WhatIf @commonParameters
+
+                Should -Invoke 'Disable-ScheduledTask' -Times 0
+            }
+
+            It 'Should write verbose cancellation message when WhatIf is specified' {
+                $verboseOutput = Disable-StmScheduledTask -TaskName 'TestTask1' -WhatIf -Verbose @commonParameters 4>&1 |
+                    ForEach-Object { $_.ToString() }
+
+                $verboseOutput | Should -Contain 'Operation cancelled by user.'
+            }
+        }
     }
 }

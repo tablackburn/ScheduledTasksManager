@@ -276,6 +276,21 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
         }
 
+        Context 'WhatIf Support' {
+            It 'Should not disable task when WhatIf is specified' {
+                Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf @commonParameters
+
+                Should -Invoke 'Unregister-ClusteredScheduledTask' -Times 0
+            }
+
+            It 'Should write verbose cancellation message when WhatIf is specified' {
+                $verboseOutput = Disable-StmClusteredScheduledTask -TaskName 'TestTask' -Cluster 'TestCluster' -WhatIf -Verbose @commonParameters 4>&1 |
+                    ForEach-Object { $_.ToString() }
+
+                $verboseOutput | Should -Contain 'Operation cancelled by user.'
+            }
+        }
+
         Context 'Integration Tests' {
             It 'Should complete full disable workflow successfully' {
                 # Arrange
