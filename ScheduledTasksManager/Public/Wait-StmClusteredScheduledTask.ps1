@@ -128,13 +128,59 @@
         $activity = "Waiting for clustered scheduled task '$TaskName' to complete"
         $status = ''
         $percentComplete = 0
+        $consecutiveErrors = 0
+        $maxConsecutiveErrors = 3
         while ($true) {
             $clusteredScheduledTaskParameters = @{
                 TaskName   = $TaskName
                 Cluster    = $Cluster
                 Credential = $Credential
             }
-            $scheduledTask = Get-StmClusteredScheduledTask @clusteredScheduledTaskParameters
+            try {
+                $scheduledTask = Get-StmClusteredScheduledTask @clusteredScheduledTaskParameters
+                $consecutiveErrors = 0  # Reset error counter on success
+            }
+            catch {
+                $consecutiveErrors++
+                $warnMsg = (
+                    "Failed to retrieve task status (attempt $consecutiveErrors of $maxConsecutiveErrors): " +
+                    $_.Exception.Message
+                )
+                Write-Warning $warnMsg
+                if ($consecutiveErrors -ge $maxConsecutiveErrors) {
+                    Write-Progress -Activity $activity -Completed
+                    $errorMessage = (
+                        "Failed to retrieve task '$TaskName' status after $maxConsecutiveErrors consecutive attempts. " +
+                        "Last error: $($_.Exception.Message)"
+                    )
+                    $errorRecordParameters = @{
+                        Exception     = [System.InvalidOperationException]::new($errorMessage, $_.Exception)
+                        ErrorId       = 'ClusterUnreachable'
+                        ErrorCategory = [System.Management.Automation.ErrorCategory]::ConnectionError
+                        TargetObject  = $Cluster
+                        Message       = $errorMessage
+                    }
+                    $errorRecord = New-StmError @errorRecordParameters
+                    $PSCmdlet.ThrowTerminatingError($errorRecord)
+                }
+                Start-Sleep -Seconds $PollingIntervalSeconds
+                # Check timeout after retry sleep
+                $elapsed = (Get-Date) - $startTime
+                if ($elapsed.TotalSeconds -ge $TimeoutSeconds) {
+                    Write-Progress -Activity $activity -Completed
+                    $timeoutMessage = "Timeout reached while waiting for task '$TaskName' to complete."
+                    $errorRecordParameters = @{
+                        Exception     = [System.TimeoutException]::new($timeoutMessage)
+                        ErrorId       = 'TimeoutReached'
+                        ErrorCategory = [System.Management.Automation.ErrorCategory]::OperationTimeout
+                        TargetObject  = $TaskName
+                        Message       = $timeoutMessage
+                    }
+                    $errorRecord = New-StmError @errorRecordParameters
+                    $PSCmdlet.ThrowTerminatingError($errorRecord)
+                }
+                continue
+            }
             $state = $scheduledTask.ScheduledTaskObject.State
             $elapsed = (Get-Date) - $startTime
             $percentComplete = [math]::Min([math]::Round(($elapsed.TotalSeconds / $TimeoutSeconds) * 100), 100)

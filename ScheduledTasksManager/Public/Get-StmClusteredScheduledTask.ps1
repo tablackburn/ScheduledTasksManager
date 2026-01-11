@@ -261,6 +261,10 @@
                 }
             }
             catch {
+                # Clean up the session on error since no valid objects will be returned
+                if ($taskOwnerCimSession) {
+                    Remove-CimSession -CimSession $taskOwnerCimSession -ErrorAction SilentlyContinue
+                }
                 $ownerErrMsg = (
                     "Failed to retrieve tasks from owner '" + $taskOwner +
                     "': " + $_.Exception.Message
