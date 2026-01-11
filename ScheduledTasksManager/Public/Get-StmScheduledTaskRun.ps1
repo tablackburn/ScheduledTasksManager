@@ -256,16 +256,16 @@
                     # Find the start and end events for the activity ID
                     # The Windows Event Log returns events from newest to oldest,
                     # so the first event is the most recent
-                    # Sort the events by RecordId to be safe
+                    # Sort the events by RecordId to find boundaries
                     Write-Verbose (
                         "Sorting events by RecordId for activity ID '$activityId' of task " +
                         "'$($currentTask.TaskName)'"
                     )
-                    $sortedEvents = $activityEvents | Sort-Object -Property 'RecordId' -Descending
+                    $eventsByRecordId = $activityEvents | Sort-Object -Property 'RecordId' -Descending
                     Write-Verbose (
                         "Finding the start event for activity ID '$activityId' of task '$($currentTask.TaskName)'"
                     )
-                    $startEvent = $sortedEvents | Select-Object -Last 1
+                    $startEvent = $eventsByRecordId | Select-Object -Last 1
                     Write-Verbose (
                         "Start event for activity ID '$activityId' of task '$($currentTask.TaskName)': " +
                         "$($startEvent | Out-String)"
@@ -273,7 +273,7 @@
                     Write-Verbose (
                         "Finding the end event for activity ID '$activityId' of task '$($currentTask.TaskName)'"
                     )
-                    $endEvent = $sortedEvents | Select-Object -First 1
+                    $endEvent = $eventsByRecordId | Select-Object -First 1
                     Write-Verbose (
                         "End event for activity ID '$activityId' of task '$($currentTask.TaskName)': " +
                         "$($endEvent | Out-String)"
@@ -286,23 +286,23 @@
                         "Finding events between the start and end events of task '$($currentTask.TaskName)' " +
                         "that do not have an ActivityId"
                     )
-                    $eventsWithoutActivityId = $taskEvents | Where-Object {
+                    $eventsWithoutActivityId = @($taskEvents | Where-Object {
                         $null -eq $_.ActivityId -and
                         $_.RecordId -gt $startEvent.RecordId -and
                         $_.RecordId -lt $endEvent.RecordId
-                    }
+                    })
                     Write-Verbose (
                         "Found $($eventsWithoutActivityId.Count) event(s) without ActivityId for activity ID " +
                         "'$activityId' of task '$($currentTask.TaskName)'"
                     )
-                    if ($eventsWithoutActivityId.Count -gt 0) {
-                        Write-Verbose (
-                            "Adding events without ActivityId to run details for activity ID '$activityId' of " +
-                            "task '$($currentTask.TaskName)'"
-                        )
-                        $sortedEvents += $eventsWithoutActivityId
-                        $sortedEvents = $sortedEvents | Sort-Object -Property 'TimeCreated' -Descending
-                    }
+
+                    # Combine all events and sort once by TimeCreated
+                    $allRunEvents = @($activityEvents) + $eventsWithoutActivityId
+                    $sortedEvents = $allRunEvents | Sort-Object -Property 'TimeCreated' -Descending
+                    Write-Verbose (
+                        "Combined and sorted $($sortedEvents.Count) event(s) for activity ID '$activityId' of " +
+                        "task '$($currentTask.TaskName)'"
+                    )
 
                     # Add all of the events to the run details
                     Write-Verbose (
@@ -332,39 +332,25 @@
                         "'$activityId' of task '$($currentTask.TaskName)'"
                     )
 
-                    # Add the result code
-                    $resultCode = $runDetails['EventXml'].Event.EventData.Data | Where-Object {
+                    # Add the result code(s) - always as an array for consistent output type
+                    $resultCodes = @($runDetails['EventXml'].Event.EventData.Data | Where-Object {
                         $_.Name -eq 'ResultCode'
-                    } | Select-Object -ExpandProperty '#text' -Unique
-                    $noResultCodeFound = (
-                        $null -eq $resultCode -or
-                        $resultCode.Count -eq 0 -or
-                        [string]::IsNullOrEmpty($resultCode[0])
-                    )
-                    if ($noResultCodeFound) {
+                    } | Select-Object -ExpandProperty '#text' -Unique)
+                    # Filter out null/empty values
+                    $resultCodes = @($resultCodes | Where-Object { -not [string]::IsNullOrEmpty($_) })
+
+                    if ($resultCodes.Count -eq 0) {
                         Write-Verbose (
                             "No ResultCode found for activity ID '$activityId' of task " +
                             "'$($currentTask.TaskName)'"
                         )
-                    }
-                    elseif ($resultCode.Count -gt 1) {
-                        Write-Verbose (
-                            "Multiple ResultCode(s) found for activity ID '$activityId' of task " +
-                            "'$($currentTask.TaskName)'"
-                        )
-                        # $resultCode is already an array of unique string values from Select-Object -Unique above
-                        $runDetails['ResultCode'] = $resultCode
-                        Write-Verbose "Using multiple ResultCode(s): $($runDetails['ResultCode'] -join ', ')"
+                        # ResultCode remains null (initialized in $runDetails)
                     }
                     else {
+                        $runDetails['ResultCode'] = $resultCodes
                         Write-Verbose (
-                            "Single ResultCode found for activity ID '$activityId' of task " +
-                            "'$($currentTask.TaskName)'"
-                        )
-                        $runDetails['ResultCode'] = $resultCode
-                        Write-Verbose (
-                            "Using ResultCode '$($runDetails['ResultCode'])' for activity ID '$activityId' of " +
-                            "task '$($currentTask.TaskName)'"
+                            "Found $($resultCodes.Count) ResultCode(s) for activity ID '$activityId' of task " +
+                            "'$($currentTask.TaskName)': $($resultCodes -join ', ')"
                         )
                     }
 

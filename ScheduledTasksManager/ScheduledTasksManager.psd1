@@ -12,7 +12,7 @@
     RootModule           = 'ScheduledTasksManager.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '0.10.4'
+    ModuleVersion        = '0.10.5'
 
     # Supported PSEditions
     CompatiblePSEditions = @('Desktop', 'Core')

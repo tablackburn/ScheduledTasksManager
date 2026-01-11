@@ -102,58 +102,16 @@
     }
 
     process {
+        # Retrieve the task with its own error handling
+        Write-Verbose "Retrieving clustered scheduled task '$TaskName'..."
+        $getStmClusteredScheduledTaskParameters = @{
+            TaskName    = $TaskName
+            Cluster     = $Cluster
+            Credential  = $Credential
+            ErrorAction = 'Stop'
+        }
         try {
-            Write-Verbose "Retrieving clustered scheduled task '$TaskName'..."
-            $getStmClusteredScheduledTaskParameters = @{
-                TaskName    = $TaskName
-                Cluster     = $Cluster
-                Credential  = $Credential
-                ErrorAction = 'Stop'
-            }
             $scheduledTask = Get-StmClusteredScheduledTask @getStmClusteredScheduledTaskParameters
-
-            if (-not $scheduledTask) {
-                $errorRecordParameters = @{
-                    Exception         = [System.Management.Automation.ItemNotFoundException]::new('Task not found')
-                    ErrorId           = 'TaskNotFound'
-                    ErrorCategory     = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                    TargetObject      = $TaskName
-                    Message           = "Clustered scheduled task '$TaskName' not found on cluster '$Cluster'."
-                    RecommendedAction = 'Verify the task name and cluster name are correct.'
-                }
-                $errorRecord = New-StmError @errorRecordParameters
-                $PSCmdlet.ThrowTerminatingError($errorRecord)
-            }
-
-            Write-Verbose "Retrieved clustered scheduled task '$TaskName'. Current state: $($scheduledTask.TaskState)"
-
-            if ($PSCmdlet.ShouldProcess("$TaskName on $Cluster", 'Stop clustered scheduled task')) {
-                Write-Verbose "Stopping clustered scheduled task '$TaskName'..."
-                try {
-                    $scheduledTask.ScheduledTaskObject | Stop-ScheduledTask -ErrorAction 'Stop'
-                    Write-Verbose "Clustered scheduled task '$TaskName' has been stopped successfully."
-                }
-                catch {
-                    $errorRecordParameters = @{
-                        Exception         = $_.Exception
-                        ErrorId           = 'StopTaskFailed'
-                        ErrorCategory     = [System.Management.Automation.ErrorCategory]::WriteError
-                        TargetObject      = $TaskName
-                        Message           = (
-                            "Failed to stop clustered scheduled task '$TaskName'. $($_.Exception.Message)"
-                        )
-                        RecommendedAction = (
-                            'Ensure the task is running and you have the necessary ' +
-                            'permissions to stop it.'
-                        )
-                    }
-                    $errorRecord = New-StmError @errorRecordParameters
-                    $PSCmdlet.ThrowTerminatingError($errorRecord)
-                }
-            }
-            else {
-                Write-Verbose 'Operation cancelled by user.'
-            }
         }
         catch {
             $errorRecordParameters = @{
@@ -166,6 +124,50 @@
             }
             $errorRecord = New-StmError @errorRecordParameters
             $PSCmdlet.ThrowTerminatingError($errorRecord)
+        }
+
+        if (-not $scheduledTask) {
+            $errorRecordParameters = @{
+                Exception         = [System.Management.Automation.ItemNotFoundException]::new('Task not found')
+                ErrorId           = 'TaskNotFound'
+                ErrorCategory     = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                TargetObject      = $TaskName
+                Message           = "Clustered scheduled task '$TaskName' not found on cluster '$Cluster'."
+                RecommendedAction = 'Verify the task name and cluster name are correct.'
+            }
+            $errorRecord = New-StmError @errorRecordParameters
+            $PSCmdlet.ThrowTerminatingError($errorRecord)
+        }
+
+        Write-Verbose "Retrieved clustered scheduled task '$TaskName'. Current state: $($scheduledTask.TaskState)"
+
+        # Stop the task with its own error handling (separate from retrieval)
+        if ($PSCmdlet.ShouldProcess("$TaskName on $Cluster", 'Stop clustered scheduled task')) {
+            Write-Verbose "Stopping clustered scheduled task '$TaskName'..."
+            try {
+                $scheduledTask.ScheduledTaskObject | Stop-ScheduledTask -ErrorAction 'Stop'
+                Write-Verbose "Clustered scheduled task '$TaskName' has been stopped successfully."
+            }
+            catch {
+                $errorRecordParameters = @{
+                    Exception         = $_.Exception
+                    ErrorId           = 'StopTaskFailed'
+                    ErrorCategory     = [System.Management.Automation.ErrorCategory]::WriteError
+                    TargetObject      = $TaskName
+                    Message           = (
+                        "Failed to stop clustered scheduled task '$TaskName'. $($_.Exception.Message)"
+                    )
+                    RecommendedAction = (
+                        'Ensure the task is running and you have the necessary ' +
+                        'permissions to stop it.'
+                    )
+                }
+                $errorRecord = New-StmError @errorRecordParameters
+                $PSCmdlet.ThrowTerminatingError($errorRecord)
+            }
+        }
+        else {
+            Write-Verbose 'Operation cancelled by user.'
         }
     }
 

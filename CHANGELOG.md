@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.10.5] - 2026-01-11
+
+### Fixed
+
+- `Stop-StmClusteredScheduledTask`: Fixed nested catch block that was masking the actual error source (stop vs retrieve errors now reported correctly)
+- `Get-StmScheduledTaskRun`: Fixed collection modification issue and improved event processing efficiency by collecting and sorting events in a single pass
+- `Get-StmScheduledTaskRun`: `ResultCode` property now always returns an array for consistent output type
+- `Get-StmClusteredScheduledTaskInfo`: Refactored state property handling to avoid redundant enum-to-string conversions
+
 ## [0.10.4] - 2026-01-11
 
 ### Fixed

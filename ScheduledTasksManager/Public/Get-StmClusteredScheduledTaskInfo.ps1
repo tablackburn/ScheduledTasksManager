@@ -212,19 +212,18 @@
         }
 
         # Ensure top-level State property from the original scheduled task
-        # Convert enum to string to ensure proper serialization through remoting
-        if ($scheduledTask.State) {
-            $mergedHashtable['State'] = [string]$scheduledTask.State
+        # Convert enum to string once to ensure proper serialization through remoting
+        $taskStateString = if ($scheduledTask.State) { [string]$scheduledTask.State } else { $null }
+        if ($taskStateString) {
+            $mergedHashtable['State'] = $taskStateString
         }
 
         # Calculate running duration if task is currently running
         # The State property comes from ScheduledTaskObject (in ClusteredScheduledTask output)
-        # Check if task is running by looking at the State property from the original task
-        if ($scheduledTask.State -and
-            ([string]$scheduledTask.State) -eq 'Running' -and
-            ($mergedHashtable.Keys -contains 'LastRunTime') -and
-            ($null -ne $mergedHashtable['LastRunTime'])) {
-
+        $isRunning = $taskStateString -eq 'Running'
+        $hasLastRunTime = ($mergedHashtable.Keys -contains 'LastRunTime') -and
+                          ($null -ne $mergedHashtable['LastRunTime'])
+        if ($isRunning -and $hasLastRunTime) {
             $runningDuration = (Get-Date) - $mergedHashtable['LastRunTime']
             $mergedHashtable['RunningDuration'] = $runningDuration
             Write-Verbose "Task '$($mergedHashtable['TaskName'])' has been running for $($runningDuration.ToString())"
