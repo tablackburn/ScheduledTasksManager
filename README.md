@@ -84,6 +84,7 @@ Import-StmClusteredScheduledTask -Cluster "NewCluster" -Path ".\BackupTask.xml"
 | `Unregister-StmClusteredScheduledTask` | Remove a clustered scheduled task |
 | `Enable-StmClusteredScheduledTask` | Enable a disabled clustered task |
 | `Disable-StmClusteredScheduledTask` | Disable a clustered task (creates backup) |
+| `Set-StmClusteredScheduledTask` | Modify clustered task properties (actions, triggers, settings) |
 | `Start-StmClusteredScheduledTask` | Manually start a clustered task |
 | `Stop-StmClusteredScheduledTask` | Stop a running clustered task |
 | `Wait-StmClusteredScheduledTask` | Wait for a clustered task to complete |
@@ -99,6 +100,7 @@ Import-StmClusteredScheduledTask -Cluster "NewCluster" -Path ".\BackupTask.xml"
 | `Get-StmScheduledTaskRun` | Get task run history with event details |
 | `Disable-StmScheduledTask` | Disable a scheduled task on local or remote computers |
 | `Enable-StmScheduledTask` | Enable a scheduled task on local or remote computers |
+| `Set-StmScheduledTask` | Modify task properties (actions, triggers, settings) |
 | `Export-StmScheduledTask` | Export task configuration to XML |
 | `Import-StmScheduledTask` | Import task configuration from XML |
 | `Register-StmScheduledTask` | Register a new scheduled task |
@@ -107,11 +109,12 @@ Import-StmClusteredScheduledTask -Cluster "NewCluster" -Path ".\BackupTask.xml"
 | `Stop-StmScheduledTask` | Stop a running scheduled task |
 | `Wait-StmScheduledTask` | Wait for a scheduled task to complete |
 
-### Cluster Utilities
+### Utilities
 
 | Function | Description |
 |----------|-------------|
 | `Get-StmClusterNode` | Retrieve cluster node information |
+| `Get-StmResultCodeMessage` | Translate result codes to human-readable messages |
 
 ## Usage Examples
 
