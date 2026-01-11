@@ -680,6 +680,82 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 $result = Get-StmScheduledTaskRun -TaskName 'TestTask1'
                 $result.ResultCode | Should -BeNullOrEmpty
             }
+
+            It 'Should set ResultMessage to null when ResultCode is not found' {
+                $result = Get-StmScheduledTaskRun -TaskName 'TestTask1'
+                $result.ResultMessage | Should -BeNullOrEmpty
+            }
+        }
+
+        Context 'ResultMessage Translation' {
+            It 'Should populate ResultMessage when ResultCode exists' {
+                $result = Get-StmScheduledTaskRun -TaskName 'TestTask1'
+                $result.ResultMessage | Should -Not -BeNullOrEmpty
+            }
+
+            It 'Should return ResultMessage as an array' {
+                $result = Get-StmScheduledTaskRun -TaskName 'TestTask1'
+                $result.ResultMessage -is [array] | Should -BeTrue
+            }
+
+            It 'ResultMessage should have expected properties' {
+                $result = Get-StmScheduledTaskRun -TaskName 'TestTask1'
+                $message = $result.ResultMessage[0]
+                $message.PSObject.Properties.Name | Should -Contain 'ResultCode'
+                $message.PSObject.Properties.Name | Should -Contain 'HexCode'
+                $message.PSObject.Properties.Name | Should -Contain 'ConstantName'
+                $message.PSObject.Properties.Name | Should -Contain 'Message'
+                $message.PSObject.Properties.Name | Should -Contain 'IsSuccess'
+            }
+
+            It 'Should correctly translate result code 0' {
+                $result = Get-StmScheduledTaskRun -TaskName 'TestTask1'
+                $message = $result.ResultMessage[0]
+                $message.ResultCode | Should -Be 0
+                $message.IsSuccess | Should -BeTrue
+            }
+
+            It 'Should write verbose message about translated result codes' {
+                $verboseOutput = Get-StmScheduledTaskRun -TaskName 'TestTask1' -Verbose 4>&1
+                $verboseOutput -join ' ' | Should -Match 'Translated \d+ ResultCode\(s\)'
+            }
+
+            Context 'Error Result Code' {
+                BeforeEach {
+                    $mockStartEvent = New-MockObject -Type 'System.Diagnostics.Eventing.Reader.EventLogRecord' -Methods @{
+                        ToXml = {
+                            return '<Event><EventData></EventData></Event>'
+                        }
+                    } -Properties @{
+                        ActivityId  = 'error-result'
+                        RecordId    = 1
+                        TimeCreated = [datetime]::Now
+                    }
+                    $mockEndEvent = New-MockObject -Type 'System.Diagnostics.Eventing.Reader.EventLogRecord' -Methods @{
+                        ToXml = {
+                            # 2147942402 = 0x80070002 = File Not Found
+                            return '<Event><EventData><Data Name="ResultCode">2147942402</Data></EventData></Event>'
+                        }
+                    } -Properties @{
+                        ActivityId  = 'error-result'
+                        RecordId    = 2
+                        TimeCreated = [datetime]::Now.AddSeconds(1)
+                    }
+
+                    Mock -CommandName 'Get-WinEvent' -MockWith {
+                        return @($mockEndEvent, $mockStartEvent)
+                    } -ParameterFilter {
+                        $FilterXPath -eq "*[EventData[Data[@Name='TaskName'] = '\TestTask1']]"
+                    }
+                }
+
+                It 'Should translate error result code' {
+                    $result = Get-StmScheduledTaskRun -TaskName 'TestTask1'
+                    $message = $result.ResultMessage[0]
+                    $message.ResultCode | Should -Be 2147942402
+                    $message.IsSuccess | Should -BeFalse
+                }
+            }
         }
     }
 }

@@ -49,13 +49,34 @@
 
         Retrieves the 5 most recent runs for the scheduled task named "MyTask" on the local computer.
 
+    .EXAMPLE
+        Get-StmScheduledTaskRun -TaskName "BackupTask" |
+            Select-Object TaskName, StartTime, @{N='Status';E={$_.ResultMessage[0].ConstantName}},
+                @{N='Message';E={$_.ResultMessage[0].Message}}
+
+        Retrieves run history for "BackupTask" and displays the human-readable status name and message
+        from the ResultMessage translation.
+
     .INPUTS
         None. You cannot pipe objects to Get-StmScheduledTaskRun.
 
     .OUTPUTS
         PSCustomObject
-        Returns objects containing details about each scheduled task run, including task name, start time, end
-        time, status, and result.
+        Returns objects containing details about each scheduled task run:
+        - TaskName: The name of the scheduled task
+        - ActivityId: The unique identifier for the task run
+        - ResultCode: The numeric exit code(s) from the task execution
+        - ResultMessage: Human-readable translation of the ResultCode(s), including symbolic name
+          and detailed explanation. Each ResultMessage object contains ResultCode, HexCode,
+          ConstantName, Message, Meanings, IsSuccess, Source, Facility, and FacilityCode properties.
+        - StartTime: When the task started
+        - EndTime: When the task completed
+        - Duration: The TimeSpan duration of the run
+        - DurationSeconds: The duration in seconds
+        - LaunchRequestIgnored: Whether the launch was skipped due to an existing instance
+        - Events: The raw event log entries for the run
+        - EventCount: The number of events in the run
+        - EventXml: The XML representation of the events
 
     .NOTES
         This function requires access to the Microsoft-Windows-TaskScheduler/Operational event log on the target
@@ -225,6 +246,7 @@
                         TaskName             = $currentTask.TaskName
                         ActivityId           = $activityId
                         ResultCode           = $null
+                        ResultMessage        = $null
                         StartTime            = $null
                         EndTime              = $null
                         Duration             = $null
@@ -339,13 +361,22 @@
                             "No ResultCode found for activity ID '$activityId' of task " +
                             "'$($currentTask.TaskName)'"
                         )
-                        # ResultCode remains null (initialized in $runDetails)
+                        # ResultCode and ResultMessage remain null (initialized in $runDetails)
                     }
                     else {
                         $runDetails['ResultCode'] = $resultCodes
                         Write-Verbose (
                             "Found $($resultCodes.Count) ResultCode(s) for activity ID '$activityId' of task " +
                             "'$($currentTask.TaskName)': $($resultCodes -join ', ')"
+                        )
+
+                        # Translate result codes to human-readable messages
+                        $runDetails['ResultMessage'] = @($resultCodes | ForEach-Object {
+                            ConvertTo-StmResultMessage -ResultCode $_
+                        })
+                        Write-Verbose (
+                            "Translated $($runDetails['ResultMessage'].Count) ResultCode(s) for activity ID " +
+                            "'$activityId' of task '$($currentTask.TaskName)'"
                         )
                     }
 

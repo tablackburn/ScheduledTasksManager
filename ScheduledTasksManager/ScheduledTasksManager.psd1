@@ -88,6 +88,7 @@ extending the ScheduledTasks module from Microsoft
         'Get-StmClusteredScheduledTaskInfo',
         'Get-StmClusteredScheduledTaskRun',
         'Get-StmClusterNode',
+        'Get-StmResultCodeMessage',
         'Get-StmScheduledTask',
         'Get-StmScheduledTaskInfo',
         'Get-StmScheduledTaskRun',
