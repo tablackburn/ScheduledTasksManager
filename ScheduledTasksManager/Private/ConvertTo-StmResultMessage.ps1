@@ -501,10 +501,9 @@ function ConvertTo-StmResultMessage {
         if ($facilityCode -eq 7) {
             # FACILITY_WIN32 - extract and translate the Win32 error code
             Write-Verbose "Detected FACILITY_WIN32, extracting error code: $errorCode"
-            try {
-                $win32Exception = [System.ComponentModel.Win32Exception]::new($errorCode)
-                $win32Message = $win32Exception.Message
+            $win32Message = Get-StmWin32ErrorMessage -ErrorCode $errorCode
 
+            if ($null -ne $win32Message) {
                 # Only add if different from Task Scheduler message (avoid duplicates)
                 $isDuplicate = $meanings | Where-Object { $_.Message -eq $win32Message }
                 if (-not $isDuplicate) {
@@ -517,30 +516,21 @@ function ConvertTo-StmResultMessage {
                     Write-Verbose "Added Win32 translation: $win32Message"
                 }
             }
-            catch {
-                Write-Verbose "Failed to translate Win32 error code $errorCode : $_"
-            }
         }
         elseif ($codeValue -ne 0 -and -not $taskSchedulerMatch -and $codeValue -gt 0 -and $codeValue -le 65535) {
             # Tier 3: Small positive integers - try direct Win32 translation
             Write-Verbose "Trying direct Win32 translation for small code: $codeValue"
-            try {
-                $win32Exception = [System.ComponentModel.Win32Exception]::new([int]$codeValue)
-                $win32Message = $win32Exception.Message
+            $win32Message = Get-StmWin32ErrorMessage -ErrorCode ([int]$codeValue)
 
-                # Check if the message is just the number (no translation available)
-                if ($win32Message -ne $codeValue.ToString()) {
-                    $meanings.Add([PSCustomObject]@{
-                        Source       = 'Win32'
-                        ConstantName = $null
-                        Message      = $win32Message
-                        IsSuccess    = $codeValue -eq 0
-                    })
-                    Write-Verbose "Added direct Win32 translation: $win32Message"
-                }
-            }
-            catch {
-                Write-Verbose "Failed direct Win32 translation for $codeValue : $_"
+            # Check if translation succeeded and message is not just the number
+            if ($null -ne $win32Message -and $win32Message -ne $codeValue.ToString()) {
+                $meanings.Add([PSCustomObject]@{
+                    Source       = 'Win32'
+                    ConstantName = $null
+                    Message      = $win32Message
+                    IsSuccess    = $false
+                })
+                Write-Verbose "Added direct Win32 translation: $win32Message"
             }
         }
 
