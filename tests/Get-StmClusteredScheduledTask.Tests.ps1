@@ -124,14 +124,6 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
         }
 
-        Context 'CimSession parameter' {
-            It 'Should use provided CimSession instead of creating new one' -Skip {
-                # This test is skipped because CimSession cannot be easily mocked
-                # The CimSession parameter requires a real Microsoft.Management.Infrastructure.CimSession object
-                # which cannot be constructed in tests without actual connectivity
-            }
-        }
-
         Context 'TaskType parameter' {
             It 'Should pass TaskType to Get-ClusteredScheduledTask' {
                 Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith {

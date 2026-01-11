@@ -498,14 +498,6 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 $verboseOutput -join ' ' | Should -Match 'Closing CIM session'
             }
 
-            It 'Should write verbose message when no CIM session to close' -Skip {
-                # This path is unreachable in normal operation because Get-ScheduledTask
-                # has a ValidateNotNullOrEmpty constraint on CimSession parameter.
-                # If New-StmCimSession returns null, Get-ScheduledTask throws a parameter
-                # binding error before execution reaches the end block.
-                # This is defensive code that cannot be triggered without modifying
-                # the parameter validation on Get-ScheduledTask.
-            }
         }
 
         Context 'TaskName Parameter' {

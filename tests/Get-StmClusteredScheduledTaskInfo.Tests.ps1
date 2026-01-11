@@ -99,14 +99,6 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
         }
 
         Context 'CimSession and Credential Handling' {
-            It 'Should pass CimSession to Get-StmClusteredScheduledTask when specified' -Skip:$true {
-                # CimSession requires an actual connection, skip in unit tests
-            }
-
-            It 'Should write verbose message when CimSession is provided' -Skip:$true {
-                # CimSession requires an actual connection, skip in unit tests
-            }
-
             It 'Should pass Credential to Get-StmClusteredScheduledTask when specified' {
                 $testCredential = [PSCredential]::new(
                     'TestUser',
