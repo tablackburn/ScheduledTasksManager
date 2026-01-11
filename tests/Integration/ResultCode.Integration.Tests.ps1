@@ -13,6 +13,11 @@
     Tests are executed INSIDE the lab (on STMNODE01) using Invoke-LabCommand
     because the cluster network is not routable from the host.
 
+    Note: Task XML is intentionally duplicated in each test rather than extracted
+    to a shared variable. This is because tests run inside Invoke-LabCommand
+    scriptblocks which cannot access variables from the outer scope. The
+    duplication ensures test isolation and makes each test self-contained.
+
 .NOTES
     Prerequisites:
     - Integration lab deployed and running
@@ -82,9 +87,13 @@ BeforeAll {
         Write-Host "  [OK] Module copied to ${testNode}:$labModulePath" -ForegroundColor Green
     }
 
-    $script:TestNode = $script:Config.virtualMachines.clusterNodes[0]
-    $script:LabModulePath = $script:Config.paths.labModulePath
     $script:TestTaskFolder = '\StmResultCodeTests'
+
+    # Only set config-dependent variables if config is available
+    if ($script:Config) {
+        $script:TestNode = $script:Config.virtualMachines.clusterNodes[0]
+        $script:LabModulePath = $script:Config.paths.labModulePath
+    }
 }
 
 AfterAll {
@@ -445,12 +454,15 @@ Describe 'Result Code Integration Tests' -Skip:$script:SkipIntegrationTests {
                     # Start the task
                     Start-StmScheduledTask -TaskName $taskName -TaskPath $TaskFolder
 
-                    # Wait a moment for task to start
-                    Start-Sleep -Seconds 2
+                    # Poll until task is running (max 10 seconds)
+                    $timeout = [DateTime]::Now.AddSeconds(10)
+                    do {
+                        Start-Sleep -Milliseconds 500
+                        $task = Get-StmScheduledTask -TaskName $taskName -TaskPath $TaskFolder
+                    } while ($task.State -ne 'Running' -and [DateTime]::Now -lt $timeout)
 
                     # Get task info while running
                     $taskInfo = Get-StmScheduledTaskInfo -TaskName $taskName -TaskPath $TaskFolder
-                    $task = Get-StmScheduledTask -TaskName $taskName -TaskPath $TaskFolder
                     $translated = Get-StmResultCodeMessage -ResultCode $taskInfo.LastTaskResult
 
                     [PSCustomObject]@{
@@ -504,8 +516,12 @@ Describe 'Result Code Integration Tests' -Skip:$script:SkipIntegrationTests {
                     # Start the task
                     Start-StmScheduledTask -TaskName $taskName -TaskPath $TaskFolder
 
-                    # Wait for task to be running
-                    Start-Sleep -Seconds 2
+                    # Poll until task is running (max 10 seconds)
+                    $timeout = [DateTime]::Now.AddSeconds(10)
+                    do {
+                        Start-Sleep -Milliseconds 500
+                        $task = Get-StmScheduledTask -TaskName $taskName -TaskPath $TaskFolder
+                    } while ($task.State -ne 'Running' -and [DateTime]::Now -lt $timeout)
 
                     # Try to start it again
                     try {
@@ -535,7 +551,7 @@ Describe 'Result Code Integration Tests' -Skip:$script:SkipIntegrationTests {
             # The task should still be running
             $result.TaskState | Should -Be 'Running'
             # Second start either succeeds silently (IgnoreNew policy) or errors
-            $result.SecondStartResult | Should -Match 'Success|IgnoreNew|already running'
+            $result.SecondStartResult | Should -Match 'success|ignorenew|already running'
         }
     }
 
