@@ -46,10 +46,6 @@ Unit tests mock all external dependencies (cluster cmdlets, CIM sessions, etc.).
 
 Located in `tests/Integration/`. Require a live Windows Failover Cluster via AutomatedLab.
 
-**Test categories:**
-- `ClusteredScheduledTask.Integration.Tests.ps1` - Tests cluster-aware scheduled task operations
-- `ResultCode.Integration.Tests.ps1` - Tests result code translation with real scheduled tasks
-
 The `Integration` task supports three modes (auto-detected):
 
 | Mode | Detection | Description |
