@@ -219,6 +219,8 @@ function Set-StmScheduledTask {
     )
 
     begin {
+        # Track CIM session for cleanup
+        $cimSessionToCleanup = $null
         Write-Verbose 'Starting Set-StmScheduledTask'
 
         # Validate mutually exclusive parameters (Principal vs User/Password)
@@ -270,7 +272,7 @@ function Set-StmScheduledTask {
             else {
                 Write-Verbose 'Using current user credentials'
             }
-            $script:cimSession = New-StmCimSession @cimSessionParameters
+            $cimSessionToCleanup = New-StmCimSession @cimSessionParameters
         }
     }
 
@@ -307,7 +309,7 @@ function Set-StmScheduledTask {
                 $effectiveTaskName = $TaskName
                 $effectiveTaskPath = $TaskPath
                 $effectiveComputerName = $ComputerName
-                $cimSession = $script:cimSession
+                $cimSession = $cimSessionToCleanup
             }
 
             $target = "$effectiveTaskName at $effectiveTaskPath on $effectiveComputerName"
@@ -397,8 +399,8 @@ function Set-StmScheduledTask {
 
     end {
         # Clean up session created in begin block (ByName only)
-        if ($script:cimSession) {
-            Remove-CimSession -CimSession $script:cimSession -ErrorAction SilentlyContinue
+        if ($cimSessionToCleanup) {
+            Remove-CimSession -CimSession $cimSessionToCleanup -ErrorAction SilentlyContinue
         }
         Write-Verbose "Completed Set-StmScheduledTask"
     }

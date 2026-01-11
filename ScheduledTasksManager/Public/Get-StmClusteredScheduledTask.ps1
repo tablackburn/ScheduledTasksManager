@@ -121,6 +121,8 @@
     )
 
     begin {
+        # Track CIM sessions for cleanup
+        $cimSessionsToCleanup = [System.Collections.Generic.List[Microsoft.Management.Infrastructure.CimSession]]::new()
         $clusteredScheduledTasksParameters = @{
             Cluster = $Cluster
         }
@@ -139,9 +141,6 @@
             $clusteredScheduledTasksParameters['TaskType'] = $TaskType
         }
 
-        # Track CIM sessions for cleanup
-        $script:cimSessionsToCleanup = [System.Collections.Generic.List[Microsoft.Management.Infrastructure.CimSession]]::new()
-
         if ($PSBoundParameters.ContainsKey('CimSession')) {
             Write-Verbose "Using provided CIM session for cluster '$Cluster'"
             $clusteredScheduledTasksParameters['CimSession'] = $CimSession
@@ -155,7 +154,7 @@
             }
             $clusterCimSession = New-StmCimSession @cimSessionParameters
             $clusteredScheduledTasksParameters['CimSession'] = $clusterCimSession
-            $script:cimSessionsToCleanup.Add($clusterCimSession)
+            $cimSessionsToCleanup.Add($clusterCimSession)
         }
     }
 
@@ -280,7 +279,7 @@
     }
 
     end {
-        foreach ($session in $script:cimSessionsToCleanup) {
+        foreach ($session in $cimSessionsToCleanup) {
             if ($session) {
                 Remove-CimSession -CimSession $session -ErrorAction SilentlyContinue
             }

@@ -64,7 +64,7 @@ function ConvertTo-StmResultMessage {
     begin {
         # Task Scheduler-specific codes from Microsoft documentation
         # Source: https://learn.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-error-and-success-constants
-        $script:TaskSchedulerCodes = @{
+        $TaskSchedulerCodes = @{
             # Success codes (SCHED_S_*)
             # Hex 0x00041300 = decimal 267008
             267008 = @{
@@ -316,7 +316,7 @@ function ConvertTo-StmResultMessage {
         }
 
         # Common HRESULT facility codes
-        $script:FacilityCodes = @{
+        $FacilityCodes = @{
             0  = 'FACILITY_NULL'
             1  = 'FACILITY_RPC'
             2  = 'FACILITY_DISPATCH'
@@ -464,9 +464,9 @@ function ConvertTo-StmResultMessage {
         # Tier 1: Check Task Scheduler lookup table first
         # Try int64 lookup first (for SCHED_E_* codes with values > int32 max)
         # Then try int32 lookup (for SCHED_S_* codes stored as int32 keys)
-        $taskSchedulerMatch = $script:TaskSchedulerCodes[[int64]$codeValue]
+        $taskSchedulerMatch = $TaskSchedulerCodes[[int64]$codeValue]
         if (-not $taskSchedulerMatch -and $codeValue -ge [int]::MinValue -and $codeValue -le [int]::MaxValue) {
-            $taskSchedulerMatch = $script:TaskSchedulerCodes[[int]$codeValue]
+            $taskSchedulerMatch = $TaskSchedulerCodes[[int]$codeValue]
         }
         if ($taskSchedulerMatch) {
             Write-Verbose "Found Task Scheduler code: $($taskSchedulerMatch.Name)"
@@ -490,7 +490,7 @@ function ConvertTo-StmResultMessage {
         $facilityCode = [int](($codeValue -shr 16) -band 0x1FFF)
         $errorCode = [int]($codeValue -band 0xFFFF)
 
-        $facilityName = $script:FacilityCodes[$facilityCode]
+        $facilityName = $FacilityCodes[$facilityCode]
         if (-not $facilityName) {
             $facilityName = "FACILITY_$facilityCode"
         }
