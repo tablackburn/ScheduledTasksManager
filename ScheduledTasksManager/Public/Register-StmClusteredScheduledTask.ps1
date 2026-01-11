@@ -200,6 +200,7 @@
     }
 
     process {
+        $cimSession = $null
         $target = "cluster '$Cluster'"
         $operation = "Register clustered scheduled task '$TaskName'"
         if ($PSCmdlet.ShouldProcess($target, $operation)) {
@@ -217,6 +218,9 @@
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Register-StmClusteredScheduledTask for task '$TaskName'"
     }
 }

@@ -202,6 +202,9 @@ function Export-StmScheduledTask {
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Export-StmScheduledTask for task '$TaskName'"
     }
 }

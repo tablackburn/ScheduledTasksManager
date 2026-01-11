@@ -181,6 +181,9 @@ function Unregister-StmScheduledTask {
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Unregister-StmScheduledTask for task '$TaskName'"
     }
 }

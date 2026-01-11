@@ -203,6 +203,9 @@ function Enable-StmScheduledTask {
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Enable-StmScheduledTask for task '$TaskName'"
     }
 }

@@ -209,6 +209,9 @@ function Register-StmScheduledTask {
     }
 
     end {
+        if ($cimSession) {
+            Remove-CimSession -CimSession $cimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose "Completed Register-StmScheduledTask for task '$TaskName'"
     }
 }
