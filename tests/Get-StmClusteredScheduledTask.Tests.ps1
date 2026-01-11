@@ -214,6 +214,33 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                     $Message -like '*Failed to merge objects*'
                 }
             }
+
+            It 'Should cleanup task owner CIM session when Get-ScheduledTask fails' {
+                $script:sessionCreationCount = 0
+                Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith {
+                    return [PSCustomObject]@{
+                        TaskName     = 'TestTask1'
+                        CurrentOwner = 'OwnerNode1'
+                    }
+                }
+                Mock -CommandName 'New-StmCimSession' -MockWith {
+                    $script:sessionCreationCount++
+                    return "mock-session-$($script:sessionCreationCount)"
+                }
+                Mock -CommandName 'Get-ScheduledTask' -MockWith {
+                    throw 'Failed to retrieve scheduled task'
+                }
+                Mock -CommandName 'Remove-CimSession' -MockWith {}
+                Mock -CommandName 'Write-Error' -MockWith {}
+
+                Get-StmClusteredScheduledTask -Cluster 'TestCluster' -TaskName 'TestTask1'
+
+                # Two sessions created: cluster session (1) and task owner session (2)
+                # Task owner session (2) should be cleaned up on error
+                # Cluster session (1) should be cleaned up in end block
+                # So Remove-CimSession should be called at least twice
+                Should -Invoke 'Remove-CimSession' -Times 2 -Exactly
+            }
         }
     }
 }

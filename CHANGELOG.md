@@ -8,6 +8,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.10.4] - 2026-01-11
+
+### Fixed
+
+- `Get-StmClusteredScheduledTask`: Added cleanup of task owner CIM sessions when errors occur during task retrieval
+- `Wait-StmClusteredScheduledTask`: Added error handling for transient cluster connectivity issues with automatic retry (up to 3 consecutive failures before throwing)
+
 ## [0.10.3] - 2026-01-10
 
 ### Fixed
