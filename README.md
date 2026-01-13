@@ -209,7 +209,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 ### Testing
 
-The module includes comprehensive Pester tests with 93%+ code coverage. Run tests with:
+The module includes comprehensive Pester tests with 99%+ code coverage. Run tests with:
 
 ```powershell
 ./build.ps1 -Task Test

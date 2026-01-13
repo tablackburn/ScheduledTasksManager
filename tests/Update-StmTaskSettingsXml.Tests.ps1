@@ -34,6 +34,22 @@ BeforeAll {
   <Actions><Exec><Command>cmd.exe</Command></Exec></Actions>
 </Task>
 '@
+
+    # XML with existing Priority and ExecutionTimeLimit elements
+    $script:xmlWithPriorityAndLimit = @'
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo><URI>\TestTask</URI></RegistrationInfo>
+  <Triggers></Triggers>
+  <Principals><Principal><UserId>SYSTEM</UserId></Principal></Principals>
+  <Settings>
+    <Enabled>true</Enabled>
+    <Priority>4</Priority>
+    <ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
+  </Settings>
+  <Actions><Exec><Command>cmd.exe</Command></Exec></Actions>
+</Task>
+'@
 }
 
 Describe 'Update-StmTaskSettingsXml' {
@@ -175,6 +191,17 @@ Describe 'Update-StmTaskSettingsXml' {
 
             $taskXml.Task.Settings.Priority | Should -Be '5'
         }
+
+        It 'Should update existing Priority element' {
+            $taskXml = [xml]$xmlWithPriorityAndLimit
+            $mockSettings = [PSCustomObject]@{
+                Priority = 9
+            }
+
+            Update-StmTaskSettingsXml -TaskXml $taskXml -Settings $mockSettings
+
+            $taskXml.Task.Settings.Priority | Should -Be '9'
+        }
     }
 
     Context 'ExecutionTimeLimit Setting' {
@@ -201,6 +228,17 @@ Describe 'Update-StmTaskSettingsXml' {
             Update-StmTaskSettingsXml -TaskXml $taskXml -Settings $mockSettings
 
             $taskXml.Task.Settings.ExecutionTimeLimit | Should -Be 'PT2H'
+        }
+
+        It 'Should update existing ExecutionTimeLimit element' {
+            $taskXml = [xml]$xmlWithPriorityAndLimit
+            $mockSettings = [PSCustomObject]@{
+                ExecutionTimeLimit = 'PT4H'
+            }
+
+            Update-StmTaskSettingsXml -TaskXml $taskXml -Settings $mockSettings
+
+            $taskXml.Task.Settings.ExecutionTimeLimit | Should -Be 'PT4H'
         }
     }
 
