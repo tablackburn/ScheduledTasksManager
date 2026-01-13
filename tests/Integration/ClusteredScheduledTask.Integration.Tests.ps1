@@ -428,52 +428,82 @@ Describe 'Clustered Scheduled Task Integration Tests' -Skip:$script:SkipIntegrat
         }
 
         It 'Should modify task action' {
-            $result = Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Set-StmClusteredScheduledTask (action)' -ScriptBlock {
+            # Modify the action
+            Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Set-StmClusteredScheduledTask (action)' -ScriptBlock {
                 param($ModulePath, $ClusterName, $TaskName)
                 Import-Module $ModulePath -Force
                 $newAction = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-Command "Write-Host Modified"'
                 Set-StmClusteredScheduledTask `
                     -Cluster $ClusterName `
                     -TaskName $TaskName `
-                    -Action $newAction `
-                    -PassThru
+                    -Action $newAction
+            } -ArgumentList @($script:LabModulePath, $script:ClusterName, $script:TestTaskName)
+
+            # Verify the action was modified
+            $task = Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Verify action modification' -ScriptBlock {
+                param($ModulePath, $ClusterName, $TaskName)
+                Import-Module $ModulePath -Force
+                Get-StmClusteredScheduledTask `
+                    -Cluster $ClusterName `
+                    -TaskName $TaskName
             } -ArgumentList @($script:LabModulePath, $script:ClusterName, $script:TestTaskName) -PassThru
 
-            $result | Should -Not -BeNullOrEmpty
+            $task | Should -Not -BeNullOrEmpty
+            $task.ScheduledTaskObject.Actions.Execute | Should -Be 'powershell.exe'
         }
 
         It 'Should modify task trigger' {
-            $result = Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Set-StmClusteredScheduledTask (trigger)' -ScriptBlock {
+            # Modify the trigger
+            Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Set-StmClusteredScheduledTask (trigger)' -ScriptBlock {
                 param($ModulePath, $ClusterName, $TaskName)
                 Import-Module $ModulePath -Force
                 $newTrigger = New-ScheduledTaskTrigger -Daily -At '6:00 AM'
                 Set-StmClusteredScheduledTask `
                     -Cluster $ClusterName `
                     -TaskName $TaskName `
-                    -Trigger $newTrigger `
-                    -PassThru
+                    -Trigger $newTrigger
+            } -ArgumentList @($script:LabModulePath, $script:ClusterName, $script:TestTaskName)
+
+            # Verify the trigger was modified
+            $task = Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Verify trigger modification' -ScriptBlock {
+                param($ModulePath, $ClusterName, $TaskName)
+                Import-Module $ModulePath -Force
+                Get-StmClusteredScheduledTask `
+                    -Cluster $ClusterName `
+                    -TaskName $TaskName
             } -ArgumentList @($script:LabModulePath, $script:ClusterName, $script:TestTaskName) -PassThru
 
-            $result | Should -Not -BeNullOrEmpty
+            $task | Should -Not -BeNullOrEmpty
+            $task.ScheduledTaskObject.Triggers | Should -Not -BeNullOrEmpty
         }
 
         It 'Should modify task settings' {
-            $result = Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Set-StmClusteredScheduledTask (settings)' -ScriptBlock {
+            # Modify the settings
+            Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Set-StmClusteredScheduledTask (settings)' -ScriptBlock {
                 param($ModulePath, $ClusterName, $TaskName)
                 Import-Module $ModulePath -Force
                 $newSettings = New-ScheduledTaskSettingsSet -Hidden
                 Set-StmClusteredScheduledTask `
                     -Cluster $ClusterName `
                     -TaskName $TaskName `
-                    -Settings $newSettings `
-                    -PassThru
+                    -Settings $newSettings
+            } -ArgumentList @($script:LabModulePath, $script:ClusterName, $script:TestTaskName)
+
+            # Verify the settings were modified
+            $task = Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Verify settings modification' -ScriptBlock {
+                param($ModulePath, $ClusterName, $TaskName)
+                Import-Module $ModulePath -Force
+                Get-StmClusteredScheduledTask `
+                    -Cluster $ClusterName `
+                    -TaskName $TaskName
             } -ArgumentList @($script:LabModulePath, $script:ClusterName, $script:TestTaskName) -PassThru
 
-            $result | Should -Not -BeNullOrEmpty
+            $task | Should -Not -BeNullOrEmpty
+            $task.ScheduledTaskObject.Settings.Hidden | Should -BeTrue
         }
 
         It 'Should modify task type' {
-            # Change task type without PassThru (PassThru can fail due to cluster propagation delay)
+            # Modify the task type
             Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Set-StmClusteredScheduledTask (tasktype)' -ScriptBlock {
                 param($ModulePath, $ClusterName, $TaskName)
                 Import-Module $ModulePath -Force

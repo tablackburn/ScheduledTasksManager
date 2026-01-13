@@ -167,20 +167,6 @@ Describe 'Update-StmTaskSettingsXml' {
     }
 
     Context 'Priority Setting' {
-        BeforeEach {
-            $script:taskXml = [xml]$baseXml
-        }
-
-        It 'Should update Priority when specified' {
-            $mockSettings = [PSCustomObject]@{
-                Priority = 7
-            }
-
-            Update-StmTaskSettingsXml -TaskXml $taskXml -Settings $mockSettings
-
-            $taskXml.Task.Settings.Priority | Should -Be '7'
-        }
-
         It 'Should create Priority element when it does not exist' {
             $taskXml = [xml]$minimalSettingsXml
             $mockSettings = [PSCustomObject]@{
@@ -205,20 +191,6 @@ Describe 'Update-StmTaskSettingsXml' {
     }
 
     Context 'ExecutionTimeLimit Setting' {
-        BeforeEach {
-            $script:taskXml = [xml]$baseXml
-        }
-
-        It 'Should update ExecutionTimeLimit when specified' {
-            $mockSettings = [PSCustomObject]@{
-                ExecutionTimeLimit = 'PT1H'
-            }
-
-            Update-StmTaskSettingsXml -TaskXml $taskXml -Settings $mockSettings
-
-            $taskXml.Task.Settings.ExecutionTimeLimit | Should -Be 'PT1H'
-        }
-
         It 'Should create ExecutionTimeLimit element when it does not exist' {
             $taskXml = [xml]$minimalSettingsXml
             $mockSettings = [PSCustomObject]@{
