@@ -1,0 +1,1713 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://tablackburn.github.io/ScheduledTasksManager/en-US/Get-StmResultCodeMessage/">
+      
+      
+        <link rel="prev" href="../Get-StmClusteredScheduledTaskRun/">
+      
+      
+        <link rel="next" href="../Get-StmScheduledTask/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
+    
+    
+      
+        <title>Get-StmResultCodeMessage - ScheduledTasksManager</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bcfcd587.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#get-stmresultcodemessage" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ScheduledTasksManager" class="md-header__button md-logo" aria-label="ScheduledTasksManager" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ScheduledTasksManager
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Get-StmResultCodeMessage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tablackburn/ScheduledTasksManager" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ScheduledTasksManager" class="md-nav__button md-logo" aria-label="ScheduledTasksManager" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    ScheduledTasksManager
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tablackburn/ScheduledTasksManager" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/tablackburn/ScheduledTasksManager/blob/main/CHANGELOG.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    en-US
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            en-US
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Disable-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Disable-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Disable-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Disable-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Enable-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Enable-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Enable-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Enable-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Export-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Export-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Export-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Export-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmClusterNode/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmClusterNode
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmClusteredScheduledTaskInfo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmClusteredScheduledTaskInfo
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmClusteredScheduledTaskRun/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmClusteredScheduledTaskRun
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Get-StmResultCodeMessage
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmResultCodeMessage
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#synopsis" class="md-nav__link">
+    <span class="md-ellipsis">
+      SYNOPSIS
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      SYNTAX
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    <span class="md-ellipsis">
+      DESCRIPTION
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLES
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="EXAMPLES">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-5" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 6
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      PARAMETERS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PARAMETERS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#-resultcode" class="md-nav__link">
+    <span class="md-ellipsis">
+      -ResultCode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-progressaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      -ProgressAction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commonparameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      CommonParameters
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      INPUTS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="INPUTS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#systemobject" class="md-nav__link">
+    <span class="md-ellipsis">
+      System.Object
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accepts-result-codes-as-integers-decimal-strings-or-hex-strings-via-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Accepts result codes as integers, decimal strings, or hex strings via pipeline.
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      OUTPUTS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OUTPUTS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pscustomobject" class="md-nav__link">
+    <span class="md-ellipsis">
+      PSCustomObject
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns-objects-with-the-following-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns objects with the following properties:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-resultcode-the-original-code-as-an-integer" class="md-nav__link">
+    <span class="md-ellipsis">
+      - ResultCode: The original code as an integer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-hexcode-the-code-in-hexadecimal-format-0x00000000" class="md-nav__link">
+    <span class="md-ellipsis">
+      - HexCode: The code in hexadecimal format (0x00000000)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-message-the-primary-translated-message" class="md-nav__link">
+    <span class="md-ellipsis">
+      - Message: The primary translated message
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-source-where-the-translation-came-from-taskscheduler-win32-unknown" class="md-nav__link">
+    <span class="md-ellipsis">
+      - Source: Where the translation came from (TaskScheduler, Win32, Unknown)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-constantname-the-constant-name-if-known-eg-sched_s_task_running" class="md-nav__link">
+    <span class="md-ellipsis">
+      - ConstantName: The constant name if known (e.g., SCHED_S_TASK_RUNNING)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-issuccess-whether-the-code-indicates-success-or-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      - IsSuccess: Whether the code indicates success or failure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-facility-the-hresult-facility-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      - Facility: The HRESULT facility name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-facilitycode-the-hresult-facility-code-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      - FacilityCode: The HRESULT facility code number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-meanings-array-of-all-possible-interpretations-for-ambiguous-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      - Meanings: Array of all possible interpretations for ambiguous codes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      NOTES
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      RELATED LINKS
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmScheduledTaskInfo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmScheduledTaskInfo
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmScheduledTaskRun/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmScheduledTaskRun
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Import-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Import-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Register-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Register-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Register-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Register-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Set-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Set-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Set-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Set-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Start-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Start-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Start-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Start-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Stop-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Stop-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Stop-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Stop-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Unregister-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Unregister-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Unregister-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Unregister-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Wait-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Wait-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Wait-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Wait-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#synopsis" class="md-nav__link">
+    <span class="md-ellipsis">
+      SYNOPSIS
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      SYNTAX
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    <span class="md-ellipsis">
+      DESCRIPTION
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLES
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="EXAMPLES">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-5" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 5
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 6
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      PARAMETERS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PARAMETERS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#-resultcode" class="md-nav__link">
+    <span class="md-ellipsis">
+      -ResultCode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-progressaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      -ProgressAction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commonparameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      CommonParameters
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      INPUTS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="INPUTS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#systemobject" class="md-nav__link">
+    <span class="md-ellipsis">
+      System.Object
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accepts-result-codes-as-integers-decimal-strings-or-hex-strings-via-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Accepts result codes as integers, decimal strings, or hex strings via pipeline.
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      OUTPUTS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OUTPUTS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pscustomobject" class="md-nav__link">
+    <span class="md-ellipsis">
+      PSCustomObject
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns-objects-with-the-following-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns objects with the following properties:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-resultcode-the-original-code-as-an-integer" class="md-nav__link">
+    <span class="md-ellipsis">
+      - ResultCode: The original code as an integer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-hexcode-the-code-in-hexadecimal-format-0x00000000" class="md-nav__link">
+    <span class="md-ellipsis">
+      - HexCode: The code in hexadecimal format (0x00000000)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-message-the-primary-translated-message" class="md-nav__link">
+    <span class="md-ellipsis">
+      - Message: The primary translated message
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-source-where-the-translation-came-from-taskscheduler-win32-unknown" class="md-nav__link">
+    <span class="md-ellipsis">
+      - Source: Where the translation came from (TaskScheduler, Win32, Unknown)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-constantname-the-constant-name-if-known-eg-sched_s_task_running" class="md-nav__link">
+    <span class="md-ellipsis">
+      - ConstantName: The constant name if known (e.g., SCHED_S_TASK_RUNNING)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-issuccess-whether-the-code-indicates-success-or-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      - IsSuccess: Whether the code indicates success or failure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-facility-the-hresult-facility-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      - Facility: The HRESULT facility name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-facilitycode-the-hresult-facility-code-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      - FacilityCode: The HRESULT facility code number
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-meanings-array-of-all-possible-interpretations-for-ambiguous-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      - Meanings: Array of all possible interpretations for ambiguous codes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      NOTES
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      RELATED LINKS
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="get-stmresultcodemessage">Get-StmResultCodeMessage</h1>
+<h2 id="synopsis">SYNOPSIS</h2>
+<p>Translates Windows Task Scheduler result codes to human-readable messages.</p>
+<h2 id="syntax">SYNTAX</h2>
+<pre><code>Get-StmResultCodeMessage [-ResultCode] &lt;Object&gt; [-ProgressAction &lt;ActionPreference&gt;] [&lt;CommonParameters&gt;]
+</code></pre>
+<h2 id="description">DESCRIPTION</h2>
+<p>The Get-StmResultCodeMessage function translates numeric result codes from Windows Task Scheduler
+into human-readable messages.
+This is useful for understanding the meaning of cryptic result codes
+returned by scheduled tasks.</p>
+<p>The function uses a three-tier translation approach:
+1.
+Task Scheduler-specific codes (SCHED_S_<em>, SCHED_E_</em>) from Microsoft documentation
+2.
+HRESULT decoding for Win32 error codes wrapped in HRESULT format
+3.
+Direct Win32 error code translation for small positive integers</p>
+<p>For codes that may have multiple interpretations, all possible meanings are returned in the
+Meanings property, with the most likely interpretation shown in the Message property.</p>
+<h2 id="examples">EXAMPLES</h2>
+<h3 id="example-1">EXAMPLE 1</h3>
+<pre><code>Get-StmResultCodeMessage -ResultCode 0
+</code></pre>
+<p>ResultCode   : 0
+HexCode      : 0x00000000
+Message      : The operation completed successfully
+Source       : Win32
+ConstantName : ERROR_SUCCESS
+IsSuccess    : True
+Facility     : FACILITY_NULL
+FacilityCode : 0
+Meanings     : {...}</p>
+<p>Translates the success code 0.</p>
+<h3 id="example-2">EXAMPLE 2</h3>
+<pre><code>Get-StmResultCodeMessage -ResultCode 267009
+</code></pre>
+<p>Translates SCHED_S_TASK_RUNNING to show "The task is currently running".</p>
+<h3 id="example-3">EXAMPLE 3</h3>
+<pre><code>Get-StmResultCodeMessage -ResultCode '0x8004131F'
+</code></pre>
+<p>Translates the hex code for SCHED_E_ALREADY_RUNNING.</p>
+<h3 id="example-4">EXAMPLE 4</h3>
+<pre><code>0, 267009, 2147750687 | Get-StmResultCodeMessage
+</code></pre>
+<p>Translates multiple result codes via pipeline input.</p>
+<h3 id="example-5">EXAMPLE 5</h3>
+<pre><code>Get-StmScheduledTaskRun -TaskName 'MyTask' | Select-Object -ExpandProperty ResultCode |
+    Get-StmResultCodeMessage
+</code></pre>
+<p>Translates result codes from task run history.</p>
+<h3 id="example-6">EXAMPLE 6</h3>
+<pre><code>Get-StmResultCodeMessage -ResultCode 2147942402 | Select-Object -ExpandProperty Meanings
+</code></pre>
+<p>Shows all possible meanings for an ambiguous code.
+In this case, shows that 0x80070002
+is "The system cannot find the file specified" (Win32 ERROR_FILE_NOT_FOUND).</p>
+<h2 id="parameters">PARAMETERS</h2>
+<h3 id="-resultcode">-ResultCode</h3>
+<p>The result code to translate.
+Accepts:
+- Integer values (e.g., 267009, 2147942402)
+- Decimal strings (e.g., '267009')
+- Hexadecimal strings with 0x prefix (e.g., '0x8004131F', '0x80070002')</p>
+<p>Multiple codes can be provided via the pipeline.</p>
+<pre><code class="language-yaml">Type: Object
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+</code></pre>
+<h3 id="-progressaction">-ProgressAction</h3>
+<p>{{ Fill ProgressAction Description }}</p>
+<pre><code class="language-yaml">Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+</code></pre>
+<h3 id="commonparameters">CommonParameters</h3>
+<p>This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see <a href="http://go.microsoft.com/fwlink/?LinkID=113216">about_CommonParameters</a>.</p>
+<h2 id="inputs">INPUTS</h2>
+<h3 id="systemobject">System.Object</h3>
+<h3 id="accepts-result-codes-as-integers-decimal-strings-or-hex-strings-via-pipeline">Accepts result codes as integers, decimal strings, or hex strings via pipeline.</h3>
+<h2 id="outputs">OUTPUTS</h2>
+<h3 id="pscustomobject">PSCustomObject</h3>
+<h3 id="returns-objects-with-the-following-properties">Returns objects with the following properties:</h3>
+<h3 id="-resultcode-the-original-code-as-an-integer">- ResultCode: The original code as an integer</h3>
+<h3 id="-hexcode-the-code-in-hexadecimal-format-0x00000000">- HexCode: The code in hexadecimal format (0x00000000)</h3>
+<h3 id="-message-the-primary-translated-message">- Message: The primary translated message</h3>
+<h3 id="-source-where-the-translation-came-from-taskscheduler-win32-unknown">- Source: Where the translation came from (TaskScheduler, Win32, Unknown)</h3>
+<h3 id="-constantname-the-constant-name-if-known-eg-sched_s_task_running">- ConstantName: The constant name if known (e.g., SCHED_S_TASK_RUNNING)</h3>
+<h3 id="-issuccess-whether-the-code-indicates-success-or-failure">- IsSuccess: Whether the code indicates success or failure</h3>
+<h3 id="-facility-the-hresult-facility-name">- Facility: The HRESULT facility name</h3>
+<h3 id="-facilitycode-the-hresult-facility-code-number">- FacilityCode: The HRESULT facility code number</h3>
+<h3 id="-meanings-array-of-all-possible-interpretations-for-ambiguous-codes">- Meanings: Array of all possible interpretations for ambiguous codes</h3>
+<h2 id="notes">NOTES</h2>
+<p>Task Scheduler codes are sourced from Microsoft documentation:
+https://learn.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-error-and-success-constants</p>
+<p>Common result codes:
+- 0: Success
+- 267009 (0x00041301): Task is currently running
+- 267011 (0x00041303): Task has not yet run
+- 2147750687 (0x8004131F): An instance of this task is already running
+- 2147942402 (0x80070002): File not found</p>
+<h2 id="related-links">RELATED LINKS</h2>
+<p><a href="">Get-StmScheduledTaskRun</a></p>
+<p><a href="">Get-StmClusteredScheduledTaskRun</a></p>
+<p><a href="https://learn.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-error-and-success-constants">https://learn.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-error-and-success-constants</a></p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.1e8ae164.min.js"></script>
+      
+        <script src="../../search/main.js"></script>
+      
+    
+  </body>
+</html>
