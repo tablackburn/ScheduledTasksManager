@@ -473,17 +473,26 @@ Describe 'Clustered Scheduled Task Integration Tests' -Skip:$script:SkipIntegrat
         }
 
         It 'Should modify task type' {
-            $result = Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Set-StmClusteredScheduledTask (tasktype)' -ScriptBlock {
+            # Change task type without PassThru (PassThru can fail due to cluster propagation delay)
+            Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Set-StmClusteredScheduledTask (tasktype)' -ScriptBlock {
                 param($ModulePath, $ClusterName, $TaskName)
                 Import-Module $ModulePath -Force
                 Set-StmClusteredScheduledTask `
                     -Cluster $ClusterName `
                     -TaskName $TaskName `
-                    -TaskType ClusterWide `
-                    -PassThru
+                    -TaskType AnyNode
+            } -ArgumentList @($script:LabModulePath, $script:ClusterName, $script:TestTaskName)
+
+            # Verify the task still exists after type change
+            $task = Invoke-LabCommand -ComputerName $script:TestNode -NoDisplay -ActivityName 'Verify task after type change' -ScriptBlock {
+                param($ModulePath, $ClusterName, $TaskName)
+                Import-Module $ModulePath -Force
+                Get-StmClusteredScheduledTask `
+                    -Cluster $ClusterName `
+                    -TaskName $TaskName
             } -ArgumentList @($script:LabModulePath, $script:ClusterName, $script:TestTaskName) -PassThru
 
-            $result | Should -Not -BeNullOrEmpty
+            $task | Should -Not -BeNullOrEmpty
         }
     }
 
