@@ -8,6 +8,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.1] - 2026-01-12
+
+### Changed
+
+- Decomposed `Set-StmClusteredScheduledTask` into 5 private helper functions for better maintainability:
+  - `Update-StmTaskActionXml` - Updates Actions in task XML
+  - `Update-StmTaskTriggerXml` - Updates Triggers in task XML (with DaysOfWeek/WeeksInterval support for weekly triggers)
+  - `Update-StmTaskSettingsXml` - Updates Settings in task XML
+  - `Update-StmTaskPrincipalXml` - Updates Principal in task XML
+  - `Update-StmTaskUserXml` - Updates UserId in task XML
+- Removed script-scoped variables anti-pattern from `Set-StmScheduledTask`, `Get-StmClusteredScheduledTask`, and `ConvertTo-StmResultMessage`
+  - Variables in `begin` block are naturally accessible in `process` and `end` blocks without `$script:` prefix
+
+### Fixed
+
+- `Set-StmClusteredScheduledTask`: Password parameter now throws a clear error explaining it's not supported for clustered tasks (native `Register-ClusteredScheduledTask` doesn't accept passwords)
+
 ## [0.11.0] - 2026-01-11
 
 ### Added
