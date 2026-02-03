@@ -267,7 +267,7 @@
             catch {
                 # Clean up the session on error since no valid objects will be returned
                 if ($taskOwnerCimSession) {
-                    Remove-CimSession -CimSession $taskOwnerCimSession -ErrorAction SilentlyContinue
+                    Remove-CimSession -CimSession $taskOwnerCimSession -ErrorAction SilentlyContinue -WhatIf:$false
                 }
                 $ownerErrMsg = (
                     "Failed to retrieve tasks from owner '" + $taskOwner +
@@ -281,7 +281,7 @@
     end {
         foreach ($session in $cimSessionsToCleanup) {
             if ($session) {
-                Remove-CimSession -CimSession $session -ErrorAction SilentlyContinue
+                Remove-CimSession -CimSession $session -ErrorAction SilentlyContinue -WhatIf:$false
             }
         }
         Write-Verbose "Finished Get-StmClusteredScheduledTask for cluster '$Cluster'"

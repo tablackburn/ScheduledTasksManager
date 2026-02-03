@@ -1,5 +1,7 @@
 function New-StmCimSession {
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '',
+        Justification = 'Creating a CIM session is a read-only connection, not a state change')]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -30,27 +32,25 @@ function New-StmCimSession {
     }
 
     process {
-        if ($PSCmdlet.ShouldProcess($ComputerName, 'Create CIM session')) {
-            try {
-                Write-Verbose "Creating CIM session to '$ComputerName'..."
-                New-CimSession @cimSessionParameters
+        try {
+            Write-Verbose "Creating CIM session to '$ComputerName'..."
+            New-CimSession @cimSessionParameters
+        }
+        catch {
+            $errorRecordParameters = @{
+                Exception         = $_.Exception
+                ErrorId           = 'CimSessionCreationFailed'
+                ErrorCategory     = [System.Management.Automation.ErrorCategory]::ConnectionError
+                TargetObject      = $ComputerName
+                Message           = "Failed to create CIM session to '$ComputerName'. $($_.Exception.Message)"
+                RecommendedAction = (
+                    "Verify the computer name '$ComputerName' is correct, the target computer is accessible, " +
+                    'and you have appropriate permissions. If using credentials, verify they are valid for ' +
+                    'the target computer.'
+                )
             }
-            catch {
-                $errorRecordParameters = @{
-                    Exception         = $_.Exception
-                    ErrorId           = 'CimSessionCreationFailed'
-                    ErrorCategory     = [System.Management.Automation.ErrorCategory]::ConnectionError
-                    TargetObject      = $ComputerName
-                    Message           = "Failed to create CIM session to '$ComputerName'. $($_.Exception.Message)"
-                    RecommendedAction = (
-                        "Verify the computer name '$ComputerName' is correct, the target computer is accessible, " +
-                        'and you have appropriate permissions. If using credentials, verify they are valid for ' +
-                        'the target computer.'
-                    )
-                }
-                $errorRecord = New-StmError @errorRecordParameters
-                $PSCmdlet.ThrowTerminatingError($errorRecord)
-            }
+            $errorRecord = New-StmError @errorRecordParameters
+            $PSCmdlet.ThrowTerminatingError($errorRecord)
         }
     }
 
