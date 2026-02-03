@@ -32,3 +32,20 @@ Contributions are welcome! Please follow these guidelines:
 - Run `./build.ps1 -Task Init -Bootstrap` to install dependencies
 - Run `./build.ps1 -Task Build` to build the module
 - Run `./build.ps1 -Task Test` to run tests
+
+## Releasing
+
+When releasing a new version:
+
+1. Update `ModuleVersion` in `ScheduledTasksManager/ScheduledTasksManager.psd1`
+2. Add entry to [CHANGELOG.md](../CHANGELOG.md) following [Keep a Changelog](https://keepachangelog.com/) format
+3. Commit and push to `main`
+4. GitHub Actions will auto-create a release, but the notes will be generic
+5. Update the GitHub release notes to match the CHANGELOG entry:
+   ```bash
+   gh release edit vX.Y.Z --notes "$(cat <<'EOF'
+   ## Fixed/Added/Changed
+   - Description from CHANGELOG
+   EOF
+   )"
+   ```
