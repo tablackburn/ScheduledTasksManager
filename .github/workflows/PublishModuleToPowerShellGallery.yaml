@@ -70,6 +70,12 @@ jobs:
           }
           Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value "IN_GALLERY=$inGallery" -Confirm:$False -Encoding 'UTF8'
 
+      - name: Publish to PSGallery
+        if: steps.check_release.outputs.exists == 'false' && steps.check_psgallery.outputs.IN_GALLERY == 'False'
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PS_GALLERY_KEY }}
+        run: ./build.ps1 -Task 'Publish' -Bootstrap
+
       - name: Create GitHub Release
         if: steps.check_release.outputs.exists == 'false'
         shell: bash
@@ -79,9 +85,3 @@ jobs:
           gh release create "v${{ steps.version.outputs.version }}" \
             --title "v${{ steps.version.outputs.version }}" \
             --generate-notes
-
-      - name: Publish to PSGallery
-        if: steps.check_release.outputs.exists == 'false' && steps.check_psgallery.outputs.IN_GALLERY == 'False'
-        env:
-          PSGALLERY_API_KEY: ${{ secrets.PS_GALLERY_KEY }}
-        run: ./build.ps1 -Task 'Publish' -Bootstrap
