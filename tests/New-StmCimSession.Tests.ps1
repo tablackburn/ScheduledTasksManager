@@ -10,10 +10,10 @@ BeforeAll {
 
 Describe 'New-StmCimSession' {
     Context 'Function Attributes' {
-        It 'Should support ShouldProcess' {
+        It 'Should not support ShouldProcess (read-only operation)' {
             $function = Get-Command -Name New-StmCimSession
-            $function.Parameters.ContainsKey('WhatIf') | Should -BeTrue
-            $function.Parameters.ContainsKey('Confirm') | Should -BeTrue
+            $function.Parameters.ContainsKey('WhatIf') | Should -BeFalse
+            $function.Parameters.ContainsKey('Confirm') | Should -BeFalse
         }
 
         It 'Should have mandatory ComputerName parameter' {
@@ -109,23 +109,9 @@ Describe 'New-StmCimSession' {
         }
     }
 
-    Context 'WhatIf Support' {
-        BeforeEach {
-            Mock -CommandName New-CimSession -MockWith {
-                throw 'New-CimSession should not be called during WhatIf'
-            }
-        }
-
-        It 'Should not create CIM session when WhatIf is specified' {
-            { New-StmCimSession -ComputerName 'TestServer10' -WhatIf } | Should -Not -Throw
-            Should -Invoke -CommandName New-CimSession -Times 0 -Exactly
-        }
-
-        It 'Should display WhatIf message' {
-            # WhatIf prevents execution, so New-CimSession should not be called
-            { New-StmCimSession -ComputerName 'TestServer11' -WhatIf } | Should -Not -Throw
-            # Verify New-CimSession was not called due to WhatIf
-            Should -Invoke -CommandName New-CimSession -Times 0 -Exactly -Scope It
+    Context 'WhatIf Not Supported' {
+        It 'Should not accept WhatIf parameter (read-only operation)' {
+            { New-StmCimSession -ComputerName 'TestServer10' -WhatIf } | Should -Throw -ErrorId 'NamedParameterNotFound*'
         }
     }
 
