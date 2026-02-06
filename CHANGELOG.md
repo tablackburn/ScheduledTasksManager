@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.3] - 2026-02-06
+
+### Changed
+
+- `Get-StmScheduledTaskRun`: Added progress indicator (`Write-Progress`) so users can see the function is still working when processing large event logs
+
 ## [0.11.2] - 2026-02-03
 
 ### Fixed

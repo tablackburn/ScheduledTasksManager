@@ -91,6 +91,7 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
 
             Mock -CommandName 'Remove-CimSession' -MockWith { }
+            Mock -CommandName 'Write-Progress' -MockWith { }
         }
 
         It 'Should return the correct object' {

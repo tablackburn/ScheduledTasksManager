@@ -186,7 +186,10 @@
 
         # Process each scheduled task
         Write-Verbose "Processing $($scheduledTasks.Count) scheduled task(s) for last run information"
+        $progressActivity = 'Retrieving scheduled task run history'
         foreach ($currentTask in $scheduledTasks) {
+            Write-Progress -Activity $progressActivity `
+                -Status "Processing task '$($currentTask.TaskName)'"
             Write-Verbose "Processing task '$($currentTask.TaskName)'"
             try {
                 Write-Verbose "Getting scheduled task information for task '$($currentTask.TaskName)'"
@@ -445,6 +448,7 @@
                 Write-Error -ErrorRecord $errorRecord
             }
         }
+        Write-Progress -Activity $progressActivity -Completed
     }
 
     end {
