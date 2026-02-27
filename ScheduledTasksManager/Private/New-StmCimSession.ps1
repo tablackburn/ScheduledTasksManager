@@ -33,6 +33,13 @@ function New-StmCimSession {
 
     process {
         try {
+            # Prevent WhatIf/Confirm preference propagation from calling functions.
+            # Creating a CIM session is a read-only connection, not a state change,
+            # but New-CimSession supports ShouldProcess and will honor $WhatIfPreference
+            # from the caller's scope, returning null instead of a session.
+            $WhatIfPreference = $false
+            $ConfirmPreference = 'High'
+
             Write-Verbose "Creating CIM session to '$ComputerName'..."
             New-CimSession @cimSessionParameters
         }
