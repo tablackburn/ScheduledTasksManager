@@ -115,6 +115,35 @@ Describe 'New-StmCimSession' {
         }
     }
 
+    Context 'WhatIf Preference Isolation' {
+        BeforeEach {
+            Mock -CommandName New-CimSession -MockWith {
+                return [PSCustomObject]@{
+                    ComputerName = $ComputerName
+                    Id           = 1
+                    Name         = 'CimSession1'
+                }
+            }
+        }
+
+        It 'Should create CIM session even when WhatIfPreference is true' {
+            # Simulate being called from a function with SupportsShouldProcess -WhatIf
+            $WhatIfPreference = $true
+            $result = New-StmCimSession -ComputerName 'TestServer10a'
+            $result | Should -Not -BeNullOrEmpty
+            $result.ComputerName | Should -Be 'TestServer10a'
+        }
+
+        It 'Should invoke New-CimSession when WhatIfPreference is true' {
+            $WhatIfPreference = $true
+            New-StmCimSession -ComputerName 'TestServer10b'
+
+            Should -Invoke -CommandName New-CimSession -Times 1 -Exactly -ParameterFilter {
+                $ComputerName -eq 'TestServer10b'
+            }
+        }
+    }
+
     Context 'Error Handling' {
         BeforeEach {
             Mock -CommandName New-CimSession -MockWith {
