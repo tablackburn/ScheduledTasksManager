@@ -116,31 +116,44 @@ Describe 'New-StmCimSession' {
     }
 
     Context 'WhatIf Preference Isolation' {
-        BeforeEach {
+        It 'Should suppress WhatIfPreference before calling New-CimSession' {
+            # Verify that New-StmCimSession resets $WhatIfPreference so that
+            # New-CimSession (which supports ShouldProcess) does not skip session creation.
             Mock -CommandName New-CimSession -MockWith {
+                if ($WhatIfPreference) {
+                    throw 'WhatIfPreference was not suppressed before calling New-CimSession'
+                }
                 return [PSCustomObject]@{
                     ComputerName = $ComputerName
                     Id           = 1
                     Name         = 'CimSession1'
                 }
             }
-        }
 
-        It 'Should create CIM session even when WhatIfPreference is true' {
-            # Simulate being called from a function with SupportsShouldProcess -WhatIf
             $WhatIfPreference = $true
             $result = New-StmCimSession -ComputerName 'TestServer10a'
             $result | Should -Not -BeNullOrEmpty
             $result.ComputerName | Should -Be 'TestServer10a'
         }
 
-        It 'Should invoke New-CimSession when WhatIfPreference is true' {
-            $WhatIfPreference = $true
-            New-StmCimSession -ComputerName 'TestServer10b'
-
-            Should -Invoke -CommandName New-CimSession -Times 1 -Exactly -ParameterFilter {
-                $ComputerName -eq 'TestServer10b'
+        It 'Should suppress ConfirmPreference before calling New-CimSession' {
+            # Verify that New-StmCimSession resets $ConfirmPreference so that
+            # New-CimSession does not prompt for confirmation.
+            Mock -CommandName New-CimSession -MockWith {
+                if ($ConfirmPreference -eq 'Low') {
+                    throw 'ConfirmPreference was not suppressed before calling New-CimSession'
+                }
+                return [PSCustomObject]@{
+                    ComputerName = $ComputerName
+                    Id           = 1
+                    Name         = 'CimSession1'
+                }
             }
+
+            $ConfirmPreference = 'Low'
+            $result = New-StmCimSession -ComputerName 'TestServer10b'
+            $result | Should -Not -BeNullOrEmpty
+            $result.ComputerName | Should -Be 'TestServer10b'
         }
     }
 
