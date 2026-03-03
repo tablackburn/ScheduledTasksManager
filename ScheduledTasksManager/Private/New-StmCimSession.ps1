@@ -34,9 +34,11 @@ function New-StmCimSession {
     process {
         try {
             # Prevent WhatIf/Confirm preference propagation from calling functions.
-            # Creating a CIM session is a read-only connection, not a state change,
-            # but New-CimSession supports ShouldProcess and will honor $WhatIfPreference
-            # from the caller's scope, returning null instead of a session.
+            # When callers use -WhatIf, $WhatIfPreference propagates via PowerShell's
+            # dynamic scope and can cause downstream cmdlets to skip operations.
+            # Note: New-CimSession does not expose -WhatIf/-Confirm parameters, so
+            # the -WhatIf:$false call-site pattern (used for Remove-CimSession elsewhere)
+            # cannot be used here. Reset the preference variables instead.
             $WhatIfPreference = $false
             $ConfirmPreference = 'High'
 
