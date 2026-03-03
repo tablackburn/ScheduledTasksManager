@@ -115,6 +115,48 @@ Describe 'New-StmCimSession' {
         }
     }
 
+    Context 'WhatIf Preference Isolation' {
+        It 'Should suppress WhatIfPreference before calling New-CimSession' {
+            # Verify that New-StmCimSession resets $WhatIfPreference so that
+            # New-CimSession (which supports ShouldProcess) does not skip session creation.
+            Mock -CommandName New-CimSession -MockWith {
+                if ($WhatIfPreference) {
+                    throw 'WhatIfPreference was not suppressed before calling New-CimSession'
+                }
+                return [PSCustomObject]@{
+                    ComputerName = $ComputerName
+                    Id           = 1
+                    Name         = 'CimSession1'
+                }
+            }
+
+            $WhatIfPreference = $true
+            $result = New-StmCimSession -ComputerName 'TestServer10a'
+            $result | Should -Not -BeNullOrEmpty
+            $result.ComputerName | Should -Be 'TestServer10a'
+        }
+
+        It 'Should suppress ConfirmPreference before calling New-CimSession' {
+            # Verify that New-StmCimSession resets $ConfirmPreference so that
+            # New-CimSession does not prompt for confirmation.
+            Mock -CommandName New-CimSession -MockWith {
+                if ($ConfirmPreference -eq 'Low') {
+                    throw 'ConfirmPreference was not suppressed before calling New-CimSession'
+                }
+                return [PSCustomObject]@{
+                    ComputerName = $ComputerName
+                    Id           = 1
+                    Name         = 'CimSession1'
+                }
+            }
+
+            $ConfirmPreference = 'Low'
+            $result = New-StmCimSession -ComputerName 'TestServer10b'
+            $result | Should -Not -BeNullOrEmpty
+            $result.ComputerName | Should -Be 'TestServer10b'
+        }
+    }
+
     Context 'Error Handling' {
         BeforeEach {
             Mock -CommandName New-CimSession -MockWith {
