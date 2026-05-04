@@ -25,16 +25,20 @@ properties {
     $PSBPreference.Test.CodeCoverage.OutputFile = '../coverage.xml'
     $PSBPreference.Test.CodeCoverage.OutputFormat = 'JaCoCo'
     $PSBPreference.Test.CodeCoverage.Files = '../ScheduledTasksManager/**/*.ps1'
-    # WORKAROUND: PowerShellBuild 0.7.3 has a bug in Test-PSBuildPester.ps1 line 118
-    # It uses [Math]::Truncate([int]$_.covered / $total) which truncates 0.886 to 0
-    # instead of 88.6%. Setting threshold to 0 until bug is fixed.
-    # See: https://github.com/psake/PowerShellBuild/issues (bug reported)
+    # Coverage threshold is enforced by Codecov, not by the local build.
+    # PowerShellBuild's Test-PSBuildPester.ps1:118 has a [Math]::Truncate(int / int)
+    # bug that displays sub-100% coverage as 0% on the console (still present in
+    # v0.8.0). The bug is display-only — the JaCoCo XML written to disk has the
+    # correct numbers and Codecov reads that XML, so coverage gating is unaffected.
+    # Threshold = 0 here just prevents the local build from acting on the bogus
+    # 0% display.
     $PSBPreference.Test.CodeCoverage.Threshold = 0.0
 
-    # PSScriptAnalyzer configuration (PowerShellBuild 0.7.3+)
-    # Disable built-in analysis due to PowerShellBuild 0.7.3 bug:
-    # Test-PSBuildScriptAnalysis.ps1 line 32-34 has typo "$_Severity" instead of "$_.Severity"
-    # causing null reference exception. We use a custom ScriptAnalysis task until fixed.
+    # Disable PowerShellBuild's built-in PSScriptAnalyzer integration.
+    # Test-PSBuildScriptAnalysis.ps1:32-34 has a "$_Severity" typo (missing dot)
+    # that silently misses findings — bug still present in v0.8.0; no upstream
+    # fix pull request open (only #106, which adds tests for the function). The custom
+    # ScriptAnalysis task below substitutes for it.
     $PSBPreference.Test.ScriptAnalysis.Enabled = $false
     $PSBPreference.Test.ScriptAnalysis.SettingsPath = Join-Path -Path $PSScriptRoot -ChildPath 'PSScriptAnalyzerSettings.psd1'
 }
@@ -109,9 +113,9 @@ Task -Name 'UnitTest' -Depends 'Build' -PreCondition $unitTestPreReqs -Descripti
     }
 }
 
-# Custom ScriptAnalysis task to work around PowerShellBuild 0.7.3 bug
-# Bug: Test-PSBuildScriptAnalysis.ps1 uses "$_Severity" instead of "$_.Severity" (missing dot)
-# This causes null reference exception when PSScriptAnalyzer returns results
+# Custom ScriptAnalysis task — substitute for PowerShellBuild's
+# Test-PSBuildScriptAnalysis (the "$_Severity" typo, missing dot, that silently
+# drops findings). Bug still present in v0.8.0.
 $scriptAnalysisPreReqs = {
     $result = $true
     if (-not (Get-Module -Name PSScriptAnalyzer -ListAvailable)) {
