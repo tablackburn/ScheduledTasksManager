@@ -34,10 +34,10 @@ properties {
     # 0% display.
     $PSBPreference.Test.CodeCoverage.Threshold = 0.0
 
-    # Disable PSB's built-in PSScriptAnalyzer integration.
+    # Disable PowerShellBuild's built-in PSScriptAnalyzer integration.
     # Test-PSBuildScriptAnalysis.ps1:32-34 has a "$_Severity" typo (missing dot)
     # that silently misses findings — bug still present in v0.8.0; no upstream
-    # fix PR open (only #106, which adds tests for the function). The custom
+    # fix pull request open (only #106, which adds tests for the function). The custom
     # ScriptAnalysis task below substitutes for it.
     $PSBPreference.Test.ScriptAnalysis.Enabled = $false
     $PSBPreference.Test.ScriptAnalysis.SettingsPath = Join-Path -Path $PSScriptRoot -ChildPath 'PSScriptAnalyzerSettings.psd1'
