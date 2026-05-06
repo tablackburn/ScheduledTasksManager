@@ -257,3 +257,6 @@ tests/local.settings.ps1
 
 # Claude Code
 tmpclaude-*
+
+# Added by ggshield
+.cache_ggshield
