@@ -179,7 +179,7 @@ The module is automatically published via GitHub Actions when:
 
 1. Version in `ScheduledTasksManager.psd1` must be incremented
 2. CI tests must pass
-3. `PS_GALLERY_KEY` secret must be configured
+3. `PSGALLERY_API_KEY` secret must be configured
 
 ### Release Process
 
