@@ -84,7 +84,7 @@ Describe 'New-StmCimSession' {
                 }
             }
 
-            $securePassword = ConvertTo-SecureString -String 'P@ssw0rd!' -AsPlainText -Force
+            $securePassword = [System.Security.SecureString]::new()
             $script:testCredential = [System.Management.Automation.PSCredential]::new('TestUser', $securePassword)
         }
 
@@ -235,7 +235,7 @@ Describe 'New-StmCimSession' {
                 throw 'Access denied.'
             }
 
-            $securePassword = ConvertTo-SecureString -String 'P@ssw0rd!' -AsPlainText -Force
+            $securePassword = [System.Security.SecureString]::new()
             $script:testCredential = [System.Management.Automation.PSCredential]::new('TestUser', $securePassword)
         }
 
@@ -281,7 +281,7 @@ Describe 'New-StmCimSession' {
                 }
             }
 
-            $securePassword = ConvertTo-SecureString -String 'P@ssw0rd!' -AsPlainText -Force
+            $securePassword = [System.Security.SecureString]::new()
             $cred = [System.Management.Automation.PSCredential]::new('TestUser', $securePassword)
 
             { New-StmCimSession -ComputerName 'TestServer15' -Credential $cred } | Should -Not -Throw

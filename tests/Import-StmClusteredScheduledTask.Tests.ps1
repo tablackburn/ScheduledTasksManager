@@ -381,7 +381,7 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 Set-Content -Path $xmlFilePath -Value $script:validXml
                 $script:xmlFilePath = $xmlFilePath
 
-                $securePassword = ConvertTo-SecureString -String 'P@ssw0rd!' -AsPlainText -Force
+                $securePassword = [System.Security.SecureString]::new()
                 $script:testCredential = [System.Management.Automation.PSCredential]::new('TestUser', $securePassword)
             }
 
@@ -529,7 +529,7 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
 
             It 'Should pass credentials to Unregister when Force is used and task exists' {
-                $securePassword = ConvertTo-SecureString -String 'P@ssw0rd!' -AsPlainText -Force
+                $securePassword = [System.Security.SecureString]::new()
                 $testCredential = [System.Management.Automation.PSCredential]::new('TestUser', $securePassword)
 
                 Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith {
