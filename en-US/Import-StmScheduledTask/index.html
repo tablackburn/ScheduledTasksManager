@@ -1,0 +1,2019 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://tablackburn.github.io/ScheduledTasksManager/en-US/Import-StmScheduledTask/">
+      
+      
+        <link rel="prev" href="../Import-StmClusteredScheduledTask/">
+      
+      
+        <link rel="next" href="../Register-StmClusteredScheduledTask/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
+    
+    
+      
+        <title>Import-StmScheduledTask - ScheduledTasksManager</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bcfcd587.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#import-stmscheduledtask" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ScheduledTasksManager" class="md-header__button md-logo" aria-label="ScheduledTasksManager" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ScheduledTasksManager
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Import-StmScheduledTask
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tablackburn/ScheduledTasksManager" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ScheduledTasksManager" class="md-nav__button md-logo" aria-label="ScheduledTasksManager" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    ScheduledTasksManager
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tablackburn/ScheduledTasksManager" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/tablackburn/ScheduledTasksManager/blob/main/CHANGELOG.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    en-US
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            en-US
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Disable-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Disable-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Disable-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Disable-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Enable-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Enable-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Enable-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Enable-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Export-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Export-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Export-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Export-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmClusterNode/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmClusterNode
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmClusteredScheduledTaskInfo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmClusteredScheduledTaskInfo
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmClusteredScheduledTaskRun/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmClusteredScheduledTaskRun
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmResultCodeMessage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmResultCodeMessage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmScheduledTaskInfo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmScheduledTaskInfo
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Get-StmScheduledTaskRun/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Get-StmScheduledTaskRun
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Import-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Import-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Import-StmScheduledTask
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Import-StmScheduledTask
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#synopsis" class="md-nav__link">
+    <span class="md-ellipsis">
+      SYNOPSIS
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      SYNTAX
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SYNTAX">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xmlfile-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      XmlFile (Default)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xmlstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      XmlString
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      Directory
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    <span class="md-ellipsis">
+      DESCRIPTION
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLES
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="EXAMPLES">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-5" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 5
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      PARAMETERS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PARAMETERS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#-xmlpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      -XmlPath
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-xml" class="md-nav__link">
+    <span class="md-ellipsis">
+      -Xml
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-directorypath" class="md-nav__link">
+    <span class="md-ellipsis">
+      -DirectoryPath
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-taskname" class="md-nav__link">
+    <span class="md-ellipsis">
+      -TaskName
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-taskpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      -TaskPath
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-computername" class="md-nav__link">
+    <span class="md-ellipsis">
+      -ComputerName
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-credential" class="md-nav__link">
+    <span class="md-ellipsis">
+      -Credential
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-force" class="md-nav__link">
+    <span class="md-ellipsis">
+      -Force
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-whatif" class="md-nav__link">
+    <span class="md-ellipsis">
+      -WhatIf
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-confirm" class="md-nav__link">
+    <span class="md-ellipsis">
+      -Confirm
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-progressaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      -ProgressAction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commonparameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      CommonParameters
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      INPUTS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="INPUTS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#none-you-cannot-pipe-objects-to-import-stmscheduledtask" class="md-nav__link">
+    <span class="md-ellipsis">
+      None. You cannot pipe objects to Import-StmScheduledTask.
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      OUTPUTS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OUTPUTS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#microsoftmanagementinfrastructureciminstancemsft_scheduledtask" class="md-nav__link">
+    <span class="md-ellipsis">
+      Microsoft.Management.Infrastructure.CimInstance#MSFT_ScheduledTask
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-single-file-or-xml-string-imports-returns-the-registered-scheduled-task-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      For single file or XML string imports, returns the registered scheduled task object.
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pscustomobject" class="md-nav__link">
+    <span class="md-ellipsis">
+      PSCustomObject
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-directory-imports-returns-a-summary-object-with-the-following-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      For directory imports, returns a summary object with the following properties:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-totalfiles-the-total-number-of-xml-files-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      - TotalFiles: The total number of XML files found
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-successcount-the-number-of-successfully-imported-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      - SuccessCount: The number of successfully imported tasks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-failurecount-the-number-of-tasks-that-failed-to-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      - FailureCount: The number of tasks that failed to import
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-importedtasks-array-of-successfully-imported-task-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      - ImportedTasks: Array of successfully imported task names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-failedtasks-array-of-objects-describing-failed-imports-filename-taskname-error" class="md-nav__link">
+    <span class="md-ellipsis">
+      - FailedTasks: Array of objects describing failed imports (FileName, TaskName, Error)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      NOTES
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      RELATED LINKS
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Register-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Register-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Register-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Register-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Set-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Set-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Set-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Set-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Start-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Start-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Start-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Start-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Stop-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Stop-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Stop-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Stop-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Unregister-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Unregister-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Unregister-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Unregister-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Wait-StmClusteredScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Wait-StmClusteredScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Wait-StmScheduledTask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Wait-StmScheduledTask
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#synopsis" class="md-nav__link">
+    <span class="md-ellipsis">
+      SYNOPSIS
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      SYNTAX
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SYNTAX">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xmlfile-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      XmlFile (Default)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xmlstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      XmlString
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      Directory
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    <span class="md-ellipsis">
+      DESCRIPTION
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLES
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="EXAMPLES">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 1
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 4
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-5" class="md-nav__link">
+    <span class="md-ellipsis">
+      EXAMPLE 5
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      PARAMETERS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PARAMETERS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#-xmlpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      -XmlPath
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-xml" class="md-nav__link">
+    <span class="md-ellipsis">
+      -Xml
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-directorypath" class="md-nav__link">
+    <span class="md-ellipsis">
+      -DirectoryPath
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-taskname" class="md-nav__link">
+    <span class="md-ellipsis">
+      -TaskName
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-taskpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      -TaskPath
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-computername" class="md-nav__link">
+    <span class="md-ellipsis">
+      -ComputerName
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-credential" class="md-nav__link">
+    <span class="md-ellipsis">
+      -Credential
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-force" class="md-nav__link">
+    <span class="md-ellipsis">
+      -Force
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-whatif" class="md-nav__link">
+    <span class="md-ellipsis">
+      -WhatIf
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-confirm" class="md-nav__link">
+    <span class="md-ellipsis">
+      -Confirm
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-progressaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      -ProgressAction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commonparameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      CommonParameters
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      INPUTS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="INPUTS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#none-you-cannot-pipe-objects-to-import-stmscheduledtask" class="md-nav__link">
+    <span class="md-ellipsis">
+      None. You cannot pipe objects to Import-StmScheduledTask.
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      OUTPUTS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OUTPUTS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#microsoftmanagementinfrastructureciminstancemsft_scheduledtask" class="md-nav__link">
+    <span class="md-ellipsis">
+      Microsoft.Management.Infrastructure.CimInstance#MSFT_ScheduledTask
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-single-file-or-xml-string-imports-returns-the-registered-scheduled-task-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      For single file or XML string imports, returns the registered scheduled task object.
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pscustomobject" class="md-nav__link">
+    <span class="md-ellipsis">
+      PSCustomObject
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-directory-imports-returns-a-summary-object-with-the-following-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      For directory imports, returns a summary object with the following properties:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-totalfiles-the-total-number-of-xml-files-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      - TotalFiles: The total number of XML files found
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-successcount-the-number-of-successfully-imported-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      - SuccessCount: The number of successfully imported tasks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-failurecount-the-number-of-tasks-that-failed-to-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      - FailureCount: The number of tasks that failed to import
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-importedtasks-array-of-successfully-imported-task-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      - ImportedTasks: Array of successfully imported task names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-failedtasks-array-of-objects-describing-failed-imports-filename-taskname-error" class="md-nav__link">
+    <span class="md-ellipsis">
+      - FailedTasks: Array of objects describing failed imports (FileName, TaskName, Error)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      NOTES
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      RELATED LINKS
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="import-stmscheduledtask">Import-StmScheduledTask</h1>
+<h2 id="synopsis">SYNOPSIS</h2>
+<p>Imports scheduled tasks from XML to a local or remote computer.</p>
+<h2 id="syntax">SYNTAX</h2>
+<h3 id="xmlfile-default">XmlFile (Default)</h3>
+<pre><code>Import-StmScheduledTask -XmlPath &lt;String&gt; [-TaskName &lt;String&gt;] [-TaskPath &lt;String&gt;] [-ComputerName &lt;String&gt;]
+ [-Credential &lt;PSCredential&gt;] [-Force] [-ProgressAction &lt;ActionPreference&gt;] [-WhatIf] [-Confirm]
+ [&lt;CommonParameters&gt;]
+</code></pre>
+<h3 id="xmlstring">XmlString</h3>
+<pre><code>Import-StmScheduledTask -Xml &lt;String&gt; [-TaskName &lt;String&gt;] [-TaskPath &lt;String&gt;] [-ComputerName &lt;String&gt;]
+ [-Credential &lt;PSCredential&gt;] [-Force] [-ProgressAction &lt;ActionPreference&gt;] [-WhatIf] [-Confirm]
+ [&lt;CommonParameters&gt;]
+</code></pre>
+<h3 id="directory">Directory</h3>
+<pre><code>Import-StmScheduledTask -DirectoryPath &lt;String&gt; [-TaskPath &lt;String&gt;] [-ComputerName &lt;String&gt;]
+ [-Credential &lt;PSCredential&gt;] [-Force] [-ProgressAction &lt;ActionPreference&gt;] [-WhatIf] [-Confirm]
+ [&lt;CommonParameters&gt;]
+</code></pre>
+<h2 id="description">DESCRIPTION</h2>
+<p>The Import-StmScheduledTask function imports scheduled tasks from XML definitions to a local or
+remote computer.
+This function supports three modes of operation:</p>
+<ul>
+<li>Single file import: Import a task from a single XML file using the -XmlPath parameter</li>
+<li>XML string import: Import a task from an XML string using the -Xml parameter</li>
+<li>Bulk directory import: Import all XML files from a directory using the -DirectoryPath parameter</li>
+</ul>
+<p>The function extracts the task name from the XML's RegistrationInfo/URI element by default, but
+allows overriding the task name for single imports using the -TaskName parameter.
+When a task
+with the same name already exists, the function will error unless the -Force parameter is
+specified, which causes the existing task to be unregistered before importing the new one.</p>
+<p>For bulk directory imports, the function processes all .xml files in the specified directory,
+reports progress, and continues processing even if individual tasks fail to import.
+A summary
+object is returned with details about successful and failed imports.</p>
+<h2 id="examples">EXAMPLES</h2>
+<h3 id="example-1">EXAMPLE 1</h3>
+<pre><code>Import-StmScheduledTask -XmlPath 'C:\Tasks\BackupTask.xml'
+</code></pre>
+<p>Imports a single scheduled task from an XML file.
+The task name is extracted from the XML's
+URI element.</p>
+<h3 id="example-2">EXAMPLE 2</h3>
+<pre><code>$params = @{
+    XmlPath  = 'C:\Tasks\Task.xml'
+    TaskName = 'CustomName'
+    TaskPath = '\Custom\Tasks\'
+}
+Import-StmScheduledTask @params
+</code></pre>
+<p>Imports a scheduled task from an XML file with a custom name and task path.</p>
+<h3 id="example-3">EXAMPLE 3</h3>
+<pre><code>Import-StmScheduledTask -DirectoryPath 'C:\Tasks\' -Force
+</code></pre>
+<p>Imports all XML files from the specified directory as scheduled tasks.
+The -Force parameter
+ensures any existing tasks with the same names are replaced.</p>
+<h3 id="example-4">EXAMPLE 4</h3>
+<pre><code>$xml = Get-Content -Path 'C:\Tasks\Task.xml' -Raw
+Import-StmScheduledTask -Xml $xml
+</code></pre>
+<p>Imports a scheduled task from an XML string variable.</p>
+<h3 id="example-5">EXAMPLE 5</h3>
+<pre><code>$credential = Get-Credential
+$params = @{
+    XmlPath      = 'C:\Tasks\Task.xml'
+    ComputerName = 'Server01'
+    Credential   = $credential
+    Force        = $true
+}
+Import-StmScheduledTask @params
+</code></pre>
+<p>Imports a scheduled task to a remote computer using specified credentials, replacing any
+existing task with the same name.</p>
+<h2 id="parameters">PARAMETERS</h2>
+<h3 id="-xmlpath">-XmlPath</h3>
+<p>Specifies the path to a single XML file containing the scheduled task definition.
+The file must
+exist and contain valid Task Scheduler XML format.
+This parameter is mandatory when using the
+XmlFile parameter set.</p>
+<pre><code class="language-yaml">Type: String
+Parameter Sets: XmlFile
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+</code></pre>
+<h3 id="-xml">-Xml</h3>
+<p>Specifies the XML content defining the scheduled task configuration.
+The XML should follow the
+Task Scheduler schema format.
+This parameter is mandatory when using the XmlString parameter set.</p>
+<pre><code class="language-yaml">Type: String
+Parameter Sets: XmlString
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+</code></pre>
+<h3 id="-directorypath">-DirectoryPath</h3>
+<p>Specifies the path to a directory containing XML files to import.
+All files with the .xml
+extension in the directory will be processed.
+This parameter is mandatory when using the
+Directory parameter set.
+The -TaskName parameter cannot be used with this parameter.</p>
+<pre><code class="language-yaml">Type: String
+Parameter Sets: Directory
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+</code></pre>
+<h3 id="-taskname">-TaskName</h3>
+<p>Optionally overrides the task name extracted from the XML's RegistrationInfo/URI element.
+This parameter is only applicable to single file or XML string imports and cannot be used
+with the -DirectoryPath parameter.</p>
+<pre><code class="language-yaml">Type: String
+Parameter Sets: XmlFile, XmlString
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+</code></pre>
+<h3 id="-taskpath">-TaskPath</h3>
+<p>Specifies the path where the scheduled task will be registered.
+The task path represents the
+folder structure in the Task Scheduler (e.g., '\Custom\Tasks\').
+If not specified, the root
+path ('\') will be used.</p>
+<pre><code class="language-yaml">Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: \
+Accept pipeline input: False
+Accept wildcard characters: False
+</code></pre>
+<h3 id="-computername">-ComputerName</h3>
+<p>Specifies the name of the computer on which to register the scheduled task.
+If not specified,
+the local computer ('localhost') is used.</p>
+<pre><code class="language-yaml">Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: Localhost
+Accept pipeline input: False
+Accept wildcard characters: False
+</code></pre>
+<h3 id="-credential">-Credential</h3>
+<p>Specifies credentials to use when connecting to a remote computer.
+If not provided, the current
+user's credentials will be used for the connection.</p>
+<pre><code class="language-yaml">Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: [System.Management.Automation.PSCredential]::Empty
+Accept pipeline input: False
+Accept wildcard characters: False
+</code></pre>
+<h3 id="-force">-Force</h3>
+<p>Overwrites existing tasks with the same name.
+Without this parameter, an error occurs if a task
+with the same name already exists.
+When specified, the existing task is unregistered before
+importing the new task definition.</p>
+<pre><code class="language-yaml">Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+</code></pre>
+<h3 id="-whatif">-WhatIf</h3>
+<p>Shows what would happen if the cmdlet runs.
+The cmdlet is not run.</p>
+<pre><code class="language-yaml">Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: wi
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+</code></pre>
+<h3 id="-confirm">-Confirm</h3>
+<p>Prompts you for confirmation before running the cmdlet.</p>
+<pre><code class="language-yaml">Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+</code></pre>
+<h3 id="-progressaction">-ProgressAction</h3>
+<p>{{ Fill ProgressAction Description }}</p>
+<pre><code class="language-yaml">Type: ActionPreference
+Parameter Sets: (All)
+Aliases: proga
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+</code></pre>
+<h3 id="commonparameters">CommonParameters</h3>
+<p>This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see <a href="http://go.microsoft.com/fwlink/?LinkID=113216">about_CommonParameters</a>.</p>
+<h2 id="inputs">INPUTS</h2>
+<h3 id="none-you-cannot-pipe-objects-to-import-stmscheduledtask">None. You cannot pipe objects to Import-StmScheduledTask.</h3>
+<h2 id="outputs">OUTPUTS</h2>
+<h3 id="microsoftmanagementinfrastructureciminstancemsft_scheduledtask">Microsoft.Management.Infrastructure.CimInstance#MSFT_ScheduledTask</h3>
+<h3 id="for-single-file-or-xml-string-imports-returns-the-registered-scheduled-task-object">For single file or XML string imports, returns the registered scheduled task object.</h3>
+<h3 id="pscustomobject">PSCustomObject</h3>
+<h3 id="for-directory-imports-returns-a-summary-object-with-the-following-properties">For directory imports, returns a summary object with the following properties:</h3>
+<h3 id="-totalfiles-the-total-number-of-xml-files-found">- TotalFiles: The total number of XML files found</h3>
+<h3 id="-successcount-the-number-of-successfully-imported-tasks">- SuccessCount: The number of successfully imported tasks</h3>
+<h3 id="-failurecount-the-number-of-tasks-that-failed-to-import">- FailureCount: The number of tasks that failed to import</h3>
+<h3 id="-importedtasks-array-of-successfully-imported-task-names">- ImportedTasks: Array of successfully imported task names</h3>
+<h3 id="-failedtasks-array-of-objects-describing-failed-imports-filename-taskname-error">- FailedTasks: Array of objects describing failed imports (FileName, TaskName, Error)</h3>
+<h2 id="notes">NOTES</h2>
+<p>This function requires:
+- Appropriate permissions to register scheduled tasks on the target computer
+- Network connectivity to remote computers when using the ComputerName parameter
+- Valid Task Scheduler XML format for the task definitions</p>
+<p>The XML definitions must follow the Task Scheduler schema and should contain a RegistrationInfo/URI
+element for automatic task name extraction.
+If the URI element is missing and -TaskName is not
+specified, the import will fail.</p>
+<p>When importing from a directory, the function uses non-terminating errors for individual task
+failures, allowing the import to continue with remaining files.
+Check the returned summary object
+for details about any failures.</p>
+<h2 id="related-links">RELATED LINKS</h2>
+<p><a href="">Export-StmScheduledTask</a></p>
+<p><a href="">Register-StmScheduledTask</a></p>
+<p><a href="">Unregister-StmScheduledTask</a></p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.1e8ae164.min.js"></script>
+      
+        <script src="../../search/main.js"></script>
+      
+    
+  </body>
+</html>
