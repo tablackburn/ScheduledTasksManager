@@ -52,6 +52,15 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                     ScheduledTaskInfoObject = $SecondObject
                 }
             }
+
+            # The Issue-3 fix creates a CIM session for remote ComputerName values. Without
+            # mocking these, tests that pass -ComputerName 'Server01' would try to reach the
+            # real (nonexistent) host. New-MockObject returns a properly-typed CimSession
+            # so the patched code's -CimSession parameter binding succeeds.
+            Mock -CommandName New-StmCimSession -MockWith {
+                return (New-MockObject -Type 'Microsoft.Management.Infrastructure.CimSession')
+            }
+            Mock -CommandName Remove-CimSession -MockWith {}
         }
 
         It 'Should retrieve task info without parameters' {
@@ -290,7 +299,7 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
             }
         }
 
-        It 'Should throw terminating error when Get-ScheduledTaskInfo fails' {
+        It 'Should write a non-terminating error (not throw) when Get-ScheduledTaskInfo fails' {
             Mock -CommandName Get-ScheduledTaskInfo -MockWith {
                 throw 'Access Denied'
             }
@@ -301,12 +310,26 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 }
             }
 
-            {
-                Get-StmScheduledTaskInfo -TaskName 'ErrorTask'
-            } | Should -Throw
+            # Calling directly (not via { } | Should -Not -Throw) for two reasons:
+            #   1. If the cmdlet throws, this It fails with the exception — which is what
+            #      we want for a regression of the original ThrowTerminatingError bug.
+            #   2. A scriptblock wrapper would scope -ErrorVariable away from the outer $err.
+            $err = $null
+            $invokeParameters = @{
+                TaskName      = 'ErrorTask'
+                ErrorVariable = 'err'
+                ErrorAction   = 'SilentlyContinue'
+            }
+            Get-StmScheduledTaskInfo @invokeParameters
 
             Should -Invoke Get-ScheduledTaskInfo -Times 1 -Exactly
             Should -Invoke New-StmError -Times 1 -Exactly
+
+            # Filtered-match-count instead of total-count: Pester mock framework adds extra raw
+            # error records to $err when the mock body throws.
+            $structuredErrors = $err |
+                Where-Object { $_.FullyQualifiedErrorId -match 'ScheduledTaskInfoRetrievalFailed' }
+            @($structuredErrors).Count | Should -Be 1
         }
 
         It 'Should include task name in error message' {
@@ -320,9 +343,11 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 }
             }
 
-            {
-                Get-StmScheduledTaskInfo -TaskName 'ErrorTask'
-            } | Should -Throw
+            $invokeParameters = @{
+                TaskName    = 'ErrorTask'
+                ErrorAction = 'SilentlyContinue'
+            }
+            Get-StmScheduledTaskInfo @invokeParameters
 
             Should -Invoke New-StmError -Times 1 -Exactly -ParameterFilter {
                 $Message -like "*ErrorTask*"
@@ -385,6 +410,110 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
 
             $result.TaskName | Should -Be 'ConflictTask'
             $result.TaskName | Should -Not -BeOfType [hashtable]
+        }
+    }
+
+    Context 'Remote-host CIM session plumbing (Issue 3 fix a)' {
+        BeforeEach {
+            Mock -CommandName Get-StmScheduledTask -MockWith {
+                $t = [PSCustomObject]@{
+                    TaskName = 'RemoteTask'
+                    TaskPath = '\'
+                    State    = 'Ready'
+                }
+                $t.PSObject.TypeNames.Insert(0, 'Microsoft.Management.Infrastructure.CimInstance#MSFT_ScheduledTask')
+                return $t
+            }
+            Mock -CommandName New-StmCimSession -MockWith {
+                # New-MockObject yields a properly-typed CimSession so the patched code's
+                # -CimSession parameter binding on Get-ScheduledTaskInfo succeeds.
+                return (New-MockObject -Type 'Microsoft.Management.Infrastructure.CimSession')
+            }
+            Mock -CommandName Get-ScheduledTaskInfo -MockWith {
+                return [PSCustomObject]@{
+                    LastRunTime        = (Get-Date).AddHours(-1)
+                    LastTaskResult     = 0
+                    NextRunTime        = (Get-Date).AddHours(1)
+                    NumberOfMissedRuns = 0
+                }
+            }
+            Mock -CommandName Merge-Object -MockWith {
+                param($FirstObject, $SecondObject)
+                @{ TaskName = $FirstObject.TaskName; State = 'Ready' }
+            }
+            Mock -CommandName Remove-CimSession -MockWith {}
+        }
+
+        It 'Should pass -CimSession to Get-ScheduledTaskInfo when ComputerName is a remote host' {
+            Get-StmScheduledTaskInfo -ComputerName 'RemoteServer' -TaskName 'RemoteTask' | Out-Null
+            Should -Invoke Get-ScheduledTaskInfo -Times 1 -ParameterFilter {
+                $null -ne $CimSession
+            }
+        }
+
+        It 'Should NOT pass -CimSession to Get-ScheduledTaskInfo when ComputerName is localhost' {
+            Get-StmScheduledTaskInfo -ComputerName 'localhost' -TaskName 'RemoteTask' | Out-Null
+            Should -Invoke Get-ScheduledTaskInfo -Times 1 -ParameterFilter {
+                -not $PSBoundParameters.ContainsKey('CimSession')
+            }
+        }
+    }
+
+    Context 'Loop continues on per-task failure (Issue 3 fix b)' {
+        BeforeEach {
+            Mock -CommandName Get-StmScheduledTask -MockWith {
+                1..3 | ForEach-Object {
+                    $t = [PSCustomObject]@{
+                        TaskName = "Task$_"
+                        TaskPath = '\'
+                        State    = 'Ready'
+                    }
+                    $t.PSObject.TypeNames.Insert(0, 'Microsoft.Management.Infrastructure.CimInstance#MSFT_ScheduledTask')
+                    $t
+                }
+            }
+            # Use Write-Error -ErrorAction Stop instead of bare `throw` — a Pester mock body's
+            # `throw` behaves unpredictably (the exception was being captured many times via
+            # -ErrorVariable instead of going through the cmdlet's try/catch).
+            Mock -CommandName Get-ScheduledTaskInfo -ParameterFilter {
+                $TaskName -eq 'Task2'
+            } -MockWith {
+                Write-Error 'simulated CIM failure on Task2' -ErrorAction Stop
+            }
+            Mock -CommandName Get-ScheduledTaskInfo -MockWith {
+                return [PSCustomObject]@{
+                    LastRunTime        = (Get-Date).AddHours(-1)
+                    LastTaskResult     = 0
+                    NextRunTime        = (Get-Date).AddHours(1)
+                    NumberOfMissedRuns = 0
+                }
+            }
+            Mock -CommandName Merge-Object -MockWith {
+                param($FirstObject, $SecondObject)
+                @{ TaskName = $FirstObject.TaskName; State = 'Ready' }
+            }
+        }
+
+        It 'Should process remaining tasks (and write a per-task error) when one task fails' {
+            $err = $null
+            $loopParameters = @{
+                TaskName      = 'Task*'
+                ErrorVariable = 'err'
+                ErrorAction   = 'SilentlyContinue'
+            }
+            $results = Get-StmScheduledTaskInfo @loopParameters
+
+            # Core contract: loop did not abort, output contains the surviving tasks
+            @($results).Count                            | Should -Be 2
+            @($results | ForEach-Object { $_.TaskName }) | Should -Be @('Task1', 'Task3')
+
+            # And: the failing task surfaced as a structured error with the right attribution.
+            # We assert filtered-match-count rather than total-count because Pester's mock
+            # framework can add extra raw error records to $err that aren't ours.
+            $structuredErrors = $err |
+                Where-Object { $_.FullyQualifiedErrorId -match 'ScheduledTaskInfoRetrievalFailed' }
+            @($structuredErrors).Count | Should -Be 1
+            $structuredErrors[0].TargetObject | Should -Be 'Task2'
         }
     }
     }

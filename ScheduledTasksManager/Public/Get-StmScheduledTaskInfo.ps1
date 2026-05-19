@@ -200,6 +200,19 @@ function Get-StmScheduledTaskInfo {
             }
 
             $scheduledTasks = Get-StmScheduledTask @stmScheduledTaskParameters
+
+            # Get-ScheduledTaskInfo needs a CIM session for remote hosts, otherwise it
+            # falls back to the local Task Scheduler and returns HRESULT 0x80070002 for
+            # task names that exist on the remote host but not locally.
+            $infoCimSession = $null
+            if ($ComputerName -ne 'localhost' -and $ComputerName -ne '.' -and
+                $ComputerName -ne $env:COMPUTERNAME) {
+                $infoCimSessionParameters = @{ ComputerName = $ComputerName }
+                if ($PSBoundParameters.ContainsKey('Credential')) {
+                    $infoCimSessionParameters['Credential'] = $Credential
+                }
+                $infoCimSession = New-StmCimSession @infoCimSessionParameters
+            }
         }
     }
 
@@ -217,7 +230,15 @@ function Get-StmScheduledTaskInfo {
 
         foreach ($task in $scheduledTasks) {
             try {
-                $scheduledTaskInfo = Get-ScheduledTaskInfo -TaskName $task.TaskName -TaskPath $task.TaskPath
+                $getScheduledTaskInfoParameters = @{
+                    TaskName    = $task.TaskName
+                    TaskPath    = $task.TaskPath
+                    ErrorAction = 'Stop'
+                }
+                if ($infoCimSession) {
+                    $getScheduledTaskInfoParameters['CimSession'] = $infoCimSession
+                }
+                $scheduledTaskInfo = Get-ScheduledTaskInfo @getScheduledTaskInfoParameters
 
                 Write-Verbose "Merging properties for task '$($task.TaskName)'"
                 $mergeParameters = @{
@@ -275,12 +296,16 @@ function Get-StmScheduledTaskInfo {
                     )
                 }
                 $errorRecord = New-StmError @errorRecordParameters
-                $PSCmdlet.ThrowTerminatingError($errorRecord)
+                $PSCmdlet.WriteError($errorRecord)
+                continue
             }
         }
     }
 
     end {
+        if ($infoCimSession) {
+            Remove-CimSession -CimSession $infoCimSession -ErrorAction SilentlyContinue
+        }
         Write-Verbose 'Finished Get-StmScheduledTaskInfo'
     }
 }
