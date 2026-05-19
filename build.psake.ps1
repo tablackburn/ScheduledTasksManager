@@ -82,7 +82,7 @@ $unitTestPreReqs = {
 # without depending on a pre-commit hook firing later.
 Task -Name 'NormalizeDocsLineEndings' -Depends 'Build' -Description 'Normalize generated doc files to LF (PlatyPS writes CRLF on Windows)' {
     $docsPath = Join-Path -Path $PSScriptRoot -ChildPath 'docs'
-    if (-not (Test-Path -Path $docsPath)) {
+    if (-not (Test-Path $docsPath)) {
         return
     }
     $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
