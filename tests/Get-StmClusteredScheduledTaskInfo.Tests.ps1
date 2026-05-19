@@ -310,5 +310,48 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 $verboseOutput | Should -Match "Filtering tasks by name.*TestTask"
             }
         }
+
+        Context 'When a named task cannot be resolved (Issues 1 + 2)' {
+            BeforeEach {
+                Mock -CommandName 'Get-StmClusteredScheduledTask' -MockWith { return $null }
+            }
+
+            It 'Should write a structured non-terminating error (not a warning) when -TaskName is given' {
+                $err = $null
+                $warn = $null
+                $namedParameters = @{
+                    Cluster         = 'TestCluster'
+                    TaskName        = 'Missing'
+                    ErrorVariable   = 'err'
+                    WarningVariable = 'warn'
+                    ErrorAction     = 'SilentlyContinue'
+                    WarningAction   = 'SilentlyContinue'
+                }
+                Get-StmClusteredScheduledTaskInfo @namedParameters
+
+                $err.Count                    | Should -Be 1
+                $err[0].FullyQualifiedErrorId | Should -Match 'ClusteredScheduledTaskNotResolvable'
+                $err[0].CategoryInfo.Category | Should -Be 'ObjectNotFound'
+                $err[0].TargetObject          | Should -Be 'Missing'
+                $warn.Count                   | Should -Be 0
+            }
+
+            It 'Should still emit a warning (and no error) when -TaskName is omitted (bulk path)' {
+                $err = $null
+                $warn = $null
+                $bulkParameters = @{
+                    Cluster         = 'TestCluster'
+                    ErrorVariable   = 'err'
+                    WarningVariable = 'warn'
+                    ErrorAction     = 'SilentlyContinue'
+                    WarningAction   = 'SilentlyContinue'
+                }
+                Get-StmClusteredScheduledTaskInfo @bulkParameters
+
+                $warn.Count      | Should -BeGreaterThan 0
+                $warn[0].Message | Should -Match 'No scheduled tasks found on cluster'
+                $err.Count       | Should -Be 0
+            }
+        }
     }
 }

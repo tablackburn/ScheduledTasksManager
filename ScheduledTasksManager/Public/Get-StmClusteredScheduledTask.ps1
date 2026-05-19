@@ -162,10 +162,30 @@
         Write-Verbose "Retrieving clustered scheduled tasks from cluster '$Cluster'"
         $clusteredScheduledTasks = Get-ClusteredScheduledTask @clusteredScheduledTasksParameters
         if ($clusteredScheduledTasks.Count -eq 0) {
-            Write-Warning (
-                "No clustered scheduled tasks found on cluster '$Cluster'. " +
-                'Ensure the cluster is properly configured.'
-            )
+            if ($taskNameProvided) {
+                $notFoundException = [System.InvalidOperationException]::new(
+                    "Clustered scheduled task '$TaskName' not found on cluster '$Cluster'.")
+                $errorRecordParameters = @{
+                    Exception         = $notFoundException
+                    ErrorId           = 'ClusteredScheduledTaskNotFound'
+                    ErrorCategory     = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    TargetObject      = $TaskName
+                    Message           = (
+                        "Clustered scheduled task '$TaskName' was not found on cluster '$Cluster'."
+                    )
+                    RecommendedAction = (
+                        'Verify the task name (including case) and that it is registered as a clustered task.'
+                    )
+                }
+                $errorRecord = New-StmError @errorRecordParameters
+                $PSCmdlet.WriteError($errorRecord)
+            }
+            else {
+                Write-Warning (
+                    "No clustered scheduled tasks found on cluster '$Cluster'. " +
+                    'Ensure the cluster is properly configured.'
+                )
+            }
             return
         }
         Write-Verbose "Found $($clusteredScheduledTasks.Count) clustered scheduled task(s) on cluster '$Cluster'"
@@ -208,11 +228,40 @@
                 # ScheduledTaskObject contains CIM instance references that depend on them
                 $taskOwnerCimSession = New-StmCimSession -ComputerName $taskOwner -Credential $Credential
                 Write-Verbose "Retrieving scheduled tasks from owner '$taskOwner' using CIM session"
+                # Suppress per-name cmdletization errors; we re-emit them as structured errors below
+                # so the user sees one diagnostic per missing task instead of a raw red leak.
                 $getScheduledTaskParameters = @{
-                    TaskName   = $taskNames
-                    CimSession = $taskOwnerCimSession
+                    TaskName    = $taskNames
+                    CimSession  = $taskOwnerCimSession
+                    ErrorAction = 'SilentlyContinue'
                 }
                 $scheduledTasksFromOwner = Get-ScheduledTask @getScheduledTaskParameters
+
+                # Diff requested vs returned: cluster registry references the task but the owner
+                # node didn't return it (task may have just failed over, or local copy is missing).
+                $foundTaskNames = @($scheduledTasksFromOwner | Select-Object -ExpandProperty 'TaskName')
+                foreach ($expectedTaskName in $taskNames) {
+                    if ($foundTaskNames -notcontains $expectedTaskName) {
+                        $ownerLookupException = [System.InvalidOperationException]::new(
+                            "Owner '$taskOwner' did not return clustered task '$expectedTaskName'.")
+                        $ownerLookupErrorParameters = @{
+                            Exception         = $ownerLookupException
+                            ErrorId           = 'ClusteredScheduledTaskOwnerLookupFailed'
+                            ErrorCategory     = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                            TargetObject      = $expectedTaskName
+                            Message           = (
+                                "Clustered scheduled task '$expectedTaskName' is registered on cluster " +
+                                "'$Cluster' but owner node '$taskOwner' did not return it. The task may " +
+                                'have just failed over, or its local copy on the owner may be missing.'
+                            )
+                            RecommendedAction = (
+                                "Verify the task exists on '$taskOwner' and that cluster ownership is consistent."
+                            )
+                        }
+                        $ownerLookupErrorRecord = New-StmError @ownerLookupErrorParameters
+                        $PSCmdlet.WriteError($ownerLookupErrorRecord)
+                    }
+                }
 
                 if ($PSBoundParameters.ContainsKey('TaskState')) {
                     Write-Verbose "Filtering scheduled tasks by state '$TaskState' on owner '$taskOwner'"
