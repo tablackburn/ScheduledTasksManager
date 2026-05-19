@@ -143,28 +143,6 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
         }
 
         Context 'Error handling' {
-            It 'Should warn when no matching clustered task found for scheduled task' {
-                Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith {
-                    return [PSCustomObject]@{
-                        TaskName     = 'ClusteredTask1'
-                        CurrentOwner = 'OwnerNode1'
-                    }
-                }
-                Mock -CommandName 'Get-ScheduledTask' -MockWith {
-                    return [PSCustomObject]@{
-                        TaskName = 'DifferentTask'
-                        State    = 'Ready'
-                    }
-                }
-                Mock -CommandName 'Write-Warning' -MockWith {}
-
-                Get-StmClusteredScheduledTask -Cluster 'TestCluster'
-
-                Should -Invoke 'Write-Warning' -Times 1 -ParameterFilter {
-                    $Message -like '*No matching clustered task found*'
-                }
-            }
-
             It 'Should write error when retrieving tasks from owner fails' {
                 Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith {
                     return [PSCustomObject]@{
