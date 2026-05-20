@@ -78,10 +78,41 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.check_release.outputs.exists == 'false'
-        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release create "v${{ steps.version.outputs.version }}" \
-            --title "v${{ steps.version.outputs.version }}" \
-            --generate-notes
+          $version = $env:VERSION
+
+          # Build release notes from this version's CHANGELOG.md section so the release
+          # body carries only the curated, user-facing entries (not the full PR list that
+          # --generate-notes produces, which is dominated by bot/CI/chore PRs).
+          $headerPattern = '^##\s+\[' + [regex]::Escape($version) + '\]'
+          $capturing = $false
+          $captured = [System.Collections.Generic.List[string]]::new()
+          foreach ($line in (Get-Content -LiteralPath './CHANGELOG.md')) {
+              if (-not $capturing) {
+                  if ($line -match $headerPattern) { $capturing = $true }
+                  continue
+              }
+              if ($line -match '^##\s+\[') { break }   # next version header ends the section
+              $captured.Add($line)
+          }
+          $body = ($captured -join "`n").Trim()
+
+          if ([string]::IsNullOrWhiteSpace($body)) {
+              Write-Host "::warning::No CHANGELOG.md section found for $version; falling back to auto-generated notes."
+              gh release create "v$version" --title "v$version" --generate-notes
+          }
+          else {
+              # Append a compare link against the most recent existing tag. The v$version
+              # tag does not exist yet (this step creates it), so the latest tag is the
+              # previous release.
+              $previousTag = git tag --list 'v*' --sort=-version:refname | Select-Object -First 1
+              if ($previousTag) {
+                  $body += "`n`n**Full Changelog**: https://github.com/${env:REPOSITORY}/compare/$previousTag...v$version"
+              }
+              Set-Content -LiteralPath './release-notes.md' -Value $body -Encoding utf8
+              gh release create "v$version" --title "v$version" --notes-file './release-notes.md'
+          }

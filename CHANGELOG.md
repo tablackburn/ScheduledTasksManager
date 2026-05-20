@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Running cmdlets with `-WhatIf` no longer fails with null CIM session errors. The caller's `$WhatIfPreference` was propagating through PowerShell's dynamic scope into the internal `New-StmCimSession` helper, causing `New-CimSession` to return nothing — which broke 14 of the 16 cmdlets that connect over a CIM session whenever `-WhatIf` was used.
 - `Get-StmScheduledTaskInfo`: Now targets the remote Task Scheduler through a CIM session when `-ComputerName` is a remote host, instead of falling back to the local machine and failing with HRESULT `0x80070002` ("the system cannot find the file specified") for tasks that exist only on the remote host. Tasks piped in (for example from `Get-StmScheduledTask -ComputerName <remote>`) reuse their originating CIM session as well.
 - `Get-StmScheduledTaskInfo`: A failure retrieving info for one task is now a non-terminating error, so the remaining tasks are still processed instead of the first failure aborting the entire call.
 - `Get-StmClusteredScheduledTask`: When `-TaskName` is specified and the task is not found, writes a structured `ClusteredScheduledTaskNotFound` error instead of silently returning a name-only partial result and a misleading warning. Bulk queries (no `-TaskName`) keep the existing warning.
