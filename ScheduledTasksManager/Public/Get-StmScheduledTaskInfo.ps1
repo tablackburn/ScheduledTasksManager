@@ -230,15 +230,26 @@ function Get-StmScheduledTaskInfo {
 
         foreach ($task in $scheduledTasks) {
             try {
-                $getScheduledTaskInfoParameters = @{
-                    TaskName    = $task.TaskName
-                    TaskPath    = $task.TaskPath
-                    ErrorAction = 'Stop'
+                if ($PSCmdlet.ParameterSetName -eq 'ByInputObject') {
+                    # Pipe the task object straight through so Get-ScheduledTaskInfo reuses
+                    # the CIM session the object was retrieved from. A task piped in from a
+                    # remote Get-StmScheduledTask carries its originating session; rebuilding
+                    # the call from TaskName/TaskPath (as the ByParameters path does) would
+                    # silently fall back to the local Task Scheduler and return HRESULT
+                    # 0x80070002 for tasks that only exist on the remote host.
+                    $scheduledTaskInfo = $task | Get-ScheduledTaskInfo -ErrorAction Stop
                 }
-                if ($infoCimSession) {
-                    $getScheduledTaskInfoParameters['CimSession'] = $infoCimSession
+                else {
+                    $getScheduledTaskInfoParameters = @{
+                        TaskName    = $task.TaskName
+                        TaskPath    = $task.TaskPath
+                        ErrorAction = 'Stop'
+                    }
+                    if ($infoCimSession) {
+                        $getScheduledTaskInfoParameters['CimSession'] = $infoCimSession
+                    }
+                    $scheduledTaskInfo = Get-ScheduledTaskInfo @getScheduledTaskInfoParameters
                 }
-                $scheduledTaskInfo = Get-ScheduledTaskInfo @getScheduledTaskInfoParameters
 
                 Write-Verbose "Merging properties for task '$($task.TaskName)'"
                 $mergeParameters = @{
@@ -304,7 +315,11 @@ function Get-StmScheduledTaskInfo {
 
     end {
         if ($infoCimSession) {
-            Remove-CimSession -CimSession $infoCimSession -ErrorAction SilentlyContinue
+            # -WhatIf:$false: tearing down the CIM session is connection cleanup, not a
+            # state change the caller should be able to skip via WhatIfPreference. Without
+            # this, an inherited $WhatIfPreference would leak the remote session. Matches
+            # the Remove-CimSession pattern used elsewhere in the module (see 0.11.2).
+            Remove-CimSession -CimSession $infoCimSession -ErrorAction SilentlyContinue -WhatIf:$false
         }
         Write-Verbose 'Finished Get-StmScheduledTaskInfo'
     }
