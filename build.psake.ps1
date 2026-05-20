@@ -74,7 +74,33 @@ $unitTestPreReqs = {
     return $result
 }
 
-Task -Name 'UnitTest' -Depends 'Build' -PreCondition $unitTestPreReqs -Description 'Execute Pester tests (excluding Integration)' {
+# Normalize PlatyPS-generated doc line endings to LF.
+# PlatyPS (invoked by PowerShellBuild's BUILDHELP task) writes files with CRLF
+# on Windows, which contradicts .gitattributes (`* text=auto eol=lf`) and
+# leaves docs/en-US/*.md as dirty in `git status` after every local build.
+# Inserting this between Build and the test tasks keeps the working tree clean
+# without depending on a pre-commit hook firing later.
+Task -Name 'NormalizeDocsLineEndings' -Depends 'Build' -Description 'Normalize generated doc files to LF (PlatyPS writes CRLF on Windows)' {
+    $docsPath = Join-Path -Path $PSScriptRoot -ChildPath 'docs'
+    if (-not (Test-Path $docsPath)) {
+        return
+    }
+    $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+    $changed = 0
+    Get-ChildItem -Path $docsPath -Filter '*.md' -Recurse -File | ForEach-Object {
+        $original = [System.IO.File]::ReadAllText($_.FullName)
+        $normalized = $original -replace "`r`n", "`n"
+        if ($original -cne $normalized) {
+            [System.IO.File]::WriteAllText($_.FullName, $normalized, $utf8NoBom)
+            $changed++
+        }
+    }
+    if ($changed -gt 0) {
+        Write-Host "  Normalized $changed doc file(s) to LF" -ForegroundColor Gray
+    }
+}
+
+Task -Name 'UnitTest' -Depends 'NormalizeDocsLineEndings' -PreCondition $unitTestPreReqs -Description 'Execute Pester tests (excluding Integration)' {
     # Remove any previously imported project modules and import from the output dir
     $moduleManifest = Join-Path $PSBPreference.Build.ModuleOutDir "$($PSBPreference.General.ModuleName).psd1"
     Get-Module $PSBPreference.General.ModuleName | Remove-Module -Force -ErrorAction SilentlyContinue
@@ -125,7 +151,7 @@ $scriptAnalysisPreReqs = {
     return $result
 }
 
-Task -Name 'ScriptAnalysis' -Depends 'Build' -PreCondition $scriptAnalysisPreReqs -Description 'Execute PSScriptAnalyzer' {
+Task -Name 'ScriptAnalysis' -Depends 'NormalizeDocsLineEndings' -PreCondition $scriptAnalysisPreReqs -Description 'Execute PSScriptAnalyzer' {
     # Get only .ps1 files (exclude .psd1 module manifests which are auto-generated)
     $ps1Files = Get-ChildItem -Path $PSBPreference.Build.ModuleOutDir -Filter '*.ps1' -Recurse
 
