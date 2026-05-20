@@ -183,8 +183,29 @@
     }
 
     process {
-        if ($scheduledTask.Count -eq 0) {
-            Write-Warning "No scheduled tasks found on cluster '$Cluster' with the specified parameters."
+        if ($null -eq $scheduledTask -or $scheduledTask.Count -eq 0) {
+            if ($PSBoundParameters.ContainsKey('TaskName')) {
+                $unresolvedException = [System.InvalidOperationException]::new(
+                    "Clustered scheduled task '$TaskName' could not be resolved on cluster '$Cluster'.")
+                $errorRecordParameters = @{
+                    Exception         = $unresolvedException
+                    ErrorId           = 'ClusteredScheduledTaskNotResolvable'
+                    ErrorCategory     = [System.Management.Automation.ErrorCategory]::ObjectNotFound
+                    TargetObject      = $TaskName
+                    Message           = (
+                        "Clustered scheduled task '$TaskName' was not found on cluster '$Cluster', " +
+                        'or its owner node could not return the task.'
+                    )
+                    RecommendedAction = (
+                        'Run Get-StmClusteredScheduledTask with -Verbose to see which stage of the lookup failed.'
+                    )
+                }
+                $errorRecord = New-StmError @errorRecordParameters
+                $PSCmdlet.WriteError($errorRecord)
+            }
+            else {
+                Write-Warning "No scheduled tasks found on cluster '$Cluster' with the specified parameters."
+            }
             return
         }
         Write-Verbose "Retrieving scheduled task info for $($scheduledTask.Count) tasks on cluster '$Cluster'"

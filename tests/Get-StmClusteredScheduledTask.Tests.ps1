@@ -143,28 +143,6 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
         }
 
         Context 'Error handling' {
-            It 'Should warn when no matching clustered task found for scheduled task' {
-                Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith {
-                    return [PSCustomObject]@{
-                        TaskName     = 'ClusteredTask1'
-                        CurrentOwner = 'OwnerNode1'
-                    }
-                }
-                Mock -CommandName 'Get-ScheduledTask' -MockWith {
-                    return [PSCustomObject]@{
-                        TaskName = 'DifferentTask'
-                        State    = 'Ready'
-                    }
-                }
-                Mock -CommandName 'Write-Warning' -MockWith {}
-
-                Get-StmClusteredScheduledTask -Cluster 'TestCluster'
-
-                Should -Invoke 'Write-Warning' -Times 1 -ParameterFilter {
-                    $Message -like '*No matching clustered task found*'
-                }
-            }
-
             It 'Should write error when retrieving tasks from owner fails' {
                 Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith {
                     return [PSCustomObject]@{
@@ -232,6 +210,82 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
                 # Cluster session (1) should be cleaned up in end block
                 # So Remove-CimSession should be called at least twice
                 Should -Invoke 'Remove-CimSession' -Times 2 -Exactly
+            }
+        }
+
+        Context 'When a named task is not found in the cluster (Issue 1 / stage-A miss)' {
+            BeforeEach {
+                Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith { return @() }
+                # The outer BeforeEach mocks New-StmCimSession to return a string sentinel,
+                # so Remove-CimSession in the end block would fail without this mock.
+                Mock -CommandName 'Remove-CimSession' -MockWith {}
+            }
+
+            It 'Should write a structured non-terminating error (not a warning) when -TaskName is given' {
+                $err = $null
+                $warn = $null
+                $namedParameters = @{
+                    Cluster         = 'TestCluster'
+                    TaskName        = 'NoSuchTask'
+                    ErrorVariable   = 'err'
+                    WarningVariable = 'warn'
+                    ErrorAction     = 'SilentlyContinue'
+                    WarningAction   = 'SilentlyContinue'
+                }
+                Get-StmClusteredScheduledTask @namedParameters
+
+                $err.Count                    | Should -Be 1
+                $err[0].FullyQualifiedErrorId | Should -Match 'ClusteredScheduledTaskNotFound'
+                $err[0].CategoryInfo.Category | Should -Be 'ObjectNotFound'
+                $err[0].TargetObject          | Should -Be 'NoSuchTask'
+                $warn.Count                   | Should -Be 0
+            }
+
+            It 'Should still emit a warning (and no error) when -TaskName is omitted (bulk path)' {
+                $err = $null
+                $warn = $null
+                $bulkParameters = @{
+                    Cluster         = 'TestCluster'
+                    ErrorVariable   = 'err'
+                    WarningVariable = 'warn'
+                    ErrorAction     = 'SilentlyContinue'
+                    WarningAction   = 'SilentlyContinue'
+                }
+                Get-StmClusteredScheduledTask @bulkParameters
+
+                $warn.Count      | Should -BeGreaterThan 0
+                $warn[0].Message | Should -Match 'No clustered scheduled tasks found'
+                $err.Count       | Should -Be 0
+            }
+        }
+
+        Context 'When the cluster claims an owner but the owner does not return the task (Issue 1 / stage-B miss)' {
+            BeforeEach {
+                Mock -CommandName 'Get-ClusteredScheduledTask' -MockWith {
+                    return [PSCustomObject]@{
+                        TaskName     = 'StragglerTask'
+                        CurrentOwner = 'OwnerNode1'
+                    }
+                }
+                # Owner returns no tasks for the requested name — the stage-B miss scenario
+                Mock -CommandName 'Get-ScheduledTask' -MockWith { return @() }
+                Mock -CommandName 'Remove-CimSession' -MockWith {}
+            }
+
+            It 'Should write a structured ClusteredScheduledTaskOwnerLookupFailed error' {
+                $err = $null
+                $stageBParameters = @{
+                    Cluster       = 'TestCluster'
+                    TaskName      = 'StragglerTask'
+                    ErrorVariable = 'err'
+                    ErrorAction   = 'SilentlyContinue'
+                }
+                Get-StmClusteredScheduledTask @stageBParameters
+
+                $err.FullyQualifiedErrorId |
+                    Should -Contain 'ClusteredScheduledTaskOwnerLookupFailed,Get-StmClusteredScheduledTask'
+                $matchingErr = $err | Where-Object { $_.FullyQualifiedErrorId -match 'OwnerLookupFailed' }
+                $matchingErr.TargetObject | Should -Be 'StragglerTask'
             }
         }
     }

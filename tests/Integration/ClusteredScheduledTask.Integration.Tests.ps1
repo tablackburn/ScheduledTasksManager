@@ -150,7 +150,7 @@ AfterAll {
             $task = Get-StmClusteredScheduledTask `
                 -Cluster $ClusterName `
                 -TaskName $TaskName `
-                -ErrorAction SilentlyContinue `
+                -ErrorAction Ignore `
                 -WarningAction SilentlyContinue
 
             if ($task) {
@@ -342,7 +342,7 @@ Describe 'Clustered Scheduled Task Integration Tests' -Skip:$script:SkipIntegrat
                 Get-StmClusteredScheduledTask `
                     -Cluster $ClusterName `
                     -TaskName $TaskName `
-                    -ErrorAction SilentlyContinue `
+                    -ErrorAction Ignore `
                     -WarningAction SilentlyContinue
             } -ArgumentList @($script:LabModulePath, $script:ClusterName, $script:TestTaskName) -PassThru
 
@@ -411,7 +411,7 @@ Describe 'Clustered Scheduled Task Integration Tests' -Skip:$script:SkipIntegrat
                 $existing = Get-StmClusteredScheduledTask `
                     -Cluster $ClusterName `
                     -TaskName $TaskName `
-                    -ErrorAction SilentlyContinue `
+                    -ErrorAction Ignore `
                     -WarningAction SilentlyContinue
                 if ($existing) {
                     Unregister-StmClusteredScheduledTask `
@@ -546,7 +546,7 @@ Describe 'Clustered Scheduled Task Integration Tests' -Skip:$script:SkipIntegrat
                 Get-StmClusteredScheduledTask `
                     -Cluster $ClusterName `
                     -TaskName $TaskName `
-                    -ErrorAction SilentlyContinue `
+                    -ErrorAction Ignore `
                     -WarningAction SilentlyContinue
             } -ArgumentList @($script:LabModulePath, $script:ClusterName, $script:TestTaskName) -PassThru
 

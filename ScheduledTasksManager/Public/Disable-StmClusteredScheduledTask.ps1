@@ -172,12 +172,15 @@
                 }
                 Unregister-ClusteredScheduledTask @unregisterClusteredScheduledTaskParameters
                 Write-Verbose "Verifying unregistration of clustered scheduled task '$TaskName'..."
+                # Use -EA Ignore: a missing task here means the unregister succeeded
+                # (Get-StmClusteredScheduledTask writes ClusteredScheduledTaskNotFound when
+                # -TaskName misses; with -EA Stop that would falsely flag success as failure).
                 $taskParameters = @{
                     TaskName      = $TaskName
                     Cluster       = $Cluster
                     CimSession    = $clusterCimSession
-                    ErrorAction   = 'Stop'
-                    WarningAction = 'SilentlyContinue' # Suppress the warning about the task not being found
+                    ErrorAction   = 'Ignore'
+                    WarningAction = 'SilentlyContinue'
                 }
                 $task = Get-StmClusteredScheduledTask @taskParameters
                 $taskExists = $null -ne $task
