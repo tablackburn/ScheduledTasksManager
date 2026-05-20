@@ -80,7 +80,7 @@ jobs:
         if: steps.check_release.outputs.exists == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
+          REPOSITORY: ${{ github.repository }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           $version = $env:VERSION
@@ -111,7 +111,7 @@ jobs:
               # previous release.
               $previousTag = git tag --list 'v*' --sort=-version:refname | Select-Object -First 1
               if ($previousTag) {
-                  $body += "`n`n**Full Changelog**: https://github.com/$env:REPO/compare/$previousTag...v$version"
+                  $body += "`n`n**Full Changelog**: https://github.com/${env:REPOSITORY}/compare/$previousTag...v$version"
               }
               Set-Content -LiteralPath './release-notes.md' -Value $body -Encoding utf8
               gh release create "v$version" --title "v$version" --notes-file './release-notes.md'
