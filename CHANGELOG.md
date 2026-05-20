@@ -8,6 +8,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.4] - 2026-05-20
+
+### Fixed
+
+- `Get-StmScheduledTaskInfo`: Now targets the remote Task Scheduler through a CIM session when `-ComputerName` is a remote host, instead of falling back to the local machine and failing with HRESULT `0x80070002` ("the system cannot find the file specified") for tasks that exist only on the remote host. Tasks piped in (for example from `Get-StmScheduledTask -ComputerName <remote>`) reuse their originating CIM session as well.
+- `Get-StmScheduledTaskInfo`: A failure retrieving info for one task is now a non-terminating error, so the remaining tasks are still processed instead of the first failure aborting the entire call.
+- `Get-StmClusteredScheduledTask`: When `-TaskName` is specified and the task is not found, writes a structured `ClusteredScheduledTaskNotFound` error instead of silently returning a name-only partial result and a misleading warning. Bulk queries (no `-TaskName`) keep the existing warning.
+- `Get-StmClusteredScheduledTask`: When the cluster reports an owner node but that node does not return the named task, writes a structured `ClusteredScheduledTaskOwnerLookupFailed` error instead of leaking the raw `CmdletizationQuery_NotFound_TaskName` error.
+- `Get-StmClusteredScheduledTaskInfo`: When `-TaskName` is specified but cannot be resolved, writes a structured `ClusteredScheduledTaskNotResolvable` error instead of a warning. Bulk queries keep the existing warning.
+- `Disable-StmClusteredScheduledTask`: Post-unregister verification no longer misreports a successful unregister as a failure now that a missing task surfaces as a structured error.
+
 ## [0.11.3] - 2026-02-06
 
 ### Changed
