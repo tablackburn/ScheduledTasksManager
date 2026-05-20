@@ -215,6 +215,10 @@ Task -Name 'UpdateReleaseNotes' -Depends 'Build' -Description 'Set built manifes
     }
 
     $releaseNotes = $releaseEntry.RawData.Trim()
+    if ([string]::IsNullOrWhiteSpace($releaseNotes)) {
+        Write-Warning "CHANGELOG.md entry for version $moduleVersion is empty; leaving ReleaseNotes unchanged."
+        return
+    }
     $builtManifest = Join-Path -Path $PSBPreference.Build.ModuleOutDir -ChildPath "$($PSBPreference.General.ModuleName).psd1"
     Update-ModuleManifest -Path $builtManifest -ReleaseNotes $releaseNotes -ErrorAction Stop
     Write-Host "  Set ReleaseNotes on built manifest from CHANGELOG [$($releaseEntry.Version)] ($($releaseNotes.Length) chars)" -ForegroundColor Gray

@@ -37,8 +37,9 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          if gh release view "v${{ steps.version.outputs.version }}" > /dev/null 2>&1; then
+          if gh release view "v$VERSION" > /dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
@@ -88,16 +89,29 @@ jobs:
           # Build release notes from this version's CHANGELOG.md section so the release
           # body carries only the curated, user-facing entries (not the full PR list that
           # --generate-notes produces, which is dominated by bot/CI/chore PRs).
-          $headerPattern = '^##\s+\[' + [regex]::Escape($version) + '\]'
-          $capturing = $false
-          $captured = [System.Collections.Generic.List[string]]::new()
-          foreach ($line in (Get-Content -LiteralPath './CHANGELOG.md')) {
-              if (-not $capturing) {
-                  if ($line -match $headerPattern) { $capturing = $true }
-                  continue
+          # Read defensively: a missing/unreadable CHANGELOG.md must fall back to
+          # --generate-notes (below), never fail the publish.
+          $changelogLines = $null
+          if (Test-Path -LiteralPath './CHANGELOG.md') {
+              try {
+                  $changelogLines = Get-Content -LiteralPath './CHANGELOG.md' -ErrorAction Stop
               }
-              if ($line -match '^##\s+\[') { break }   # next version header ends the section
-              $captured.Add($line)
+              catch {
+                  Write-Host "::warning::Could not read CHANGELOG.md ($($_.Exception.Message)); falling back to auto-generated notes."
+              }
+          }
+          $captured = [System.Collections.Generic.List[string]]::new()
+          if ($changelogLines) {
+              $headerPattern = '^##\s+\[' + [regex]::Escape($version) + '\]'
+              $capturing = $false
+              foreach ($line in $changelogLines) {
+                  if (-not $capturing) {
+                      if ($line -match $headerPattern) { $capturing = $true }
+                      continue
+                  }
+                  if ($line -match '^##\s+\[') { break }   # next version header ends the section
+                  $captured.Add($line)
+              }
           }
           $body = ($captured -join "`n").Trim()
 
@@ -109,7 +123,9 @@ jobs:
               # Append a compare link against the most recent existing tag. The v$version
               # tag does not exist yet (this step creates it), so the latest tag is the
               # previous release.
-              $previousTag = git tag --list 'v*' --sort=-version:refname | Select-Object -First 1
+              $previousTag = git tag --list 'v*' --sort=-version:refname |
+                  Where-Object { $_ -ne "v$version" } |
+                  Select-Object -First 1
               if ($previousTag) {
                   $body += "`n`n**Full Changelog**: https://github.com/${env:REPOSITORY}/compare/$previousTag...v$version"
               }
