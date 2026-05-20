@@ -81,8 +81,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          $version = '${{ steps.version.outputs.version }}'
+          $version = $env:VERSION
 
           # Build release notes from this version's CHANGELOG.md section so the release
           # body carries only the curated, user-facing entries (not the full PR list that
