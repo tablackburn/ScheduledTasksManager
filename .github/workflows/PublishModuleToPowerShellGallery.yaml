@@ -45,47 +45,32 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Bootstrap
-        # Runs unconditionally: the PSGallery check below depends on it
-        # (BuildHelpers/Set-BuildEnvironment) and now runs regardless of the release
-        # check, so a release created but never published can still be recovered.
-        run: ./build.ps1 -Task 'Init' -Bootstrap
-
       - name: Check if Version Exists in PSGallery
         id: check_psgallery
         # Runs unconditionally so a release that was created but never published can
         # still be recovered (see Publish gating below).
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          Import-Module BuildHelpers
-          Set-BuildEnvironment -Force
-          [version]$githubVersion = Get-Metadata -Path $env:BHPSModuleManifest -PropertyName 'ModuleVersion' -ErrorAction 'Stop'
+          $version = $env:VERSION
           $findError = $null
-          $moduleSplat = @{
-              Repository      = 'PSGallery'
-              Name            = $env:BHProjectName
-              RequiredVersion = $githubVersion
-              AllowPrerelease = $True
-              ErrorAction     = 'SilentlyContinue'
-              ErrorVariable   = 'findError'
-          }
-          $published = Find-Module @moduleSplat
+          $published = Find-Module -Name ScheduledTasksManager -RequiredVersion $version -Repository PSGallery -ErrorAction SilentlyContinue -ErrorVariable findError
           if ($published) {
-              $inGallery = $True
+            Write-Host "PSGallery version $version already exists"
+            "exists=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } elseif ($findError) {
+            # Find-Module records no error when the version simply isn't on the gallery,
+            # so a recorded error means the query itself failed (transient/network). Don't
+            # treat that as "not published" (publishing is gated only on this check) — fail
+            # so the run is visibly retryable instead of attempting a blind publish.
+            throw "PowerShell Gallery query failed for version ${version}: $($findError[0].Exception.Message)"
+          } else {
+            Write-Host "PSGallery version $version not found - will publish"
+            "exists=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           }
-          elseif ($findError) {
-              # Find-Module records no error when the version simply isn't on the gallery,
-              # so a recorded error means the query itself failed (transient/network). Don't
-              # treat that as "not published" (publishing is gated only on this check) — fail
-              # so the run is visibly retryable instead of attempting a blind publish.
-              throw "PowerShell Gallery query failed for version ${githubVersion}: $($findError[0].Exception.Message)"
-          }
-          else {
-              $inGallery = $False
-          }
-          Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value "IN_GALLERY=$inGallery" -Confirm:$False -Encoding 'UTF8'
 
       - name: Publish to PSGallery
-        if: steps.check_psgallery.outputs.IN_GALLERY == 'False'
+        if: steps.check_psgallery.outputs.exists == 'false'
         env:
           PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
         run: ./build.ps1 -Task 'Publish' -Bootstrap
