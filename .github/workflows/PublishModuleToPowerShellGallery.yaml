@@ -46,12 +46,15 @@ jobs:
           fi
 
       - name: Bootstrap
-        if: steps.check_release.outputs.exists == 'false'
+        # Runs unconditionally: the PSGallery check below depends on it
+        # (BuildHelpers/Set-BuildEnvironment) and now runs regardless of the release
+        # check, so a release created but never published can still be recovered.
         run: ./build.ps1 -Task 'Init' -Bootstrap
 
       - name: Check if Version Exists in PSGallery
         id: check_psgallery
-        if: steps.check_release.outputs.exists == 'false'
+        # Runs unconditionally so a release that was created but never published can
+        # still be recovered (see Publish gating below).
         run: |
           Import-Module BuildHelpers
           Set-BuildEnvironment -Force
@@ -72,7 +75,7 @@ jobs:
           Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value "IN_GALLERY=$inGallery" -Confirm:$False -Encoding 'UTF8'
 
       - name: Publish to PSGallery
-        if: steps.check_release.outputs.exists == 'false' && steps.check_psgallery.outputs.IN_GALLERY == 'False'
+        if: steps.check_psgallery.outputs.IN_GALLERY == 'False'
         env:
           PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
         run: ./build.ps1 -Task 'Publish' -Bootstrap
