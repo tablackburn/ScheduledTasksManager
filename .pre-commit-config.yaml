@@ -16,7 +16,7 @@ repos:
   # ad-hoc tooling) before it reaches the index. .gitattributes already pins LF
   # but only acts at git operations; this enforces it before the commit lands.
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: mixed-line-ending
         args: [--fix=lf]
