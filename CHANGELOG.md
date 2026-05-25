@@ -10,10 +10,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-### Changed
-
-- Integration test setup no longer ships a sample admin password. `integration-test-config.example.json` and `tests/Integration/README.md` now use an explicit placeholder you replace with your own strong password (the real `integration-test-config.json` is gitignored and never committed).
-
 ## [0.11.4] - 2026-05-20
 
 ### Fixed
