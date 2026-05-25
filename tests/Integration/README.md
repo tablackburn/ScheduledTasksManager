@@ -78,7 +78,7 @@ Invoke-Pester .\ClusteredScheduledTask.Integration.Tests.ps1 -Output Detailed
 
 **Cluster**: STMCLUSTER (192.168.100.50)
 **Domain**: stmtest.local
-**Admin**: stmtest.local\Install (P@ssw0rd1)
+**Admin**: stmtest.local\Install (password you set in `integration-test-config.json`)
 
 ## Scripts
 
