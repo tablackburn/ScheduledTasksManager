@@ -5,7 +5,8 @@
     "name": "StmTestLab",
     "domainName": "stmtest.local",
     "adminUser": "Install",
-    "adminPassword": "P@ssw0rd1",
+    "_password_comment": "Replace with your own strong password meeting Windows complexity rules (12+ chars with upper, lower, digit, and symbol). Your real integration-test-config.json is gitignored and is never committed.",
+    "adminPassword": "<choose-a-strong-password>",
     "_mode_comment": "Set to 'local' for AutomatedLab on this machine, 'remote' for AutomatedLab on another server",
     "mode": "local"
   },
