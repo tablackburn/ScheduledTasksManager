@@ -103,18 +103,24 @@ Task -Name 'NormalizeDocsLineEndings' -Depends 'Build' -Description 'Normalize g
 Task -Name 'UnitTest' -Depends 'NormalizeDocsLineEndings' -PreCondition $unitTestPreReqs -Description 'Execute Pester tests (excluding Integration)' {
     # Deliberately no module import here.
     #
-    # Every test file imports the module itself, from the source tree
-    # (tests/<Name>.Tests.ps1 -> ..\ScheduledTasksManager\ScheduledTasksManager.psd1),
-    # and this repository's coverage configuration measures that same source tree. This
-    # task used to additionally import the staged copy from ModuleOutDir, leaving two
-    # modules with the same name and GUID loaded from different paths. InModuleScope
-    # will not choose between them, so under Pester 6 all 87 tests that use it failed
+    # The test files import the module themselves. Twenty-eight of them take it from the
+    # source tree (tests/<Name>.Tests.ps1 -> ..\ScheduledTasksManager\ScheduledTasksManager.psd1),
+    # which is also what this repository's coverage configuration measures. One,
+    # tests/Help.tests.ps1, deliberately imports the staged copy under Output/ because it
+    # validates generated help. That file does not use InModuleScope, so the two paths
+    # coexist without conflict -- but adding InModuleScope to it, or another built-path
+    # import to a file that has it, would bring the conflict back.
+    #
+    # This task used to import the staged copy as well, so a second module with the same
+    # name and GUID was loaded from a different path for every test file. InModuleScope
+    # will not choose between them, and under Pester 6 all 87 tests that use it failed
     # with "Multiple script or manifest modules named 'ScheduledTasksManager' are
     # currently loaded". Pester 5 tolerated it.
     #
-    # Removing any stale copy first is still worth doing, so a rerun in the same session
-    # does not inherit one.
-    Get-Module $PSBPreference.General.ModuleName | Remove-Module -Force -ErrorAction SilentlyContinue
+    # Removing stale copies first is still worth doing so a rerun in the same session
+    # does not inherit one. -All matters: without it Get-Module returns a single instance,
+    # which is precisely useless when the fault being guarded against is several.
+    Get-Module -Name $PSBPreference.General.ModuleName -All | Remove-Module -Force -ErrorAction SilentlyContinue
 
     Push-Location -LiteralPath $PSBPreference.Test.RootDir
 
@@ -183,7 +189,7 @@ Task -Name 'UnitTest' -Depends 'NormalizeDocsLineEndings' -PreCondition $unitTes
     }
     finally {
         Pop-Location
-        Remove-Module $PSBPreference.General.ModuleName -ErrorAction SilentlyContinue
+        Get-Module -Name $PSBPreference.General.ModuleName -All | Remove-Module -Force -ErrorAction SilentlyContinue
     }
 }
 
