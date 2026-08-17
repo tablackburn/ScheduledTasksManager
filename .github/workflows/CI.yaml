@@ -23,6 +23,13 @@ jobs:
   lint:
     name: PSScriptAnalyzer Lint
     runs-on: windows-latest
+    # Guard against a hung step burning the 6-hour default. The suite runs in
+    # about 70 seconds. Two hazards this bounds: BuildHelpers' Invoke-Git calls
+    # WaitForExit() before draining standard output, so a HEAD commit message
+    # larger than the 4096-byte pipe buffer deadlocks with no output; and a test
+    # that invokes a cmdlet with a missing mandatory parameter blocks forever on
+    # the resulting prompt when the host looks interactive.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
 
@@ -64,6 +71,13 @@ jobs:
   test:
     name: Unit Tests (windows-latest)
     runs-on: windows-latest
+    # Guard against a hung step burning the 6-hour default. The suite runs in
+    # about 70 seconds. Two hazards this bounds: BuildHelpers' Invoke-Git calls
+    # WaitForExit() before draining standard output, so a HEAD commit message
+    # larger than the 4096-byte pipe buffer deadlocks with no output; and a test
+    # that invokes a cmdlet with a missing mandatory parameter blocks forever on
+    # the resulting prompt when the host looks interactive.
+    timeout-minutes: 15
     defaults:
       run:
         shell: pwsh

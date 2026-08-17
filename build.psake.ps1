@@ -101,10 +101,26 @@ Task -Name 'NormalizeDocsLineEndings' -Depends 'Build' -Description 'Normalize g
 }
 
 Task -Name 'UnitTest' -Depends 'NormalizeDocsLineEndings' -PreCondition $unitTestPreReqs -Description 'Execute Pester tests (excluding Integration)' {
-    # Remove any previously imported project modules and import from the output dir
-    $moduleManifest = Join-Path $PSBPreference.Build.ModuleOutDir "$($PSBPreference.General.ModuleName).psd1"
-    Get-Module $PSBPreference.General.ModuleName | Remove-Module -Force -ErrorAction SilentlyContinue
-    Import-Module $moduleManifest -Force
+    # Deliberately no module import here.
+    #
+    # The test files import the module themselves. Twenty-eight of them take it from the
+    # source tree (tests/<Name>.Tests.ps1 -> ..\ScheduledTasksManager\ScheduledTasksManager.psd1),
+    # which is also what this repository's coverage configuration measures. One,
+    # tests/Help.tests.ps1, deliberately imports the staged copy under Output/ because it
+    # validates generated help. That file does not use InModuleScope, so the two paths
+    # coexist without conflict -- but adding InModuleScope to it, or another built-path
+    # import to a file that has it, would bring the conflict back.
+    #
+    # This task used to import the staged copy as well, so a second module with the same
+    # name and GUID was loaded from a different path for every test file. InModuleScope
+    # will not choose between them, and under Pester 6 all 87 tests that use it failed
+    # with "Multiple script or manifest modules named 'ScheduledTasksManager' are
+    # currently loaded". Pester 5 tolerated it.
+    #
+    # Removing stale copies first is still worth doing so a rerun in the same session
+    # does not inherit one. -All matters: without it Get-Module returns a single instance,
+    # which is precisely useless when the fault being guarded against is several.
+    Get-Module -Name $PSBPreference.General.ModuleName -All | Remove-Module -Force -ErrorAction SilentlyContinue
 
     Push-Location -LiteralPath $PSBPreference.Test.RootDir
 
@@ -129,13 +145,51 @@ Task -Name 'UnitTest' -Depends 'NormalizeDocsLineEndings' -PreCondition $unitTes
 
         $testResult = Invoke-Pester -Configuration $configuration
 
+        # FailedCount alone is not enough. A file that dies during discovery -- an
+        # empty -ForEach under Pester 6, say -- generates no tests at all: zero passed,
+        # zero failed. Gating only on FailedCount reports success while that file never
+        # ran, which is how ~777 tests sat silently disabled in PlexAutomationToolkit
+        # and how tests/Help.tests.ps1 passed here while failing discovery.
+        #
+        # Use FailedContainersCount, not `Containers | Where-Object { -not $_.Passed }`:
+        # a container that dies during discovery still reports Passed = $true, so the
+        # obvious filter matches nothing and reproduces the bug it exists to catch.
+        if ($testResult.FailedContainersCount -gt 0) {
+            $testResult.FailedContainers | ForEach-Object { Write-Warning "Container failed: $($_.Item)" }
+            throw "$($testResult.FailedContainersCount) test file(s) failed to run. See 'Container failed' above."
+        }
+
+        # Setup and teardown failures are counted separately again. Measured against
+        # Pester 6.1.0, a throwing AfterAll leaves FailedCount and FailedContainersCount
+        # both at 0 while the run still reports passing tests.
+        if ($testResult.FailedBlocksCount -gt 0) {
+            $testResult.FailedBlocks | ForEach-Object { Write-Warning "Block failed: $($_.Path -join ' > ')" }
+            throw "$($testResult.FailedBlocksCount) setup/teardown block(s) failed. See 'Block failed' above."
+        }
+
         if ($testResult.FailedCount -gt 0) {
             throw 'One or more Pester tests failed'
+        }
+
+        # A run that executed nothing is not a passing run. Measured against Pester
+        # 6.1.0, three ways to get there that every failure count reads as success:
+        #   empty test directory     Total 0    Passed 0  Failed 0  Skipped 0  NotRun 0
+        #   filter matching no test  Total 120  Passed 0  Failed 0  Skipped 0  NotRun 120
+        #   every test -Skip         Total 3    Passed 0  Failed 0  Skipped 3  NotRun 0
+        # TotalCount minus NotRunCount misses the third, and so does the per-test
+        # .Executed property -- skipped tests report Executed = $true. Only passed plus
+        # failed separates a suite that ran from one that did not. Casts are deliberate:
+        # with nothing discovered these come back null.
+        $ranCount = [int]$testResult.PassedCount + [int]$testResult.FailedCount
+        if ($ranCount -le 0) {
+            $counts = 'discovered {0}, skipped {1}, not run {2}' -f
+                [int]$testResult.TotalCount, [int]$testResult.SkippedCount, [int]$testResult.NotRunCount
+            throw "Pester ran no tests under [$($PSBPreference.Test.RootDir)] ($counts). Refusing to report success without running tests."
         }
     }
     finally {
         Pop-Location
-        Remove-Module $PSBPreference.General.ModuleName -ErrorAction SilentlyContinue
+        Get-Module -Name $PSBPreference.General.ModuleName -All | Remove-Module -Force -ErrorAction SilentlyContinue
     }
 }
 

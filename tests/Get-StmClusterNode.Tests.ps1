@@ -165,7 +165,16 @@ InModuleScope -ModuleName 'ScheduledTasksManager' {
 
         Context 'Parameter Validation' {
             It 'Should require Cluster parameter' {
-                { Get-StmClusterNode } | Should -Throw
+                # Assert the parameter metadata rather than invoking with no arguments.
+                # Cluster is mandatory, so `{ Get-StmClusterNode } | Should -Throw`
+                # depends on the host being non-interactive: PowerShell prompts for a
+                # missing mandatory parameter, and when stdin looks like a terminal that
+                # prompt blocks forever. This suite hung indefinitely here on two runs
+                # out of three, always at this exact test, and passed on the third.
+                # Checking the attribute tests the same intent deterministically.
+                $clusterParameter = (Get-Command -Name 'Get-StmClusterNode').Parameters['Cluster']
+                $clusterParameter | Should -Not -BeNullOrEmpty
+                $clusterParameter.Attributes.Mandatory | Should -Contain $true
             }
 
             It 'Should pass NodeName to Invoke-Command when specified' {
