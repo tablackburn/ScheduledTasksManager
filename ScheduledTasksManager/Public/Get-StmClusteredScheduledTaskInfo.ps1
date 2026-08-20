@@ -243,7 +243,7 @@
         # The State property comes from ScheduledTaskObject (in ClusteredScheduledTask output)
         $isRunning = $taskStateString -eq 'Running'
         $hasLastRunTime = ($mergedHashtable.Keys -contains 'LastRunTime') -and
-                          ($null -ne $mergedHashtable['LastRunTime'])
+        ($null -ne $mergedHashtable['LastRunTime'])
         if ($isRunning -and $hasLastRunTime) {
             $runningDuration = (Get-Date) - $mergedHashtable['LastRunTime']
             $mergedHashtable['RunningDuration'] = $runningDuration

@@ -67,80 +67,80 @@ function ConvertTo-StmResultMessage {
         $TaskSchedulerCodes = @{
             # Success codes (SCHED_S_*)
             # Hex 0x00041300 = decimal 267008
-            267008 = @{
+            267008     = @{
                 Name      = 'SCHED_S_TASK_READY'
                 Message   = 'The task is ready to run at its next scheduled time'
                 IsSuccess = $true
             }
             # Hex 0x00041301 = decimal 267009
-            267009 = @{
+            267009     = @{
                 Name      = 'SCHED_S_TASK_RUNNING'
                 Message   = 'The task is currently running'
                 IsSuccess = $true
             }
             # Hex 0x00041302 = decimal 267010
-            267010 = @{
+            267010     = @{
                 Name      = 'SCHED_S_TASK_DISABLED'
                 Message   = 'The task will not run at the scheduled times because it has been disabled'
                 IsSuccess = $true
             }
             # Hex 0x00041303 = decimal 267011
-            267011 = @{
+            267011     = @{
                 Name      = 'SCHED_S_TASK_HAS_NOT_RUN'
                 Message   = 'The task has not yet run'
                 IsSuccess = $true
             }
             # Hex 0x00041304 = decimal 267012
-            267012 = @{
+            267012     = @{
                 Name      = 'SCHED_S_TASK_NO_MORE_RUNS'
                 Message   = 'There are no more runs scheduled for this task'
                 IsSuccess = $true
             }
             # Hex 0x00041305 = decimal 267013
-            267013 = @{
+            267013     = @{
                 Name      = 'SCHED_S_TASK_NOT_SCHEDULED'
                 Message   = 'One or more of the properties needed to run this task on a schedule have not been set'
                 IsSuccess = $true
             }
             # Hex 0x00041306 = decimal 267014
-            267014 = @{
+            267014     = @{
                 Name      = 'SCHED_S_TASK_TERMINATED'
                 Message   = 'The last run of the task was terminated by the user'
                 IsSuccess = $true
             }
             # Hex 0x00041307 = decimal 267015
-            267015 = @{
+            267015     = @{
                 Name      = 'SCHED_S_TASK_NO_VALID_TRIGGERS'
                 Message   = 'Either the task has no triggers or the existing triggers are disabled or not set'
                 IsSuccess = $true
             }
             # Hex 0x00041308 = decimal 267016
-            267016 = @{
+            267016     = @{
                 Name      = 'SCHED_S_EVENT_TRIGGER'
                 Message   = 'Event triggers do not have set run times'
                 IsSuccess = $true
             }
             # Hex 0x0004131B = decimal 267035
-            267035 = @{
+            267035     = @{
                 Name      = 'SCHED_S_SOME_TRIGGERS_FAILED'
                 Message   = 'The task is registered, but not all specified triggers will start the task'
                 IsSuccess = $true
             }
             # Hex 0x0004131C = decimal 267036
-            267036 = @{
+            267036     = @{
                 Name      = 'SCHED_S_BATCH_LOGON_PROBLEM'
                 Message   = 'The task is registered, but may fail to start. Batch logon privilege needs to be enabled for the task principal'
                 IsSuccess = $true
             }
             # Hex 0x00041325 = decimal 267045
-            267045 = @{
+            267045     = @{
                 Name      = 'SCHED_S_TASK_QUEUED'
                 Message   = 'The Task Scheduler service has asked the task to run'
                 IsSuccess = $true
             }
 
             # Error codes (SCHED_E_*)
-            6200 = @{
+            6200       = @{
                 Name      = 'SCHED_E_SERVICE_NOT_LOCALSYSTEM'
                 Message   = 'The Task Scheduler service must be configured to run in the System account to function properly'
                 IsSuccess = $false
@@ -471,11 +471,11 @@ function ConvertTo-StmResultMessage {
         if ($taskSchedulerMatch) {
             Write-Verbose "Found Task Scheduler code: $($taskSchedulerMatch.Name)"
             $meanings.Add([PSCustomObject]@{
-                Source       = 'TaskScheduler'
-                ConstantName = $taskSchedulerMatch.Name
-                Message      = $taskSchedulerMatch.Message
-                IsSuccess    = $taskSchedulerMatch.IsSuccess
-            })
+                    Source       = 'TaskScheduler'
+                    ConstantName = $taskSchedulerMatch.Name
+                    Message      = $taskSchedulerMatch.Message
+                    IsSuccess    = $taskSchedulerMatch.IsSuccess
+                })
         }
 
         # Parse HRESULT structure for additional information
@@ -508,11 +508,11 @@ function ConvertTo-StmResultMessage {
                 $isDuplicate = $meanings | Where-Object { $_.Message -eq $win32Message }
                 if (-not $isDuplicate) {
                     $meanings.Add([PSCustomObject]@{
-                        Source       = 'Win32'
-                        ConstantName = $null
-                        Message      = $win32Message
-                        IsSuccess    = -not $isFailure
-                    })
+                            Source       = 'Win32'
+                            ConstantName = $null
+                            Message      = $win32Message
+                            IsSuccess    = -not $isFailure
+                        })
                     Write-Verbose "Added Win32 translation: $win32Message"
                 }
             }
@@ -525,11 +525,11 @@ function ConvertTo-StmResultMessage {
             # Check if translation succeeded and message is not just the number
             if ($null -ne $win32Message -and $win32Message -ne $codeValue.ToString()) {
                 $meanings.Add([PSCustomObject]@{
-                    Source       = 'Win32'
-                    ConstantName = $null
-                    Message      = $win32Message
-                    IsSuccess    = $false
-                })
+                        Source       = 'Win32'
+                        ConstantName = $null
+                        Message      = $win32Message
+                        IsSuccess    = $false
+                    })
                 Write-Verbose "Added direct Win32 translation: $win32Message"
             }
         }
@@ -538,11 +538,11 @@ function ConvertTo-StmResultMessage {
         if ($codeValue -eq 0 -and $meanings.Count -eq 0) {
             Write-Verbose 'Adding success message for code 0'
             $meanings.Add([PSCustomObject]@{
-                Source       = 'Win32'
-                ConstantName = 'ERROR_SUCCESS'
-                Message      = 'The operation completed successfully'
-                IsSuccess    = $true
-            })
+                    Source       = 'Win32'
+                    ConstantName = 'ERROR_SUCCESS'
+                    Message      = 'The operation completed successfully'
+                    IsSuccess    = $true
+                })
         }
 
         # Build the result object

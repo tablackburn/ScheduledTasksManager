@@ -305,10 +305,10 @@
                         "that do not have an ActivityId"
                     )
                     $eventsWithoutActivityId = @($taskEvents | Where-Object {
-                        $null -eq $_.ActivityId -and
-                        $_.RecordId -gt $startEvent.RecordId -and
-                        $_.RecordId -lt $endEvent.RecordId
-                    })
+                            $null -eq $_.ActivityId -and
+                            $_.RecordId -gt $startEvent.RecordId -and
+                            $_.RecordId -lt $endEvent.RecordId
+                        })
                     Write-Verbose (
                         "Found $($eventsWithoutActivityId.Count) event(s) without ActivityId for activity ID " +
                         "'$activityId' of task '$($currentTask.TaskName)'"
@@ -354,8 +354,8 @@
 
                     # Add the result code(s) - always as an array for consistent output type
                     $resultCodes = @($runDetails['EventXml'].Event.EventData.Data | Where-Object {
-                        $_.Name -eq 'ResultCode'
-                    } | Select-Object -ExpandProperty '#text' -Unique)
+                            $_.Name -eq 'ResultCode'
+                        } | Select-Object -ExpandProperty '#text' -Unique)
                     # Filter out null/empty values
                     $resultCodes = @($resultCodes | Where-Object { -not [string]::IsNullOrEmpty($_) })
 
@@ -375,8 +375,8 @@
 
                         # Translate result codes to human-readable messages
                         $runDetails['ResultMessage'] = @($resultCodes | ForEach-Object {
-                            ConvertTo-StmResultMessage -ResultCode $_
-                        })
+                                ConvertTo-StmResultMessage -ResultCode $_
+                            })
                         Write-Verbose (
                             "Translated $($runDetails['ResultMessage'].Count) ResultCode(s) for activity ID " +
                             "'$activityId' of task '$($currentTask.TaskName)'"
