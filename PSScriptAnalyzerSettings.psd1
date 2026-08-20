@@ -1,49 +1,11 @@
 @{
-    # Include all rules by default
-    IncludeRules = @(
-        '*'
-    )
-
-    # Configure specific rule settings
-    Rules        = @{
-        # Enforce consistent formatting
-        PSPlaceOpenBrace           = @{
-            Enable             = $true
-            OnSameLine         = $true
-            NewLineAfter       = $true
-            IgnoreOneLineBlock = $false
-        }
-
-        PSPlaceCloseBrace          = @{
-            Enable             = $true
-            NewLineAfter       = $true
-            IgnoreOneLineBlock = $false
-            NoEmptyLineBefore  = $false
-        }
-
-        # Enable formatting rules (they default to disabled)
-        PSUseConsistentWhitespace  = @{
-            Enable                                  = $true
-            IgnoreAssignmentOperatorInsideHashTable = $true
-        }
-
-        PSUseConsistentIndentation = @{
-            Enable              = $true
-        }
-
-        # Enable additional formatting rules (disabled by default)
-        PSUseCorrectCasing         = @{
-            Enable = $true
-        }
-
-        PSAlignAssignmentStatement = @{
-            Enable         = $true
-            CheckHashtable = $true
-        }
-
-        PSAvoidLongLines           = @{
-            Enable            = $true
-            MaximumLineLength = 120
-        }
-    }
+    # Scope analysis to actionable severities, dropping Information-level noise.
+    #
+    # ParseError must be listed. It is how PSScriptAnalyzer reports a file it
+    # could not parse at all, and naming Severity without it silently hides
+    # syntax-broken files: a file with a missing brace reports zero findings
+    # under @('Error', 'Warning'). Microsoft's documentation states this
+    # directly -- "To suppress ParseErrors, don't include it as a value in the
+    # Severity parameter" -- which is exactly what must not happen to a lint gate.
+    Severity = @('ParseError', 'Error', 'Warning')
 }

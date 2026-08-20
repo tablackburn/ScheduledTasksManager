@@ -33,40 +33,27 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Cache PowerShell modules
-        id: cache-lint-modules
-        uses: actions/cache@v6
-        with:
-          path: ~/Documents/PowerShell/Modules
-          key: ${{ runner.os }}-psmodules-lint-${{ hashFiles('build.depend.psd1') }}
-          restore-keys: |
-            ${{ runner.os }}-psmodules-lint-
-
-      - name: Install PSScriptAnalyzer
-        if: steps.cache-lint-modules.outputs.cache-hit != 'true'
+      # Lint through the build rather than calling Invoke-ScriptAnalyzer directly.
+      #
+      # The direct call passed -Settings PSGallery and analysed the source tree.
+      # ./build.ps1 -Task Analyze uses this repository's
+      # PSScriptAnalyzerSettings.psd1, which psake already points at, and
+      # analyses the built module. Two rulesets over two different paths, so a
+      # local run and this job disagreed: 1 finding here against 61 locally.
+      #
+      # The 61 are what this repository's own settings file asks for -- it turns
+      # on the formatting rules PSScriptAnalyzer ships disabled, and nothing had
+      # ever run them. They are warnings, and the build fails on Error, so this
+      # reports them without turning the job red. Fixing them is a separate
+      # change; 60 of the 61 are auto-fixable with Invoke-Formatter against this
+      # same settings file.
+      - name: Install dependencies
         shell: pwsh
-        run: |
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+        run: ./build.ps1 -Bootstrap -Task Init
 
       - name: Run PSScriptAnalyzer
         shell: pwsh
-        run: |
-          $results = Invoke-ScriptAnalyzer -Path ./ScheduledTasksManager -Recurse -Settings PSGallery -ReportSummary
-          $errors = $results | Where-Object { $_.Severity -eq 'Error' }
-
-          if ($results) {
-            Write-Host "::group::PSScriptAnalyzer Results"
-            $results | Format-Table -AutoSize
-            Write-Host "::endgroup::"
-          }
-
-          if ($errors) {
-            Write-Host "::error::PSScriptAnalyzer found $($errors.Count) error(s)"
-            exit 1
-          }
-
-          Write-Host "PSScriptAnalyzer passed with no errors"
+        run: ./build.ps1 -Task Analyze
 
   test:
     name: Unit Tests (windows-latest)
